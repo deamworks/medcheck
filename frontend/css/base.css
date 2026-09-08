@@ -1,0 +1,89 @@
+/* ล้างค่าเริ่มต้น + ตั้ง typography */
+
+*, *::before, *::after {
+    box-sizing: border-box;    /* padding ไม่ทำให้กล่องกว้างเกิน */
+    margin: 0;
+}
+
+img, svg, video {
+    display: block;
+    max-width: 100%;  /* รูปไม่ล้นจอมือถือ */
+}
+
+button, input, select, textarea {
+    font: inherit;  /* ปุ่มใช้ฟอนต์เดียวกับเนื้อหา */
+    color: inherit; /* ปุ่มใช้สีเดียวกับเนื้อหา */
+}
+
+html {
+    font-family: 100%;
+    -webkit-text-size-adjust: 100%;  /* ป้องกัน iOS ขยายตัวอักษร */
+    scroll-behavior: smooth;  /* เลื่อนหน้าเว็บแบบนุ่มนวล */
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--ink-900);
+    font-family: var(--font);
+    font-size: var(--fs-md);
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;  /* ตัวอักษรคมขึ้นบน Mac */
+}
+
+/* ข้อความ */
+h1, h2, h3, h4 {
+    font-weight:700;
+    line-height: 1.35; /* หัวข้อชิดกว่าเนื้อหาได้ */
+    text-wrap: balance;  /* จัดข้อความให้สวยบน Safari */
+}
+
+h1 { font-size: var(--fs-3xl); }
+h2 { font-size: var(--fs-2xl); }
+h3 { font-size: var(--fs-xl); }
+h4 { font-size: var(--fs-lg); }
+
+p {
+    color: var(--ink-700);
+    max-width: 70ch; 
+}
+
+a {
+    color: var(--brand-600);
+    text-underline-offset: 3px;
+}
+
+/* focus จากคีย์บอร์ด */
+:focus-visible {
+    outline: 2px solid var(--brand-600);
+    outline-offset: 2px;
+    border-radius: var(--r-sm);
+}
+
+/* โครงหน้า */
+.container {
+    width: 100%;
+    max-width: var(--maxw);
+    margin-inline: auto;
+    padding-inline: var(--sp-4);
+}
+
+/* ซ่อนแต่ยังให้โปรแกรมอ่านหน้าจออ่านได้  */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* Open/Close Animation */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
