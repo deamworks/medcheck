@@ -63,4 +63,15 @@
 
   /* ความกว้างสูงสุดของเนื้อหา */
   --maxw: 72rem;
+  
+ /* เส้นขอบเช้ม (hover) */
+--line-strong: #D6CCC9;
+
+/* พื้นและเส้นของสีสถานะ */
+--ok-soft: #E2F1EE;
+--ok-line: #A9D6CE;
+--warn-soft: #FBF1DC;
+--warn-line: #E4CB98;
+--focus-ring: #FBE0E1;
 }
+

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedCheck — คลังคอมโพเนนต์</title>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <main class="container" style="padding-block: var(--sp-7)">
+        <h1>คอมโพเนนต์</h1>
+        <p>ตัวอย่างคอมโพเนนต์ที่ใช้งานได้</p>
+    </main>
+
+    <section class="demo">
+        <h2>ปุ่ม</h2>
+        <div class="row">
+            <button class="btn btn-primary">สแกนฉลากยา</button>
+            <button class="btn btn-outline">ค้นหาด้วยชื่อ</button>
+            <button class="btn btn-ghost">ยกเลิก</button>
+        </div>
+
+        <div class="row">
+            <button class="btn btn-primary btn-sm">ปุ่มเล็ก</button>
+            <button class="btn btn-primary">กลาง</button>
+            <button class="btn btn-primary btn-lg">ใหญ่</button>
+        </div>
+
+        <div class="row">
+      <button class="btn btn-primary" disabled>กดไม่ได้</button>
+      <button class="btn btn-primary" data-loading>กำลังอ่านฉลาก</button>
+    </div>
+
+    <button class="btn btn-primary btn-lg btn-block">ถ่ายภาพฉลาก</button>
+  </div>
+    </section>
+
+
+    <section class="demo">
+        <h2>ช่องกรอกข้อมูล</h2>
+
+        <div class="stack">
+            <div class="field">
+                <label for="f-name">ชื่อ <span class="req">*</span></label>
+                <input type="text" id="f-name" class="input" placeholder="ชื่อยา" aria-describedby="f-name-h">
+                <p class="hint" id="f-name-h">กรอกชื่อยาบนฉลาก</p>
+            </div>
+        </div>
+
+           <!-- ผิดพลาด -->
+    <div class="field is-error">
+      <label for="f-reg">เลขทะเบียนยา<span class="req">*</span></label>
+      <input class="input" id="f-reg" type="text" value="822"
+             aria-invalid="true" aria-describedby="f-reg-e">
+      <p class="hint">รูปแบบ 1A 822/43</p>
+      <p class="err" id="f-reg-e">เลขทะเบียนไม่ครบ ต้องมีรูปแบบ 1A 822/43</p>
+    </div>
+
+    <!-- ช่องข้อความยาว -->
+    <div class="field">
+      <label for="f-warn">คำเตือน</label>
+      <textarea class="input" id="f-warn"></textarea>
+    </div>
+  </div>
+    </section>
+
+    <section class="demo">
+  <h2>ชิปตัวกรอง</h2>
+  <div class="row">
+    <button class="chip" aria-pressed="true">ทั้งหมด</button>
+    <button class="chip" aria-pressed="false">ยาแก้ปวดลดไข้</button>
+    <button class="chip" aria-pressed="false">ยาแก้แพ้ลดน้ำมูก</button>
+    <button class="chip" aria-pressed="false">ยาแก้ไอขับเสมหะ</button>
+    <button class="chip" aria-pressed="false">ยาระบาย</button>
+  </div>
+</section>
+
+<section class="demo">
+  <h2>ป้ายสถานะ</h2>
+  <div class="row">
+    <span class="badge badge-ok">ทะเบียนถูกต้อง</span>
+    <span class="badge badge-warn">ไม่พบในฐานข้อมูล</span>
+    <span class="badge badge-danger">ทะเบียนถูกยกเลิก</span>
+  </div>
+</section>
+
+<section class="demo">
+  <h2>การ์ด</h2>
+  <div class="card-grid">
+
+    <a class="card" href="#">
+      <p class="card-title">ซาร่า</p>
+      <p class="card-sub">พาราเซตามอล 500 มก.</p>
+      <p style="margin-top: var(--sp-3)">
+        <span class="badge badge-ok">1A 822/43</span>
+      </p>
+    </a>
+
+    <a class="card" href="#">
+      <p class="card-title">ANTACIL GEL HH</p>
+      <p class="card-sub">ยาลดกรดชนิดน้ำ</p>
+      <p style="margin-top: var(--sp-3)">
+        <span class="badge badge-ok">2A 46/58</span>
+      </p>
+    </a>
+
+    <div class="card">
+      <p class="card-title">การ์ดที่กดไม่ได้</p>
+      <p class="card-sub">สังเกตว่าไม่ยกขึ้นตอนเอาเมาส์ชี้</p>
+    </div>
+  </div>
+
+  <section class="demo">
+  <h2>กล่องแจ้งเตือน</h2>
+  <div class="stack">
+
+    <div class="alert alert-info">
+      <p><strong>ข้อมูลนี้ใช้เพื่อการศึกษา</strong>
+        ไม่ใช่คำแนะนำทางการแพทย์ หากอาการไม่ดีขึ้นควรพบแพทย์</p>
+    </div>
+
+    <div class="alert alert-ok">
+      <p><strong>พบข้อมูลยา</strong>
+        เลขทะเบียน 1A 822/43 ตรงกับ ซาร่า (พาราเซตามอล 500 มก.)</p>
+    </div>
+
+    <div class="alert alert-warn" role="alert">
+      <p><strong>อ่านฉลากไม่ชัด</strong>
+        ลองถ่ายใหม่ในที่แสงสว่างขึ้น หรือค้นหาด้วยชื่อยาแทน</p>
+    </div>
+
+    <div class="alert alert-danger" role="alert">
+      <p><strong>ทะเบียนนี้ถูกยกเลิกแล้ว</strong>
+        ไม่ควรใช้ยานี้ ควรปรึกษาเภสัชกร</p>
+    </div>
+
+  </div>
+</section>
+</body>
+</html>
