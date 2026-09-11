@@ -87,3 +87,23 @@ a {
         scroll-behavior: auto !important;
     }
 }
+
+/* หน้าแต่ละหน้า */
+.view { padding-block: var(--sp-6)}
+
+/* ลิงค์ข้ามไปเนื้อหา */
+.skin {
+    position: absolute;
+    left: var(--sp-4);
+    top: -4rem;         /* ซ่อนไว้เหนือจอ */
+    z-index: 100;
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--brand-600);
+    color: #fff;
+    border-radius: var(--r-md);
+    text-decoration: none;
+    transition: top var(--t -fast) var(--ease);
+}
+
+.skin:focus { top: var(--sp -3)}    /* เลื่อนลงมาเมื่อกด Tab */
+
