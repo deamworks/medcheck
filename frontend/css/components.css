@@ -346,6 +346,7 @@ a.card:hover {
 }
 .ico-sm { width: 1.125rem; height: 1.125rem; stroke-width: 2.2}
 
+/* แถบเมนูบน */
 .hdr {
     position: sticky;
     top: 0;
@@ -408,7 +409,6 @@ a.card:hover {
 }
 
 /* เมนูล่าง (มือถือ) */
-
 .botnav {display: none}
 @media (max-width: 700px) {
     .botnav {
@@ -440,4 +440,46 @@ a.card:hover {
     /* กันเนื้อหาท้ายหน้าถูกเมนูบัง */
 
     body {padding-bottom: 4.5rem; }
+}
+
+/* ช่องค้นหา */
+
+.searchbox {
+    position: relative;
+    max-width: 40rem;
+    margin-block: var(--sp-4);
+}
+.searchbox .ico {
+    position: absolute;
+    left: var(--sp-4);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-500);
+    pointer-events: none;
+}
+.searchbox .input {
+    min-height: 3.25rem;
+    padding-left: 3.25rem;
+    border-radius: var(--r-full);
+    font-size: var(--fs-lg);
+}
+
+#chips { margin-bottom: var(--sp-4) }
+#resultCount { margin-bottom: var(--sp-3);}
+
+.card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-top: var(--sp-3);
+    font-size: var(--fs-xs);
+    color: var(--ink-500);
+}
+
+.regno {
+    font-family: ui-monospace, Consolas, monospace;
+    font-family: var(--fs-sm);
+    font-weight: 600;
+    color: var(--ink-900);
 }

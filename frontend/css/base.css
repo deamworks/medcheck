@@ -9,6 +9,7 @@ img, svg, video {
     display: block;
     max-width: 100%;  /* รูปไม่ล้นจอมือถือ */
 }
+[hidden] { display: none !important; }
 
 button, input, select, textarea {
     font: inherit;  /* ปุ่มใช้ฟอนต์เดียวกับเนื้อหา */
@@ -92,7 +93,7 @@ a {
 .view { padding-block: var(--sp-6)}
 
 /* ลิงค์ข้ามไปเนื้อหา */
-.skin {
+.skip {
     position: absolute;
     left: var(--sp-4);
     top: -4rem;         /* ซ่อนไว้เหนือจอ */

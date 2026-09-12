@@ -46,10 +46,31 @@
     <link rel="stylesheet" href="css/components.css">
 </head>
 
+    <a  class="skip" href="#app">ข้ามไปเนื้อหาหลัก</a>
+
 <body>
 
+    
+
+    <header class="hdr">
+            <div class="container hdr-in">
+
+                <a href="#/home" class="brand">
+                    <svg class="ico" aria-hidden="true"><use href="#i-pill"></svg>
+                    MedCheck
+                </a>
+
+                <nav class="nav" aria-label="เมนูหลัก">
+                    <a href="#/home" data-nav="home">หน้าแรก</a>
+                    <a href="#/scan" data-nav="scan">สแกนฉลาก</a>
+                    <a href="#/search" data-nav="search">ค้นหายา</a>
+                    <a href="#/about" data-nav="about">เกี่ยวกับ</a>
+                </nav>
+            </div>
+    </header>
+
     <!-- ลิงก์ข้ามไปเนื้อหา สำหรับคนที่ใช้คีย์บอร์ด -->
-    <a href="#app" class="skip">ข้ามไปเนื้อหาหลัก</a>
+    
 
     <main id="app" class="container">
         <section class="view" data-view="home">
@@ -67,8 +88,23 @@
 
         <section class="view" data-view="search" hidden>
             <h1>ค้นหายา</h1>
-            <p>ส่วนนี้ทำในวันที่ 4</p>
-        </section>
+
+            <div class="searchbox">
+                <label for="q" class="sr-only">ค้นหาชื่อยา ชื่อสามัญ หรือเลขทะเบียน</label>
+                <svg class="ico" aria-hidden="true"><use href="#i-search"></svg>
+                <input id="q" type="search" class="input"
+                    placeholder="เช่น พารา, ซาร่า, 1A 822/43" autocomplete="off">
+            </div>
+
+            <div class="row" id="chips" role="group" aria-label="กรองตามกลุ่มอาการ"></div>
+            <p class="hint" id="resultCount" aria-live="polite">กำลังโหลดข้อมูลยา...</p>
+            <div class="card-grid" id="results"></div>
+            <div class="alert alert-info" id="empty" hidden>
+                <p><strong>ไม่พบยาที่ค้นหา</strong> 
+                    ลองพิมพ์ชื่อสั้นลง เช่น "พารา" แทน "พาราเซตามอล" หรือเลือกหมวด "ทั้งหมด"</p>
+            </div>
+    </section>
+
 
         <section class="view" data-view="about" hidden>
             <h1>เกี่ยวกับระบบ</h1>
@@ -76,24 +112,8 @@
         </section>
     </main>
 
-    <main>
-        <header class="hdr">
-            <div class="container hdr-in">
+    
 
-                <a href="#/home" class="brand">
-                    <svg class="ico" aria-hidden="true"><use href="#i-pill"></svg>
-                    MedCheck
-                </a>
-
-                <nav class="nav" aria-label="เมนูหลัก">
-                    <a href="#/home" data-nav="home">หน้าแรก</a>
-                    <a href="#/scan" data-nav="scan">สแกนฉลาก</a>
-                    <a href="#/search" data-nav="search">ค้นหายา</a>
-                    <a href="#/about" data-nav="about">เกี่ยวกับ</a>
-                </nav>
-            </div>
-        </header>
-    </main>
 
     <main>
         <nav class="botnav" aria-label="เมนูหลัก (มือถือ)">
@@ -119,6 +139,7 @@
         </nav>
     </main>
 
+    
 
     <script src="js/app.js"></script>
 </body>
