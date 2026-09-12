@@ -85,15 +85,48 @@
 
     --hdr:4.6rem; --nav:4.6rem; --maxw:1120px;
     color-scheme:light;
-
-    /* โหมดมืด */
-    @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){ color-scheme:dark;}}
-    :root[data-theme="dark"]{ color-scheme:dark;}
-
-    /* ระดับขนาดตัวอักษร */
-    html{font-size:100%}                       /* 16px */
-    html[data-fs="2"]{font-size:112.5%}        /* 18px */
-    html[data-fs="3"]{font-size:127%}          /* ~20px */
 }
+
+/* โหมดมืด — ตามการตั้งค่าของเครื่อง */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){ color-scheme:dark;
+    --primary:#F2444C; --primary-2:#D01B24; --primary-hover:#FF5A62; --primary-active:#BE0F18;
+    --tint:#2C1618; --tint-2:#3D1D20; --tint-line:#5A2A2E; --brand-ink:#FF9494;
+    --c1:#FF9E86; --c1-bg:#33201B; --c2:#66D6B4; --c2-bg:#123028; --c3:#FF9494; --c3-bg:#331A1A;
+    --c4:#BFA3F5; --c4-bg:#241C38; --c5:#8CBAEE; --c5-bg:#132738; --c6:#F0C476; --c6-bg:#332715;
+    --page:#101215; --panel:#15181C; --surface:#191D22; --surface-2:#20252B; --surface-3:#262C33;
+    --ink:#F1F3F6; --ink-2:#C5CCD4; --ink-3:#959EA9;
+    --line:#2A2F36; --line-2:#3A424B;
+    --ok:#63D69E; --ok-bg:#0F2E1F; --ok-line:#245540;
+    --warn:#EDBE74; --warn-bg:#2E220F; --warn-line:#54401F;
+    --danger:#FF9494; --danger-bg:#301416; --danger-line:#582327;
+    --info:#8FBDEE; --info-bg:#112336; --info-line:#274461;
+    --dark:#0C0E11; --dark-2:#14171B; --dark-line:#252A31;
+    --sh-1:0 1px 2px rgba(0,0,0,.5); --sh-2:0 6px 20px rgba(0,0,0,.55); --sh-3:0 20px 48px rgba(0,0,0,.68);
+    --glow:0 8px 28px rgba(242,68,76,.28);
+}}
+
+/* โหมดมืด — ผู้ใช้กดเลือกเอง */
+:root[data-theme="dark"]{ color-scheme:dark;
+  --primary:#F2444C; --primary-2:#D01B24; --primary-hover:#FF5A62; --primary-active:#BE0F18;
+  --tint:#2C1618; --tint-2:#3D1D20; --tint-line:#5A2A2E; --brand-ink:#FF9494;
+  --c1:#FF9E86; --c1-bg:#33201B; --c2:#66D6B4; --c2-bg:#123028; --c3:#FF9494; --c3-bg:#331A1A;
+  --c4:#BFA3F5; --c4-bg:#241C38; --c5:#8CBAEE; --c5-bg:#132738; --c6:#F0C476; --c6-bg:#332715;
+  --page:#101215; --panel:#15181C; --surface:#191D22; --surface-2:#20252B; --surface-3:#262C33;
+  --ink:#F1F3F6; --ink-2:#C5CCD4; --ink-3:#959EA9;
+  --line:#2A2F36; --line-2:#3A424B;
+  --ok:#63D69E; --ok-bg:#0F2E1F; --ok-line:#245540;
+  --warn:#EDBE74; --warn-bg:#2E220F; --warn-line:#54401F;
+  --danger:#FF9494; --danger-bg:#301416; --danger-line:#582327;
+  --info:#8FBDEE; --info-bg:#112336; --info-line:#274461;
+  --dark:#0C0E11; --dark-2:#14171B; --dark-line:#252A31;
+  --sh-1:0 1px 2px rgba(0,0,0,.5); --sh-2:0 6px 20px rgba(0,0,0,.55); --sh-3:0 20px 48px rgba(0,0,0,.68);
+  --glow:0 8px 28px rgba(242,68,76,.28);
+}
+
+/* ระดับขนาดตัวอักษร */
+html{font-size:100%}                       /* 16px */
+html[data-fs="2"]{font-size:112.5%}        /* 18px */
+html[data-fs="3"]{font-size:127%}          /* ~20px */
+
 
 
