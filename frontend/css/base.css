@@ -17,9 +17,10 @@ button, input, select, textarea {
 }
 
 html {
-    font-family: 100%;
+    font-size: 100%;
     -webkit-text-size-adjust: 100%;  /* ป้องกัน iOS ขยายตัวอักษร */
     scroll-behavior: smooth;  /* เลื่อนหน้าเว็บแบบนุ่มนวล */
+    scrollbar-gutter: stable;
 }
 
 body {
@@ -33,9 +34,10 @@ body {
 
 /* ข้อความ */
 h1, h2, h3, h4 {
-    font-weight:700;
-    line-height: 1.35; /* หัวข้อชิดกว่าเนื้อหาได้ */
-    text-wrap: balance;  /* จัดข้อความให้สวยบน Safari */
+  font-family: var(--font-head);
+  font-weight: 700;
+  line-height: 1.35;
+  text-wrap: balance;
 }
 
 h1 { font-size: var(--fs-3xl); }

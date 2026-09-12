@@ -1,0 +1,265 @@
+/* ==========================================================
+   MedCheck — shell.css
+   หมวดจากไฟล์แบบ: HEADER · BUTTONS · หน้าจอเปิดตัว · MOTION · LAYOUT
+   ========================================================== */
+
+/* ============================ HEADER ============================ */
+/* แถบบนโปร่งใสตอนอยู่บนสุด แล้วค่อยๆ ทึบเมื่อเลื่อนลง เพื่อให้อ่านง่ายเสมอ */
+.hdr{position:sticky; top:0; z-index:100; background:transparent;
+  border-bottom:1px solid transparent; padding-top:env(safe-area-inset-top);
+  transition:background var(--d3) var(--ez), border-color var(--d3) var(--ez), box-shadow var(--d3) var(--ez)}
+.hdr.is-scrolled{background:color-mix(in srgb,var(--surface) 88%,transparent);
+  border-bottom-color:var(--line); box-shadow:var(--sh-1)}
+@supports (backdrop-filter:blur(8px)){.hdr.is-scrolled{backdrop-filter:saturate(1.5) blur(16px)}}
+/* ฮีโร่เลื่อนขึ้นไปอยู่ใต้แถบบน จะได้เห็นพื้นหลังทะลุแถบโปร่ง (--hdr-h ตั้งค่าจาก JS ตามความสูงจริง) */
+#view-home .hero{margin-top:calc(-1 * var(--hdr-h,0px)); padding-top:var(--hdr-h,0px)}
+/* แถบบนใช้ความกว้างได้มากกว่าเนื้อหา และคิดเป็น rem จึงขยายตามขนาดตัวอักษรเอง
+   ป้องกันไม่ให้เมนูกับปุ่มขยายตัวอักษรซ้อนทับกันตอนเลือกขนาด กกก */
+.hdr .wrap{max-width:min(84rem,100%)}
+.hdr-in{min-height:var(--hdr); display:flex; align-items:center; gap:.9rem; padding-block:.5rem;
+  flex-wrap:wrap}
+/* ปุ่มช่วยการมองเห็นต้องไม่ถูกบีบไม่ว่ากรณีใด */
+.hdr-act{flex:0 0 auto}
+.logo{display:flex; align-items:center; gap:.6rem; text-decoration:none; color:inherit; white-space:nowrap}
+.logo-mark{width:2.6rem;height:2.6rem;flex:0 0 auto;border-radius:.85rem; display:grid;place-items:center;
+  background:linear-gradient(145deg,var(--red-500),var(--red-700)); color:#fff; box-shadow:var(--glow);
+  position:relative; overflow:hidden}
+.logo-mark::after{content:""; position:absolute; inset:0;
+  background:linear-gradient(120deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%);
+  transform:translateX(-120%); animation:sheen 5s var(--ez) 1.4s infinite}
+@keyframes sheen{0%,72%{transform:translateX(-120%)} 88%,100%{transform:translateX(120%)}}
+.logo-mark svg{width:1.4rem;height:1.4rem}
+.logo-tx{display:flex; flex-direction:column; line-height:1.18}
+.logo-tx b{font-family:var(--f-head); font-size:1.28rem; font-weight:700; letter-spacing:-.02em; color:var(--ink)}
+.logo-tx b i{font-style:normal; color:var(--primary)}
+.logo-tx span{font-size:.7rem; color:var(--ink-3)}
+@media (max-width:560px){ .logo-tx span{display:none} }
+.mainnav{display:none; margin-inline-start:auto; gap:.2rem}
+.mainnav a{display:inline-flex; align-items:center; gap:.45rem; padding:.62rem .95rem; border-radius:var(--r-full);
+  text-decoration:none; color:var(--ink-2); font-size:.95rem; font-weight:500; position:relative;
+  white-space:nowrap; flex:0 0 auto;
+  transition:background var(--d1) var(--ez), color var(--d1) var(--ez)}
+.mainnav a svg{width:1.2rem;height:1.2rem}
+.mainnav a:hover{background:var(--surface-3); color:var(--ink)}
+.mainnav a[aria-current="page"]{color:var(--primary); font-weight:600; background:var(--tint)}
+.hdr-act{display:flex; align-items:center; gap:.4rem; margin-inline-start:auto}
+.mainnav+.hdr-act{margin-inline-start:.4rem}
+.iconbtn{width:2.75rem;height:2.75rem;border-radius:var(--r-full); border:1px solid var(--line);
+  background:var(--surface); color:var(--ink-2); display:grid;place-items:center; cursor:pointer;
+  transition:background var(--d1) var(--ez), transform var(--d1) var(--ez), border-color var(--d1) var(--ez)}
+.iconbtn:hover{background:var(--surface-3); border-color:var(--line-2); color:var(--ink)}
+.iconbtn:active{transform:scale(.92)}
+.iconbtn svg{width:1.25rem;height:1.25rem}
+/* ===================== เมนูหลัก 3 ระดับ =====================
+   • จอกว้างพอ            → เมนูบนเต็ม
+   • เดสก์ท็อปที่ย่อจอ      → ปุ่ม ☰ เปิดเมนูสไลด์
+   • มือถือ (< 700px)     → เมนูล่างเหมือนเดิม
+   จุดที่ "กว้างพอ" ขยับตามขนาดตัวอักษร เพราะเมนูกว้างขึ้นเมื่อกด กก / กกก
+   (media query อ่านหน่วย em จากขนาดเริ่มต้นของเบราว์เซอร์ ไม่ใช่ค่าที่เราตั้งบน html จึงต้องระบุเป็น px) */
+.menu-btn{display:none}
+@media (min-width:700px) and (max-width:999px){ .menu-btn{display:grid} }
+@media (min-width:1000px){ .mainnav{display:flex} }
+@media (min-width:700px) and (max-width:1139px){
+  html[data-fs="2"] .mainnav{display:none} html[data-fs="2"] .menu-btn{display:grid} }
+@media (min-width:700px) and (max-width:1289px){
+  html[data-fs="3"] .mainnav{display:none} html[data-fs="3"] .menu-btn{display:grid} }
+
+/* ---- ปุ่ม ☰ ที่แปลงร่างเป็นกากบาทตอนเปิด ---- */
+.menu-btn .bars{position:relative; width:1.4rem; height:1.05rem}
+.menu-btn .bars i{position:absolute; inset-inline:0; height:2.5px; border-radius:2px; background:currentColor;
+  transition:transform var(--d2) var(--ez-back), opacity var(--d1) var(--ez)}
+.menu-btn .bars i:nth-child(1){top:0}
+.menu-btn .bars i:nth-child(2){top:calc(50% - 1.25px)}
+.menu-btn .bars i:nth-child(3){bottom:0}
+.menu-btn[aria-expanded="true"]{background:var(--primary); color:#fff; border-color:var(--primary)}
+.menu-btn[aria-expanded="true"] .bars i:nth-child(1){transform:translateY(.5rem) rotate(45deg)}
+.menu-btn[aria-expanded="true"] .bars i:nth-child(2){opacity:0; transform:scaleX(.2)}
+.menu-btn[aria-expanded="true"] .bars i:nth-child(3){transform:translateY(-.5rem) rotate(-45deg)}
+
+/* ---- เมนูสไลด์ ---- */
+.drawer-back{position:fixed; inset:0; z-index:200; background:rgba(16,10,12,.5);
+  opacity:0; pointer-events:none; transition:opacity var(--d3) var(--ez)}
+@supports (backdrop-filter:blur(4px)){ .drawer-back{backdrop-filter:blur(4px)} }
+.drawer-back.open{opacity:1; pointer-events:auto}
+.drawer{position:fixed; z-index:201; top:0; bottom:0; inset-inline-end:0; width:min(23rem,88vw);
+  background:var(--surface); box-shadow:var(--sh-3); display:flex; flex-direction:column;
+  padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  padding-top:calc(1rem + env(safe-area-inset-top)); overflow-y:auto;
+  transform:translateX(102%); visibility:hidden;
+  transition:transform var(--d3) var(--ez-out), visibility 0s linear var(--d3)}
+.drawer.open{transform:none; visibility:visible; transition:transform var(--d3) var(--ez-out), visibility 0s}
+.drawer-head{display:flex; align-items:center; gap:.8rem; padding-bottom:1rem; border-bottom:1px solid var(--line)}
+.drawer-head .logo{flex:1; min-width:0}
+.drawer-nav{display:grid; gap:.55rem; margin-top:1.1rem}
+.drawer-nav a{display:flex; align-items:center; gap:.9rem; min-height:3.6rem; padding:0 1.1rem;
+  border-radius:var(--r); text-decoration:none; color:var(--ink-2); background:var(--surface-2);
+  border:1.5px solid var(--line); font-family:var(--f-head); font-size:1.08rem; font-weight:600;
+  opacity:0; transform:translateX(1.6rem)}
+.drawer.open .drawer-nav a{opacity:1; transform:none;
+  transition:opacity var(--d3) var(--ez-out) var(--dd,0ms), transform var(--d3) var(--ez-out) var(--dd,0ms),
+             background var(--d1) var(--ez), color var(--d1) var(--ez), border-color var(--d1) var(--ez)}
+.drawer-nav a svg{width:1.5rem;height:1.5rem}
+.drawer-nav a:hover{background:var(--tint); border-color:var(--tint-line); color:var(--primary)}
+.drawer-nav a[aria-current="page"]{background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  color:#fff; border-color:transparent; box-shadow:var(--glow)}
+.drawer-foot{margin-top:auto; padding-top:1.1rem; border-top:1px solid var(--line)}
+.drawer-foot a{display:flex; align-items:center; gap:.8rem; min-height:3.2rem; padding:0 1.1rem;
+  border-radius:var(--r); text-decoration:none; color:var(--ink-3); font-size:1rem;
+  transition:background var(--d1) var(--ez), color var(--d1) var(--ez)}
+.drawer-foot a:hover{background:var(--surface-2); color:var(--ink)}
+.drawer-foot a svg{width:1.35rem;height:1.35rem}
+@media (prefers-reduced-motion:reduce){
+  .drawer,.drawer.open{transition:none} .drawer-nav a{opacity:1; transform:none}
+  .menu-btn .bars i{transition:none}
+}
+
+/* ---- ปุ่มขยายตัวอักษร ---- */
+.fs-ctl{display:inline-flex; align-items:center; padding:.2rem; gap:.15rem;
+  border:1px solid var(--line); border-radius:var(--r-full); background:var(--surface)}
+.fs-ctl button{min-width:2.35rem; height:2.35rem; border:0; border-radius:var(--r-full); cursor:pointer;
+  background:transparent; color:var(--ink-3); font-family:var(--f-head); font-weight:700; line-height:1;
+  display:grid; place-items:center; padding:0 .3rem;
+  transition:background var(--d1) var(--ez), color var(--d1) var(--ez), transform var(--d1) var(--ez)}
+.fs-ctl button:nth-child(1){font-size:.82rem}
+.fs-ctl button:nth-child(2){font-size:.95rem}
+.fs-ctl button:nth-child(3){font-size:1.1rem}
+.fs-ctl button:hover{background:var(--surface-3); color:var(--ink-2)}
+.fs-ctl button[aria-pressed="true"]{background:var(--primary); color:#fff; box-shadow:var(--glow)}
+.fs-ctl button:active{transform:scale(.9)}
+/* ปุ่มขยายตัวอักษรต้องอยู่บนมือถือด้วย จึงยอมซ่อนปุ่มผู้ดูแลระบบแทน (ยังกดได้จากส่วนท้ายหน้า) */
+@media (max-width:820px){ .hdr .admin-link{display:none} }
+@media (max-width:400px){
+  .fs-ctl button{min-width:2rem; height:2.1rem; padding:0 .2rem}
+  .hdr-in{gap:.5rem}
+}
+/* ============================ BUTTONS ============================ */
+.btn{--h:3.35rem; display:inline-flex; align-items:center; justify-content:center; gap:.6rem;
+  min-height:var(--h); padding:0 1.5rem; border-radius:var(--r-full); border:2px solid transparent;
+  font-family:var(--f-head); font-size:1.02rem; font-weight:600; line-height:1; cursor:pointer;
+  text-decoration:none; white-space:nowrap; position:relative; overflow:hidden;
+  transition:background var(--d1) var(--ez), color var(--d1) var(--ez), border-color var(--d1) var(--ez),
+             box-shadow var(--d2) var(--ez), transform var(--d1) var(--ez)}
+.btn svg{width:1.25rem;height:1.25rem}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:var(--glow)}
+.btn-primary:hover{box-shadow:0 12px 34px rgba(224,27,36,.42); transform:translateY(-2px)}
+.btn-primary:active{transform:translateY(0) scale(.97)}
+.btn-outline{background:var(--surface); color:var(--primary); border-color:var(--tint-line)}
+.btn-outline:hover{background:var(--tint); border-color:var(--primary); transform:translateY(-2px)}
+.btn-soft{background:var(--surface); color:var(--ink); border-color:var(--line-2)}
+.btn-soft:hover{background:var(--surface-3)}
+.btn-ghost{background:transparent; color:var(--ink-2); border-color:transparent}
+.btn-ghost:hover{background:var(--surface-3)}
+.btn-sm{--h:2.6rem; padding:0 1rem; font-size:.9rem}
+.btn-sm svg{width:1.05rem;height:1.05rem}
+.btn-lg{--h:4rem; padding:0 2rem; font-size:1.15rem}
+.btn-lg svg{width:1.45rem;height:1.45rem}
+.btn-block{width:100%}
+.btn[disabled],.btn[aria-disabled="true"]{opacity:.45; cursor:not-allowed; box-shadow:none; transform:none}
+/* ระลอกคลื่นตอนกด ให้รู้ว่าระบบรับคำสั่งแล้ว */
+.btn::after{content:""; position:absolute; inset:0; border-radius:inherit; background:radial-gradient(circle,#fff 12%,transparent 12.5%);
+  background-position:50%; background-size:220%; opacity:0; transition:background-size .5s,opacity .6s}
+.btn:active::after{background-size:0%; opacity:.28; transition:0s}
+.spin{width:1.15rem;height:1.15rem;border:2.5px solid currentColor;border-top-color:transparent;
+  border-radius:50%; animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ปุ่มอ่านออกเสียงประจำหัวข้อ */
+.speak{display:inline-flex; align-items:center; gap:.4rem; min-height:2.5rem; padding:0 .85rem;
+  border-radius:var(--r-full); border:1.5px solid var(--tint-line); background:var(--tint); color:var(--primary);
+  font-family:var(--f-head); font-size:.85rem; font-weight:600; cursor:pointer; white-space:nowrap;
+  transition:background var(--d1) var(--ez), color var(--d1) var(--ez), transform var(--d1) var(--ez)}
+.speak svg{width:1.05rem;height:1.05rem}
+.speak:hover{background:var(--primary); color:#fff; border-color:var(--primary)}
+.speak:active{transform:scale(.94)}
+.speak[aria-pressed="true"]{background:var(--primary); color:#fff; border-color:var(--primary)}
+.speak[aria-pressed="true"] svg{animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.55;transform:scale(.86)}}
+/* ============================ หน้าจอเปิดตัว ============================ */
+#intro{position:fixed; inset:0; z-index:9999; display:grid; place-content:center; justify-items:center;
+  gap:1.1rem; background:linear-gradient(168deg,#FFFBFB 0%,#FFEFEF 46%,#FFF7F3 100%)}
+:root[data-theme="dark"] #intro{background:linear-gradient(168deg,#171114 0%,#2A1519 46%,#181214 100%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #intro{
+  background:linear-gradient(168deg,#171114 0%,#2A1519 46%,#181214 100%)}}
+#intro.out{animation:introOut 420ms var(--ez) forwards}
+@keyframes introOut{to{opacity:0; transform:scale(1.04); visibility:hidden}}
+.intro-mark{position:relative; width:5.4rem;height:5.4rem;border-radius:1.7rem; display:grid;place-items:center;
+  background:linear-gradient(145deg,var(--red-500),var(--red-700)); color:#fff; box-shadow:var(--glow);
+  animation:markIn 620ms var(--ez-back) both}
+.intro-mark svg{width:2.9rem;height:2.9rem}
+@keyframes markIn{from{opacity:0; transform:scale(.5) rotate(-14deg)} to{opacity:1; transform:none}}
+.intro-mark::after{content:""; position:absolute; inset:-.5rem; border-radius:2.1rem;
+  border:2px solid var(--tint-line); animation:markRing 1.5s var(--ez-out) 280ms infinite}
+@keyframes markRing{0%{transform:scale(.86); opacity:.9} 100%{transform:scale(1.28); opacity:0}}
+.intro-name{font-family:var(--f-head); font-size:1.9rem; font-weight:700; letter-spacing:-.02em; color:var(--ink);
+  animation:introUp 560ms var(--ez-out) 180ms both}
+.intro-name i{font-style:normal; color:var(--primary)}
+.intro-sub{font-size:.92rem; color:var(--ink-3); margin-top:-.6rem;
+  animation:introUp 560ms var(--ez-out) 280ms both}
+@keyframes introUp{from{opacity:0; transform:translateY(1rem)} to{opacity:1; transform:none}}
+.intro-bar{width:11rem; height:5px; border-radius:99px; background:var(--tint-2); overflow:hidden;
+  animation:introUp 460ms var(--ez-out) 340ms both}
+.intro-bar i{display:block; height:100%; border-radius:99px; width:0;
+  background:linear-gradient(90deg,var(--primary),#F0682B);
+  animation:introBar 820ms var(--ez-out) 360ms forwards}
+@keyframes introBar{to{width:100%}}
+html.intro-on,html.intro-on body{overflow:hidden}
+
+/* เนื้อหาในฮีโร่ทยอยโผล่หลังหน้าจอเปิดตัวจางไป */
+html.intro-on .view{animation:none}
+html.entered #view-home .eyebrow,html.entered #view-home h1,html.entered .hero-lead,
+html.entered .hero-cta,html.entered .hero-stats,html.entered .hero-note,html.entered .art{
+  animation:heroUp 620ms var(--ez-out) both}
+html.entered #view-home h1{animation-delay:70ms}
+html.entered .hero-lead{animation-delay:150ms}
+html.entered .hero-cta{animation-delay:230ms}
+html.entered .hero-stats{animation-delay:310ms}
+html.entered .hero-note{animation-delay:380ms}
+html.entered .art{animation-delay:180ms}
+@keyframes heroUp{from{opacity:0; transform:translateY(1.5rem)} to{opacity:1; transform:none}}
+html.entered .hdr{animation:hdrDrop 640ms var(--ez-out) both}
+@keyframes hdrDrop{from{opacity:0; transform:translateY(-100%)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){
+  #intro,.intro-mark,.intro-mark::after,.intro-name,.intro-sub,.intro-bar,.intro-bar i{animation:none}
+  html.entered .hdr,html.entered .art,html.entered .hero-lead,html.entered .hero-cta,
+  html.entered .hero-stats,html.entered .hero-note,html.entered #view-home h1,
+  html.entered #view-home .eyebrow{animation:none}
+}
+/* ============================ MOTION ============================ */
+/* เปลี่ยนหน้า: เลื่อนขึ้นมาพร้อมจางเข้า เห็นชัดว่าเปลี่ยนหน้าแล้ว แต่ไม่เร็วจนตาตามไม่ทัน */
+.view{animation:vin 420ms var(--ez-out) both}
+@keyframes vin{from{opacity:0; transform:translate3d(0,22px,0) scale(.994)} to{opacity:1; transform:none}}
+/* หัวข้อหลักของหน้าขยับตามทีหลังเล็กน้อย ให้สายตาไล่ตามได้ */
+.view>*>.page-head,.view>.hero,.view>.wrap>.scan-wrap>.center{animation:vinLead 520ms var(--ez-out) both 80ms}
+@keyframes vinLead{from{opacity:0; transform:translate3d(0,14px,0)} to{opacity:1; transform:none}}
+.reveal{opacity:0; transform:translate3d(0,26px,0)}
+.reveal.in{opacity:1; transform:none;
+  transition:opacity var(--d4) var(--ez-out) var(--rd,0ms), transform var(--d4) var(--ez-out) var(--rd,0ms)}
+.pop{opacity:0; transform:scale(.9)}
+.pop.in{opacity:1; transform:none;
+  transition:opacity var(--d3) var(--ez-back) var(--rd,0ms), transform var(--d3) var(--ez-back) var(--rd,0ms)}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;
+    transition-duration:1ms!important;scroll-behavior:auto!important}
+  .view{animation:none} .reveal,.pop{opacity:1; transform:none}
+}
+/* ============================ LAYOUT ============================ */
+main{min-height:60vh; padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom) + .5rem)}
+@media (min-width:700px){ main{padding-bottom:0} }
+.sec{padding-block:clamp(2.4rem,6vw,4.6rem)}
+.sec-sm{padding-block:clamp(1.6rem,3.6vw,2.6rem)}
+.sec-head{display:flex; align-items:flex-start; gap:.85rem; flex-wrap:wrap; margin-bottom:1.4rem}
+.sec-head .ttl{flex:1 1 18rem; min-width:0}
+.sec-head p{color:var(--ink-2); font-size:1rem; margin-top:.45rem; max-width:56ch}
+.eyebrow{display:inline-flex; align-items:center; gap:.5rem; margin-bottom:.65rem; padding:.32rem .8rem;
+  border-radius:var(--r-full); background:var(--tint); color:var(--brand-ink); border:1px solid var(--tint-line);
+  font-family:var(--f-head); font-size:.8rem; font-weight:700; letter-spacing:.02em}
+.eyebrow svg{width:1rem;height:1rem}
+.page-head{display:flex; align-items:flex-start; gap:.85rem; flex-wrap:wrap; margin-bottom:1.5rem}
+.backlink{width:3rem;height:3rem;flex:0 0 auto;border-radius:var(--r-full); border:1px solid var(--line);
+  background:var(--surface); color:var(--ink-2); display:grid;place-items:center; cursor:pointer; text-decoration:none;
+  transition:all var(--d1) var(--ez)}
+.backlink:hover{background:var(--tint); color:var(--primary); border-color:var(--tint-line); transform:translateX(-3px)}
+.backlink svg{width:1.35rem;height:1.35rem}
+.page-head h1{font-size:clamp(1.5rem,3.6vw,2.15rem)}
+.page-head p{color:var(--ink-2); font-size:1rem; margin-top:.4rem}

@@ -1,0 +1,230 @@
+/* ==========================================================
+   MedCheck — pages.css
+   หมวดจากไฟล์แบบ: HERO · STEPS · CATEGORY GRID · SHORTCUTS · SCAN
+   ========================================================== */
+
+/* ============================ HERO ============================ */
+.hero{position:relative; overflow:hidden; isolation:isolate;
+  background:linear-gradient(168deg,#FFFBFB 0%,#FFEFEF 42%,#FFF7F3 100%)}
+:root[data-theme="dark"] .hero{background:linear-gradient(168deg,#171114 0%,#2A1519 45%,#181214 100%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero{background:linear-gradient(168deg,#171114 0%,#2A1519 45%,#181214 100%)}}
+.hero .blob{position:absolute; z-index:-1; border-radius:50%; filter:blur(46px); opacity:.55}
+.hero .b1{width:32rem;height:32rem; top:-12rem; inset-inline-start:-10rem; background:radial-gradient(circle,#FF9494,transparent 66%)}
+.hero .b2{width:26rem;height:26rem; bottom:-11rem; inset-inline-end:-6rem; background:radial-gradient(circle,#FFC98A,transparent 66%)}
+.hero .b3{width:20rem;height:20rem; top:24%; inset-inline-end:26%; background:radial-gradient(circle,#F9A8B8,transparent 68%); opacity:.42}
+@media (prefers-reduced-motion:no-preference){
+  .hero .b1{animation:drift 17s ease-in-out infinite}
+  .hero .b2{animation:drift 21s ease-in-out -6s infinite reverse}
+}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(2.4rem,-1.8rem) scale(1.09)}}
+.hero::after{content:""; position:absolute; inset:0; z-index:-1; opacity:.5;
+  background-image:radial-gradient(rgba(190,15,24,.14) 1.3px,transparent 1.3px); background-size:1.7rem 1.7rem;
+  mask-image:radial-gradient(84% 66% at 50% 42%,#000 8%,transparent 76%);
+  -webkit-mask-image:radial-gradient(84% 66% at 50% 42%,#000 8%,transparent 76%)}
+.hero-in{position:relative; display:grid; gap:clamp(1.8rem,4vw,3rem); align-items:center;
+  padding-block:clamp(2.4rem,6vw,5rem)}
+@media (min-width:940px){ .hero-in{grid-template-columns:1.04fr .96fr} }
+.hero h1{text-wrap:balance}
+.hero h1 em{font-style:normal; position:relative; white-space:nowrap;
+  background:linear-gradient(120deg,var(--primary),#F0682B); -webkit-background-clip:text; background-clip:text; color:transparent}
+.hero h1 em::after{content:""; position:absolute; left:0; right:0; bottom:.06em; height:.16em; border-radius:99px;
+  background:linear-gradient(90deg,var(--primary),#F0682B); opacity:.22;
+  transform:scaleX(0); transform-origin:left; animation:uline .9s var(--ez-out) .5s forwards}
+@keyframes uline{to{transform:scaleX(1)}}
+.hero-lead{margin-top:1.05rem; color:var(--ink-2); font-size:clamp(1rem,1.5vw,1.13rem); line-height:1.8; max-width:50ch}
+.hero-cta{display:flex; flex-wrap:wrap; gap:.8rem; margin-top:1.7rem}
+.hero-note{margin-top:1.15rem; display:flex; gap:.55rem; align-items:flex-start; font-size:.88rem;
+  color:var(--ink-3); max-width:46ch}
+.hero-note svg{width:1.1rem;height:1.1rem; color:var(--primary); margin-top:.15rem}
+.hero-stats{display:flex; flex-wrap:wrap; gap:.7rem 1.8rem; margin-top:1.7rem; padding-top:1.3rem;
+  border-top:2px dashed var(--tint-line)}
+.hero-stat b{display:block; font-family:var(--f-head); font-size:2rem; font-weight:700; line-height:1.05;
+  font-variant-numeric:tabular-nums;
+  background:linear-gradient(135deg,var(--primary),#F0682B); -webkit-background-clip:text; background-clip:text; color:transparent}
+.hero-stat span{font-size:.8rem; color:var(--ink-3)}
+
+/* hero art */
+.art{position:relative; justify-self:center; width:min(28rem,94%); aspect-ratio:1/.94}
+.art svg{position:relative; width:100%; height:100%}
+.art .ring{position:absolute; inset:14% 18%; border-radius:50%; border:2px solid var(--tint-line); opacity:.7}
+@media (prefers-reduced-motion:no-preference){
+  .art .ring{animation:ripple 3.4s var(--ez-out) infinite}
+  .art .ring.r2{animation-delay:1.15s} .art .ring.r3{animation-delay:2.3s}
+}
+@keyframes ripple{0%{transform:scale(.72); opacity:.75} 100%{transform:scale(1.35); opacity:0}}
+.art-float{animation:float 5.6s ease-in-out infinite}
+.art-float2{animation:float 6.8s ease-in-out .6s infinite}
+@keyframes float{0%,100%{transform:translateY(0)} 50%{transform:translateY(-.7rem)}}
+@media (prefers-reduced-motion:reduce){ .art-float,.art-float2,.art .ring{animation:none} }
+/* ============================ STEPS ============================ */
+.steps{display:grid; gap:1.1rem; position:relative}
+@media (min-width:820px){ .steps{grid-template-columns:repeat(3,1fr)}
+  .steps::before{content:""; position:absolute; top:3.6rem; left:16%; right:16%; height:3px; z-index:0;
+    background:repeating-linear-gradient(90deg,var(--tint-line) 0 12px,transparent 12px 22px)} }
+.step{position:relative; z-index:1; padding:1.6rem 1.3rem 1.4rem; background:var(--surface);
+  border:2px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-1); text-align:start;
+  overflow:hidden; cursor:pointer; width:100%; font:inherit; color:inherit; display:block;
+  transition:transform var(--d3) var(--ez-out), box-shadow var(--d3) var(--ez-out),
+             border-color var(--d2) var(--ez)}
+/* เลขขั้นตอนตัวใหญ่จางเป็นพื้นหลัง แทนป้ายวงกลมมุมไอคอนที่ดูเหมือนป้ายแจ้งเตือน */
+.step-num{position:absolute; top:-.9rem; inset-inline-end:.4rem; z-index:0; pointer-events:none;
+  font-family:var(--f-head); font-size:6.4rem; font-weight:700; line-height:1; letter-spacing:-.05em;
+  color:var(--tint-2); transition:color var(--d3) var(--ez), transform var(--d3) var(--ez-out)}
+.step>*{position:relative; z-index:1}
+.step h3{font-size:1.16rem; margin-bottom:.4rem}
+.step p{font-size:.95rem; color:var(--ink-2); line-height:1.65}
+.step-hint{display:inline-flex; align-items:center; gap:.4rem; margin-top:.9rem; font-size:.85rem;
+  font-weight:600; font-family:var(--f-head); color:var(--primary); opacity:.85;
+  transition:opacity var(--d2) var(--ez)}
+.step-hint svg{width:1rem;height:1rem}
+
+/* เวทีภาพประกอบ แสดงเต็มเสมอ ไม่ตัดขอบ ความสูงคงที่จึงไม่ดันเลย์เอาต์ตอนชี้ */
+.step-stage{display:block; margin-bottom:1rem}
+/* span เป็น inline โดยกำเนิด ต้องประกาศ display:block ไม่งั้น width/aspect-ratio ไม่ทำงาน */
+.step-scene{display:block; width:100%; aspect-ratio:200/150; border-radius:1.1rem;
+  background:linear-gradient(150deg,var(--tint),var(--tint-2)); border:1.5px solid var(--tint-line);
+  overflow:hidden; transition:border-color var(--d2) var(--ez), box-shadow var(--d2) var(--ez)}
+.step-scene svg{width:100%; height:100%; display:block}
+.step.is-open .step-scene{border-color:var(--primary); box-shadow:inset 0 0 0 1px var(--tint-line)}
+
+/* สถานะเปิด (ชี้เมาส์ โฟกัส หรือแตะ) */
+.step.is-open{transform:translateY(-6px); box-shadow:var(--sh-2); border-color:var(--primary)}
+.step.is-open .step-num{color:var(--tint-line); transform:translateY(.3rem) scale(1.04)}
+.step.is-open .step-hint{opacity:0}
+
+/* ---- ชิ้นส่วนในฉาก ----
+   ปกติไม่ใส่แอนิเมชันเลย จึงเห็นเป็นภาพนิ่งที่ครบทุกชิ้น
+   แล้วค่อยติดแอนิเมชันเมื่อการ์ดถูกชี้ ทำให้ไม่มีชิ้นไหนหายไปตอนอยู่เฉยๆ */
+.step.is-open .sc-move{animation:scMove 2.6s var(--ez-out) infinite}
+@keyframes scMove{0%,10%{transform:translateX(-38px); opacity:0} 32%,72%{transform:none; opacity:1}
+  92%,100%{transform:translateX(38px); opacity:0}}
+.step.is-open .sc-sweep{animation:scSweep 2.6s var(--ez) infinite}
+@keyframes scSweep{0%,8%{transform:translateY(-26px); opacity:0} 18%{opacity:1}
+  70%{transform:translateY(26px); opacity:1} 84%,100%{opacity:0}}
+.step.is-open .sc-fade{animation:scFade 2.6s var(--ez-out) infinite}
+@keyframes scFade{0%,42%{opacity:0; transform:translateY(6px)} 58%,88%{opacity:1; transform:none} 100%{opacity:0}}
+.step.is-open .sc-pop{animation:scPop 2.6s var(--ez-back) infinite}
+@keyframes scPop{0%,58%{opacity:0; transform:scale(.4)} 72%,90%{opacity:1; transform:none} 100%{opacity:0; transform:scale(.9)}}
+.step.is-open .sc-draw{stroke-dasharray:120; animation:scDraw 2.6s var(--ez-out) infinite}
+@keyframes scDraw{0%,20%{stroke-dashoffset:120} 55%,88%{stroke-dashoffset:0} 100%{stroke-dashoffset:120}}
+.sc-d1{animation-delay:.12s} .sc-d2{animation-delay:.24s} .sc-d3{animation-delay:.36s}
+@media (prefers-reduced-motion:reduce){
+  .step.is-open{transform:none}
+  .step.is-open .sc-move,.step.is-open .sc-fade,.step.is-open .sc-draw,
+  .step.is-open .sc-pop,.step.is-open .sc-sweep{animation:none; stroke-dasharray:none}
+}
+/* ============================ CATEGORY GRID ============================ */
+.cats{display:grid; gap:.9rem}
+@media (min-width:620px){ .cats{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:960px){ .cats{grid-template-columns:repeat(3,1fr)} }
+.catcard{display:flex; align-items:center; gap:.95rem; padding:1.15rem 1.2rem; border-radius:var(--r-lg);
+  border:1.5px solid var(--line); background:var(--surface); text-decoration:none; color:inherit;
+  box-shadow:var(--sh-1); position:relative; overflow:hidden;
+  transition:transform var(--d2) var(--ez), box-shadow var(--d2) var(--ez), border-color var(--d2) var(--ez)}
+.catcard::before{content:""; position:absolute; inset-inline-start:0; top:0; bottom:0; width:5px;
+  background:var(--cc,var(--primary)); transform:scaleY(0); transform-origin:bottom;
+  transition:transform var(--d2) var(--ez)}
+.catcard:hover{transform:translateY(-4px); box-shadow:var(--sh-2); border-color:var(--cc,var(--primary))}
+.catcard:hover::before{transform:scaleY(1)}
+.catcard-ico{width:3.4rem;height:3.4rem;flex:0 0 auto;border-radius:1.05rem; display:grid;place-items:center;
+  background:var(--cbg,var(--tint)); color:var(--cc,var(--primary));
+  transition:transform var(--d2) var(--ez-back)}
+.catcard:hover .catcard-ico{transform:scale(1.09) rotate(-5deg)}
+.catcard-ico svg{width:1.85rem;height:1.85rem}
+.catcard-b{flex:1; min-width:0}
+.catcard-b b{display:block; font-family:var(--f-head); font-size:1.05rem; font-weight:600; line-height:1.35}
+.catcard-b span{display:block; font-size:.85rem; color:var(--ink-3); margin-top:.2rem}
+.catcard-go{color:var(--ink-3); transition:transform var(--d2) var(--ez), color var(--d2) var(--ez)}
+.catcard-go svg{width:1.35rem;height:1.35rem}
+.catcard:hover .catcard-go{color:var(--cc,var(--primary)); transform:translateX(4px)}
+/* ============================ SHORTCUTS ============================ */
+.shortcuts{display:grid; gap:1rem; margin-top:1.3rem}
+@media (min-width:760px){ .shortcuts{grid-template-columns:repeat(2,1fr)} }
+.shortcut{display:flex; align-items:center; gap:1rem; padding:1.5rem 1.5rem; border-radius:var(--r-xl);
+  border:2px solid var(--line); background:var(--surface); text-decoration:none; color:inherit;
+  box-shadow:var(--sh-1); position:relative; overflow:hidden;
+  transition:transform var(--d2) var(--ez), box-shadow var(--d2) var(--ez), border-color var(--d2) var(--ez)}
+.shortcut:hover{transform:translateY(-5px); box-shadow:var(--sh-2); border-color:var(--tint-line)}
+.shortcut.is-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2)); border-color:transparent; color:#fff}
+.shortcut.is-primary:hover{box-shadow:0 16px 40px rgba(224,27,36,.4)}
+.shortcut-ico{width:3.8rem;height:3.8rem;flex:0 0 auto;border-radius:1.2rem; display:grid;place-items:center;
+  background:var(--tint); color:var(--primary); border:1.5px solid var(--tint-line);
+  transition:transform var(--d2) var(--ez-back)}
+.shortcut.is-primary .shortcut-ico{background:rgba(255,255,255,.2); color:#fff; border-color:rgba(255,255,255,.34)}
+.shortcut:hover .shortcut-ico{transform:scale(1.08) rotate(-6deg)}
+.shortcut-ico svg{width:2rem;height:2rem}
+.shortcut-b{flex:1; min-width:0}
+.shortcut-b b{display:block; font-family:var(--f-head); font-size:1.2rem; font-weight:700}
+.shortcut-b span{font-size:.92rem; opacity:.82}
+.shortcut-go{width:2.6rem;height:2.6rem;flex:0 0 auto;border-radius:50%; display:grid;place-items:center;
+  background:var(--surface-3); color:var(--ink-2); transition:all var(--d2) var(--ez)}
+.shortcut.is-primary .shortcut-go{background:rgba(255,255,255,.22); color:#fff}
+.shortcut:hover .shortcut-go{transform:translateX(4px)}
+.shortcut-go svg{width:1.35rem;height:1.35rem}
+/* ============================ SCAN ============================ */
+.scan-wrap{max-width:46rem; margin-inline:auto}
+.stage{position:relative; width:100%; aspect-ratio:4/3; background:#23262B; border-radius:var(--r-xl);
+  overflow:hidden; display:grid; place-items:center; box-shadow:var(--sh-2); border:2px solid var(--line)}
+.stage video,.stage img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.stage-idle{position:relative; z-index:2; text-align:center; color:#D5DAE0; padding:1.8rem 1.5rem; max-width:34ch}
+.stage-idle .ico{width:5rem;height:5rem; margin:0 auto 1rem; border-radius:50%; display:grid;place-items:center;
+  background:rgba(255,255,255,.1); border:2px solid rgba(255,255,255,.2); color:#FFB3B3; position:relative}
+.stage-idle .ico svg{width:2.4rem;height:2.4rem}
+@media (prefers-reduced-motion:no-preference){ .stage-idle .ico{animation:breathe 3s ease-in-out infinite} }
+@keyframes breathe{0%,100%{transform:scale(1)} 50%{transform:scale(1.07)}}
+.stage-idle b{display:block; font-family:var(--f-head); font-size:1.2rem; color:#fff; margin-bottom:.4rem}
+.stage-idle p{font-size:.92rem; line-height:1.65; color:#A9B1BA}
+.corners{position:absolute; inset:11% 9%; z-index:3; pointer-events:none}
+.corners i{position:absolute; width:3rem;height:3rem; border:5px solid var(--primary);
+  filter:drop-shadow(0 0 8px rgba(224,27,36,.6))}
+.corners i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-radius:1rem 0 0 0}
+.corners i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-radius:0 1rem 0 0}
+.corners i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 1rem}
+.corners i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 1rem 0}
+.laser{position:absolute; left:4px; right:4px; height:3px; border-radius:3px;
+  background:linear-gradient(90deg,transparent,var(--red-400),#fff,var(--red-400),transparent);
+  box-shadow:0 0 18px 4px rgba(249,92,92,.65); animation:laser 2.8s var(--ez) infinite}
+@keyframes laser{0%{top:2%;opacity:.2} 50%{top:94%;opacity:1} 100%{top:2%;opacity:.2}}
+@media (prefers-reduced-motion:reduce){ .laser{animation:none; top:50%} }
+.stage-bar{position:absolute; left:0;right:0;bottom:0; z-index:4; padding:1rem; display:flex; gap:1rem;
+  align-items:center; justify-content:center; background:linear-gradient(transparent,rgba(12,14,17,.85))}
+.stage-bar .iconbtn{width:3.2rem;height:3.2rem; background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.3); color:#fff}
+.stage-bar .iconbtn[aria-pressed="true"]{background:#fff; color:var(--primary)}
+.shutter{width:4.6rem;height:4.6rem;border-radius:50%; border:5px solid rgba(255,255,255,.92); background:#fff;
+  color:var(--primary); cursor:pointer; display:grid;place-items:center; box-shadow:0 8px 24px rgba(0,0,0,.4);
+  transition:transform var(--d1) var(--ez)}
+.shutter svg{width:1.9rem;height:1.9rem}
+.shutter:hover{transform:scale(1.05)}
+.shutter:active{transform:scale(.9)}
+.shutter[disabled]{opacity:.5; cursor:not-allowed}
+.tiplist{display:grid; gap:.8rem; margin-top:.9rem}
+.tiplist li{display:flex; gap:.8rem; align-items:flex-start; font-size:1rem; color:var(--ink-2); line-height:1.65;
+  padding:.9rem 1rem; border-radius:var(--r-sm); background:var(--surface-2); border:1px solid var(--line)}
+.tiplist li>span{width:2.2rem;height:2.2rem;flex:0 0 auto;border-radius:.7rem; background:var(--tint);
+  color:var(--primary); display:grid;place-items:center; border:1px solid var(--tint-line)}
+.tiplist li svg{width:1.2rem;height:1.2rem}
+
+/* processing */
+.proc{max-width:34rem; margin-inline:auto; text-align:center; padding:clamp(1.8rem,4vw,2.8rem) 1.5rem;
+  background:var(--surface); border:1.5px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-2)}
+.proc-ring{width:7rem;height:7rem; margin:0 auto 1.3rem; position:relative}
+.proc-ring svg{position:absolute; inset:0; width:100%; height:100%}
+.proc-ring .trk{stroke:var(--tint-2)}
+.proc-ring .bar{stroke:url(#pg); transition:stroke-dashoffset var(--d3) var(--ez)}
+.proc-ring b{position:absolute; inset:0; display:grid; place-items:center; font-family:var(--f-head);
+  font-size:1.5rem; font-weight:700; color:var(--primary); font-variant-numeric:tabular-nums}
+.proc h2{font-size:1.4rem; margin-bottom:.4rem}
+.proc>p{color:var(--ink-2); font-size:.98rem}
+.proc-steps{display:grid; gap:.55rem; margin-top:1.5rem; text-align:start}
+.proc-steps li{display:flex; align-items:center; gap:.8rem; font-size:.98rem; color:var(--ink-3);
+  padding:.8rem 1rem; border-radius:var(--r-sm); background:var(--surface-2); border:1px solid transparent;
+  transition:all var(--d2) var(--ez)}
+.proc-dot{width:1.8rem;height:1.8rem;flex:0 0 auto;border-radius:50%; border:2.5px solid var(--line-2);
+  display:grid;place-items:center; background:var(--surface); color:transparent}
+.proc-dot svg{width:1rem;height:1rem}
+.proc-steps li[data-s="run"]{color:var(--ink); font-weight:600; background:var(--tint); border-color:var(--tint-line)}
+.proc-steps li[data-s="run"] .proc-dot{border-color:var(--primary); border-top-color:transparent; animation:spin .8s linear infinite}
+.proc-steps li[data-s="done"]{color:var(--ink-2)}
+.proc-steps li[data-s="done"] .proc-dot{background:var(--ok); border-color:var(--ok); color:#fff}
+.proc-steps li[data-s="fail"] .proc-dot{background:var(--danger-bg); border-color:var(--danger); color:var(--danger)}
+@media (prefers-reduced-motion:reduce){ .proc-steps li[data-s="run"] .proc-dot{animation:none;border-top-color:var(--primary)} }

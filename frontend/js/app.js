@@ -1,4 +1,17 @@
+const CATEGORY_TONE = {
+  "cat-gastro":        "c1",
+  "cat-laxative":      "c2",
+  "cat-analgesic":     "c3",
+  "cat-antihistamine": "c4",
+  "cat-cough":         "c5",
+  "cat-oral":          "c6",
+};
+
+const PACKAGING_ICON = { bottle: "i-bottle", blister: "i-blister" };
+
 "use strict";
+
+
 
 // 1. ตัวช่วยย่อ
 // หา element ตัวแรกที่ตรงเงื่อนไข
@@ -75,23 +88,31 @@ function searchDrugs(query, categoryId) {
     const q = normalize(query);
 
     return DB.items.filter((item) => {
-        const matchCategory = categoryId === "all" || item.categoryById === categoryId;
+        const matchCategory = categoryId === "all" || item.categoryId === categoryId;
         const matchText = q === "" || item.haystack.includes(q);
         return matchCategory && matchText;
     });
 }
 // สร้าง HTML ของการ์ด 1 ใบ
 function cardHTML(item) {
-    return `
-    <a class="card" href="#/drug/${item.id}">
-        <p class="card-title">${escapeHTML(item.productName)}</p>
-        <p class="card-sub">${escapeHTML(item.formulation.genericTh)}</p>
-        <p class="card-meta">
-            <span class="regno">${escapeHTML(item.regNo)}</span>
-            <span>·</span>
-            <span>${escapeHTML(item.category.short)}</span>
-            </p>
-        </a>`;
+  const tone = CATEGORY_TONE[item.categoryId] ?? "c1";
+  const icon = PACKAGING_ICON[item.packaging] ?? "i-pill";
+
+  return `
+    <a class="row-item" href="#/drug/${item.id}">
+      <span class="row-ico tone-${tone}" aria-hidden="true">
+        <svg class="ico"><use href="#${icon}"/></svg>
+      </span>
+      <span class="row-main">
+        <span class="row-title">${escapeHTML(item.productName)}</span>
+        <span class="row-sub">${escapeHTML(item.formulation.genericEn)}</span>
+        <span class="row-tags">
+          <span class="tag-cat">${escapeHTML(item.category.short)}</span>
+          <span class="tag-reg">Reg. No. ${escapeHTML(item.regNo)}</span>
+        </span>
+      </span>
+      <svg class="ico row-arrow" aria-hidden="true"><use href="#i-chevron"/></svg>
+    </a>`;
 }
 
 // สร้างชิปจากข้อมูลหมวด (ทำครั้งเดียว)
@@ -106,7 +127,7 @@ function renderChips() {
 function renderSearch() {
     const results = searchDrugs(state.query, state.category);
 
-    $$("#ships .chip").forEach((chip) => {
+    $$("#chips .chip").forEach((chip) => {
         chip.setAttribute("aria-pressed", String(chip.dataset.cat === state.category));
     });
     // จำนวนผลลัพธ์
@@ -157,13 +178,13 @@ function readRoute() {
 }
 // แสดงหน้าที่ต้องการ ซ่อนหน้าที่เหลือ
 function showRoute(name) {
-    // 4.1 วนดูทุก section.view
+    // วนดูทุก section.view
     $$(".view").forEach((section) => {
         // ถ้าชื่อไม่ตรง ให้ซ่อน (hidden = true)
         section.hidden = section.dataset.view !== name;
     });
 
-    // 4.2 วนดูลิงก์เมนูทุกอัน ทั้งบนและล่าง
+    // วนดูลิงก์เมนูทุกอัน ทั้งบนและล่าง
     $$("[data-nav]").forEach((link) => {
         const isCurrent = link.dataset.nav === name;
 
@@ -173,10 +194,10 @@ function showRoute(name) {
         else           link.removeAttribute("aria-current");
     });
 
-    // 4.3 เปลี่ยนชื่อบนและแท็บเบราว์เซอร์
+    // เปลี่ยนชื่อบนและแท็บเบราว์เซอร์
     document.title = ROUTES[name] + " - MedCheck";
 
-    // 4.4 เลื่อนกลับขึ้นไปบนสุด
+    // เลื่อนกลับขึ้นไปบนสุด
     window.scrollTo(0,0);
 }
 // ต่อสายให้ทำงานอัตโนมัติ

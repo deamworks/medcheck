@@ -1,0 +1,84 @@
+/* ==========================================================
+   MedCheck — tokens.css
+   หมวดจากไฟล์แบบ: TOKENS · ระดับขนาดตัวอักษร (ปุ่ม ก / กก / กกก)
+   ========================================================== */
+
+/* ============================ TOKENS ============================ */
+:root{
+  --red-50:#FFF4F4; --red-100:#FFE1E1; --red-200:#FFC4C4; --red-300:#FF9494;
+  --red-400:#F95C5C; --red-500:#EE2B33; --red-600:#E01B24; --red-700:#BE0F18;
+  --red-800:#960C13; --red-900:#6E0A10;
+
+  --primary:#E01B24; --primary-2:#BE0F18; --primary-hover:#BE0F18; --primary-active:#960C13;
+  --on-primary:#fff;
+  --tint:#FFF4F4; --tint-2:#FFE1E1; --tint-line:#FFC4C4; --brand-ink:#BE0F18;
+
+  /* สีประจำกลุ่มอาการ ช่วยให้จำและกวาดตาหาได้เร็ว */
+  --c1:#E0432B; --c1-bg:#FFF0EC; --c2:#0E8A6A; --c2-bg:#E6F6F1;
+  --c3:#D6221F; --c3-bg:#FFEFEF; --c4:#7A4BD0; --c4-bg:#F2ECFD;
+  --c5:#1667C4; --c5-bg:#E9F1FC; --c6:#B5730A; --c6-bg:#FDF3E2;
+
+  --page:#fff; --panel:#F7F8FA; --surface:#fff; --surface-2:#FBF7F7; --surface-3:#F3F4F6;
+  --ink:#15171A; --ink-2:#454C54; --ink-3:#6B7480;
+  --line:#E7E9ED; --line-2:#D2D7DE;
+
+  --ok:#0B6B3E; --ok-bg:#E6F5ED; --ok-line:#A5DCC0;
+  --warn:#8A5300; --warn-bg:#FFF5E3; --warn-line:#F0CE97;
+  --danger:#BE0F18; --danger-bg:#FFEFEF; --danger-line:#FFC4C4;
+  --info:#14508C; --info-bg:#EAF2FB; --info-line:#BCD5F0;
+
+  --dark:#15171B; --dark-2:#1E2126; --dark-line:#2C3037; --dark-ink:#EBEDF0; --dark-ink-2:#98A1AC;
+
+  --ring:#E01B24;
+  --sh-1:0 1px 2px rgba(18,20,24,.05),0 2px 6px rgba(18,20,24,.04);
+  --sh-2:0 6px 20px rgba(18,20,24,.08);
+  --sh-3:0 20px 48px rgba(120,10,16,.16);
+  --glow:0 8px 28px rgba(224,27,36,.32);
+
+  --r-xs:10px; --r-sm:14px; --r:18px; --r-lg:24px; --r-xl:30px; --r-full:999px;
+  --d1:150ms; --d2:240ms; --d3:380ms; --d4:560ms;
+  --ez:cubic-bezier(.22,.61,.36,1); --ez-out:cubic-bezier(.16,1,.3,1); --ez-back:cubic-bezier(.34,1.5,.64,1);
+
+  --f-head:"IBM Plex Sans Thai","Sarabun","Segoe UI",Tahoma,sans-serif;
+  --f-body:"Sarabun","IBM Plex Sans Thai","Segoe UI",Tahoma,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+
+  --hdr:4.6rem; --nav:4.6rem; --maxw:1120px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){ color-scheme:dark;
+  --primary:#F2444C; --primary-2:#D01B24; --primary-hover:#FF5A62; --primary-active:#BE0F18;
+  --tint:#2C1618; --tint-2:#3D1D20; --tint-line:#5A2A2E; --brand-ink:#FF9494;
+  --c1:#FF9E86; --c1-bg:#33201B; --c2:#66D6B4; --c2-bg:#123028; --c3:#FF9494; --c3-bg:#331A1A;
+  --c4:#BFA3F5; --c4-bg:#241C38; --c5:#8CBAEE; --c5-bg:#132738; --c6:#F0C476; --c6-bg:#332715;
+  --page:#101215; --panel:#15181C; --surface:#191D22; --surface-2:#20252B; --surface-3:#262C33;
+  --ink:#F1F3F6; --ink-2:#C5CCD4; --ink-3:#959EA9;
+  --line:#2A2F36; --line-2:#3A424B;
+  --ok:#63D69E; --ok-bg:#0F2E1F; --ok-line:#245540;
+  --warn:#EDBE74; --warn-bg:#2E220F; --warn-line:#54401F;
+  --danger:#FF9494; --danger-bg:#301416; --danger-line:#582327;
+  --info:#8FBDEE; --info-bg:#112336; --info-line:#274461;
+  --dark:#0C0E11; --dark-2:#14171B; --dark-line:#252A31;
+  --sh-1:0 1px 2px rgba(0,0,0,.5); --sh-2:0 6px 20px rgba(0,0,0,.55); --sh-3:0 20px 48px rgba(0,0,0,.68);
+  --glow:0 8px 28px rgba(242,68,76,.28);
+}}
+:root[data-theme="dark"]{ color-scheme:dark;
+  --primary:#F2444C; --primary-2:#D01B24; --primary-hover:#FF5A62; --primary-active:#BE0F18;
+  --tint:#2C1618; --tint-2:#3D1D20; --tint-line:#5A2A2E; --brand-ink:#FF9494;
+  --c1:#FF9E86; --c1-bg:#33201B; --c2:#66D6B4; --c2-bg:#123028; --c3:#FF9494; --c3-bg:#331A1A;
+  --c4:#BFA3F5; --c4-bg:#241C38; --c5:#8CBAEE; --c5-bg:#132738; --c6:#F0C476; --c6-bg:#332715;
+  --page:#101215; --panel:#15181C; --surface:#191D22; --surface-2:#20252B; --surface-3:#262C33;
+  --ink:#F1F3F6; --ink-2:#C5CCD4; --ink-3:#959EA9;
+  --line:#2A2F36; --line-2:#3A424B;
+  --ok:#63D69E; --ok-bg:#0F2E1F; --ok-line:#245540;
+  --warn:#EDBE74; --warn-bg:#2E220F; --warn-line:#54401F;
+  --danger:#FF9494; --danger-bg:#301416; --danger-line:#582327;
+  --info:#8FBDEE; --info-bg:#112336; --info-line:#274461;
+  --dark:#0C0E11; --dark-2:#14171B; --dark-line:#252A31;
+  --sh-1:0 1px 2px rgba(0,0,0,.5); --sh-2:0 6px 20px rgba(0,0,0,.55); --sh-3:0 20px 48px rgba(0,0,0,.68);
+  --glow:0 8px 28px rgba(242,68,76,.28);
+}
+/* ============ ระดับขนาดตัวอักษร (ปุ่ม ก / กก / กกก) ============ */
+html{font-size:100%}                       /* 16px */
+html[data-fs="2"]{font-size:112.5%}        /* 18px */
+html[data-fs="3"]{font-size:127%}          /* ~20px */
