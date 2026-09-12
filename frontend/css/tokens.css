@@ -1,92 +1,99 @@
+/* ไส่่เฉดแดง */
+:root{
+    --red-50:#FFF4F4; 
+    --red-100:#FFE1E1; 
+    --red-200:#FFC4C4; 
+    --red-300:#FF9494;
+    --red-400:#F95C5C; 
+    --red-500:#EE2B33; 
+    --red-600:#E01B24; 
+    --red-700:#BE0F18;
+    --red-800:#960C13; 
+    --red-900:#6E0A10;
 
-:root {
-  /* สีแบรนด์  */
-  --brand-50:  #FFF4F4;
-  --brand-100: #FFE1E1;
-  --brand-200: #FFC4C4;
-  --brand-300: #FF9494;
-  --brand-500: #EE2B33;
-  --brand-600: #E01B24;   /* สีหลัก */
-  --brand-700: #BE0F18;   /* ตอนกด */
-  --brand-800: #960C13;
+    /* สีที่บอกหน้าที่ */
+    --primary:#E01B24; 
+    --primary-2:#BE0F18; 
+    --primary-hover:#BE0F18; 
+    --primary-active:#960C13;
+    --on-primary:#fff;
+    --tint:#FFF4F4; 
+    --tint-2:#FFE1E1; 
+    --tint-line:#FFC4C4; 
+    --brand-ink:#BE0F18;
 
-  /*  สีข้อความ  */
-  --ink-900: #15171A;
-  --ink-700: #454C54;
-  --ink-500: #6B7480;
+    /* สีประจำกลุ่มอาการ ช่วยให้จำและกวาดตาหาได้เร็ว */
+    --c1:#E0432B; 
+    --c1-bg:#FFF0EC; 
+    --c2:#0E8A6A; 
+    --c2-bg:#E6F6F1;
+    --c3:#D6221F; 
+    --c3-bg:#FFEFEF; 
+    --c4:#7A4BD0; 
+    --c4-bg:#F2ECFD;
+    --c5:#1667C4;
+    --c5-bg:#E9F1FC; 
+    --c6:#B5730A; 
+    --c6-bg:#FDF3E2;
 
-  /*  พื้นหลัง  */
-  --bg:          #FFFFFF;
-  --surface:     #FFFFFF;
-  --surface-2:   #FBF7F7;
-  --surface-3:   #F3F4F6;
-  --line:        #E7E9ED;
-  --line-strong: #D2D7DE;
+    /* พื้นผิวและตัวอักษร */
+    --page:#fff; 
+    --panel:#F7F8FA; 
+    --surface:#fff; 
+    --surface-2:#FBF7F7; 
+    --surface-3:#F3F4F6;
+    --ink:#15171A; 
+    --ink-2:#454C54; 
+    --ink-3:#6B7480;
+    --line:#E7E9ED; 
+    --line-2:#D2D7DE;
 
-  /*  สีบอกสถานะ */
-  --ok:        #0B6B3E;
-  --ok-soft:   #E6F5ED;
-  --ok-line:   #A5DCC0;
-  --warn:      #8A5300;
-  --warn-soft: #FFF5E3;
-  --warn-line: #F0CE97;
-  --danger:    var(--brand-700);
-  --focus-ring: var(--brand-100);
+    /* สีบอกสถานะ */
+    --ok:#0B6B3E; 
+    --ok-bg:#E6F5ED; 
+    --ok-line:#A5DCC0;
+    --warn:#8A5300; 
+    --warn-bg:#FFF5E3; 
+    --warn-line:#F0CE97;
+    --danger:#BE0F18; 
+    --danger-bg:#FFEFEF; 
+    --danger-line:#FFC4C4;
+    --info:#14508C; 
+    --info-bg:#EAF2FB; 
+    --info-line:#BCD5F0;
 
-  /* สีประจำ 6 กลุ่มอาการ (ใช้วันที่ 6)  */
-  --c1: #E0432B;  --c1-bg: #FFF0EC;   /* ปวดท้อง ท้องอืด */
-  --c2: #0E8A6A;  --c2-bg: #E6F6F1;   /* ยาระบาย */
-  --c3: #D6221F;  --c3-bg: #FFEFEF;   /* แก้ปวดลดไข้ */
-  --c4: #7A4BD0;  --c4-bg: #F2ECFD;   /* แก้แพ้ลดน้ำมูก */
-  --c5: #1667C4;  --c5-bg: #E9F1FC;   /* แก้ไอขับเสมหะ */
-  --c6: #B5730A;  --c6-bg: #FDF3E2;   /* ปากและลำคอ */
+    --dark:#15171B; 
+    --dark-2:#1E2126; 
+    --dark-line:#2C3037; 
+    --dark-ink:#EBEDF0; 
+    --dark-ink-2:#98A1AC;
 
-  /*  ระยะห่าง )  */
-  --sp-1: 0.25rem;  
-  --sp-2: 0.5rem;   
-  --sp-3: 0.75rem;  
-  --sp-4: 1rem;
-  --sp-5: 1.5rem;   
-  --sp-6: 2rem;     
-  --sp-7: 3rem;     
-  --sp-8: 4rem;
+    /* เงา มุมโค้ง จังหวะ ฟอนต์ */
+    --ring:#E01B24;
+    --sh-1:0 1px 2px rgba(18,20,24,.05),0 2px 6px rgba(18,20,24,.04);
+    --sh-2:0 6px 20px rgba(18,20,24,.08);
+    --sh-3:0 20px 48px rgba(120,10,16,.16);
+    --glow:0 8px 28px rgba(224,27,36,.32);
 
-  /*  ขนาดตัวอักษร */
-  --fs-xs: 0.75rem;   
-  --fs-sm: 0.875rem;  
-  --fs-md: 1rem;
-  --fs-lg: 1.125rem;  
-  --fs-xl: 1.5rem;
-  --fs-2xl: 2rem;     
-  --fs-3xl: 2.5rem;
+    --r-xs:10px; --r-sm:14px; --r:18px; --r-lg:24px; --r-xl:30px; --r-full:999px;
+    --d1:150ms; --d2:240ms; --d3:380ms; --d4:560ms;
+    --ez:cubic-bezier(.22,.61,.36,1); --ez-out:cubic-bezier(.16,1,.3,1); --ez-back:cubic-bezier(.34,1.5,.64,1);
 
-  /* มุมโค้ง  */
-  --r-xs:   0.625rem;   /* 10px */
-  --r-sm:   0.875rem;   /* 14px */
-  --r-md:   1.125rem;   /* 18px */
-  --r-lg:   1.5rem;     /* 24px */
-  --r-xl:   1.875rem;   /* 30px */
-  --r-full: 999px;
+    --f-head:"IBM Plex Sans Thai","Sarabun","Segoe UI",Tahoma,sans-serif;
+    --f-body:"Sarabun","IBM Plex Sans Thai","Segoe UI",Tahoma,sans-serif;
+    --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
 
-  /*  เงา  */
-  --sh-1: 0 1px 2px rgba(18,20,24,.05), 0 2px 6px rgba(18,20,24,.04);
-  --sh-2: 0 6px 20px rgba(18,20,24,.08);
-  --sh-3: 0 20px 48px rgba(120,10,16,.16);
-  --glow: 0 8px 28px rgba(224,27,36,.32);
+    --hdr:4.6rem; --nav:4.6rem; --maxw:1120px;
+    color-scheme:light;
 
-  /* ฟอนต์ — หัวข้อกับเนื้อหาคนละตัว -*/
-  --font-head: "IBM Plex Sans Thai", "Sarabun", "Segoe UI", Tahoma, sans-serif;
-  --font:      "Sarabun", "IBM Plex Sans Thai", "Segoe UI", Tahoma, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    /* โหมดมืด */
+    @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){ color-scheme:dark;}}
+    :root[data-theme="dark"]{ color-scheme:dark;}
 
-  /*  แอนิเมชัน  */
-  --t-fast: 150ms;
-  --t-base: 240ms;
-  --t-slow: 380ms;
-  --ease:      cubic-bezier(.22, .61, .36, 1);
-  --ease-out:  cubic-bezier(.16, 1, .3, 1);
-  --ease-back: cubic-bezier(.34, 1.5, .64, 1);   /* เด้งเล็กน้อย */
-
-  --maxw: 70rem;
-  color-scheme: light;
+    /* ระดับขนาดตัวอักษร */
+    html{font-size:100%}                       /* 16px */
+    html[data-fs="2"]{font-size:112.5%}        /* 18px */
+    html[data-fs="3"]{font-size:127%}          /* ~20px */
 }
+
+
