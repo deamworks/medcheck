@@ -1,0 +1,748 @@
+{
+ "meta": {
+  "version": 1,
+  "updatedAt": "2568-09-08",
+  "sourceNote": "รายการผลิตภัณฑ์และเลขทะเบียนตำรับยา ตรวจสอบยืนยันเป็นรายยี่ห้อกับฐานข้อมูลทะเบียนยาของ อย.",
+  "references": [
+   {
+    "label": "ประกาศกระทรวงสาธารณสุข เรื่อง ยาสามัญประจำบ้านแผนปัจจุบัน พ.ศ. 2568",
+    "url": "https://drug.fda.moph.go.th/announcement-ministry/category/current-home-remedies"
+   },
+   {
+    "label": "ระบบสืบค้นข้อมูลผลิตภัณฑ์ยา สำนักงานคณะกรรมการอาหารและยา (อย.)",
+    "url": "https://pertento.fda.moph.go.th/fda_search_drug/SEARCH_DRUG/FRM_SEARCH_DRUG.aspx"
+   },
+   {
+    "label": "ChumCheck ร้านชำปลอดภัย สำนักงานสาธารณสุขจังหวัดสมุทรสงคราม",
+    "url": "https://fdasamutsongkhram.org/ChumCheck/index.php"
+   }
+  ]
+ },
+ "categories": [
+  {
+   "id": "cat-gastro",
+   "order": 1,
+   "name": "ยาแก้ปวดท้อง ท้องอืด ท้องขึ้น ท้องเฟ้อ (รวมยาลดกรด)",
+   "short": "ยาแก้ปวดท้อง ท้องอืด ท้องขึ้น ท้องเฟ้อ",
+   "desc": "ยาลดกรดและยาขับลม สำหรับอาการปวดท้องจากกรดเกิน ท้องอืด ท้องขึ้น ท้องเฟ้อ จุกเสียดแน่นท้อง",
+   "icon": "stomach"
+  },
+  {
+   "id": "cat-laxative",
+   "order": 2,
+   "name": "ยาระบาย",
+   "short": "ยาระบาย",
+   "desc": "ยาช่วยการขับถ่าย สำหรับอาการท้องผูก ถ่ายไม่ออก",
+   "icon": "laxative"
+  },
+  {
+   "id": "cat-analgesic",
+   "order": 3,
+   "name": "ยาแก้ปวดลดไข้",
+   "short": "ยาแก้ปวดลดไข้",
+   "desc": "ยาบรรเทาอาการปวดและลดไข้ สำหรับอาการปวดศีรษะ ปวดเมื่อย และมีไข้",
+   "icon": "fever"
+  },
+  {
+   "id": "cat-antihistamine",
+   "order": 4,
+   "name": "ยาแก้แพ้ลดน้ำมูก",
+   "short": "ยาแก้แพ้ลดน้ำมูก",
+   "desc": "ยาบรรเทาอาการแพ้ ลมพิษ คัดจมูก และน้ำมูกไหล",
+   "icon": "allergy"
+  },
+  {
+   "id": "cat-cough",
+   "order": 5,
+   "name": "ยาแก้ไอ ขับเสมหะ",
+   "short": "ยาแก้ไอ ขับเสมหะ",
+   "desc": "ยาบรรเทาอาการไอ และช่วยละลายหรือขับเสมหะ",
+   "icon": "cough"
+  },
+  {
+   "id": "cat-oral",
+   "order": 6,
+   "name": "ยาสำหรับโรคปากและลำคอ",
+   "short": "ยาสำหรับโรคปากและลำคอ",
+   "desc": "ยาสำหรับอาการในช่องปากและลำคอ เช่น แผลในปาก เชื้อราในช่องปาก",
+   "icon": "mouth"
+  }
+ ],
+ "formulations": [
+  {
+   "id": "f-01",
+   "categoryId": "cat-gastro",
+   "name": "อะลูมิเนียมไฮดรอกไซด์ + แมกนีเซียมไฮดรอกไซด์ (ชนิดน้ำ)",
+   "genericTh": "อะลูมิเนียมไฮดรอกไซด์ + แมกนีเซียมไฮดรอกไซด์",
+   "genericEn": "Aluminium Hydroxide + Magnesium Hydroxide",
+   "ingredients": [
+    {
+     "name": "Aluminium Hydroxide",
+     "strength": ""
+    },
+    {
+     "name": "Magnesium Hydroxide",
+     "strength": ""
+    }
+   ],
+   "dosageForm": "ยาน้ำแขวนตะกอนสำหรับรับประทาน / ยาน้ำแขวนตะกอน",
+   "dosageFormEn": "ORAL SUSPENSION / SUSPENSION",
+   "packaging": "bottle",
+   "indications": [
+    "บรรเทาอาการจุกเสียด ท้องขึ้น ท้องเฟ้อ และปวดท้องเนื่องจากมีกรดในกระเพาะอาหารหรือแผลในกระเพาะอาหารและลำไส้"
+   ],
+   "dosage": "เขย่าขวดก่อนใช้ยา รับประทานหลังอาหาร 20 นาทีถึง 1 ชั่วโมง และก่อนนอน หรือเมื่อมีอาการ\nผู้ใหญ่ รับประทานครั้งละ 1 - 4 ช้อนชา\nเด็ก 6 - 12 ปี รับประทานครั้งละ 1 - 2 ช้อนชา\nเด็ก 3 - 6 ปี รับประทานครั้งละ ครึ่ง - 1 ช้อนชา",
+   "dosageAdult": "ผู้ใหญ่ รับประทานครั้งละ 1 - 4 ช้อนชา",
+   "warnings": [
+    {
+     "level": "danger",
+     "text": "ห้ามใช้ในผู้ที่เป็นโรคหัวใจ หรือโรคไต"
+    },
+    {
+     "level": "warn",
+     "text": "ไม่ควรรับประทานเป็นเวลานานกว่า 2 สัปดาห์ นอกจากแพทย์สั่ง"
+    }
+   ]
+  },
+  {
+   "id": "f-02",
+   "categoryId": "cat-gastro",
+   "name": "โซเดียมอัลจิเนต + โซเดียมไบคาร์บอเนต + แคลเซียมคาร์บอเนต (ชนิดน้ำ)",
+   "genericTh": "โซเดียมอัลจิเนต + โซเดียมไบคาร์บอเนต + แคลเซียมคาร์บอเนต",
+   "genericEn": "Sodium Alginate + Sodium Bicarbonate + Calcium Carbonate",
+   "ingredients": [
+    {
+     "name": "sodium alginate",
+     "strength": ""
+    },
+    {
+     "name": "sodium bicarbonate",
+     "strength": ""
+    },
+    {
+     "name": "calcium carbonate",
+     "strength": ""
+    }
+   ],
+   "dosageForm": "ยาน้ำแขวนตะกอนสำหรับรับประทาน",
+   "dosageFormEn": "ORAL SUSPENSION",
+   "packaging": "bottle",
+   "indications": [
+    "บรรเทาอาการจุกเสียด ท้องขึ้น ท้องเฟ้อ และปวดท้องเนื่องจากมีกรดในกระเพาะอาหารหรือแผลในกระเพาะอาหารและลำไส้"
+   ],
+   "dosage": "เขย่าขวดก่อนใช้ยา รับประทานหลังอาหาร 20 นาทีถึง 1 ชั่วโมง และก่อนนอน หรือเมื่อมีอาการ\nผู้ใหญ่ รับประทานครั้งละ 1 - 4 ช้อนชา\nเด็ก 6 - 12 ปี รับประทานครั้งละ 1 - 2 ช้อนชา\nเด็ก 3 - 6 ปี รับประทานครั้งละ ครึ่ง - 1 ช้อนชา",
+   "dosageAdult": "ผู้ใหญ่ รับประทานครั้งละ 1 - 4 ช้อนชา",
+   "warnings": [
+    {
+     "level": "danger",
+     "text": "ห้ามใช้ในผู้ที่เป็นโรคหัวใจหรือโรคไต"
+    },
+    {
+     "level": "warn",
+     "text": "ไม่ควรรับประทานเป็นเวลานานกว่า 2 สัปดาห์"
+    },
+    {
+     "level": "warn",
+     "text": "ในกรณีที่รับประทานยานี้ร่วมกับยาอื่น ควรรับประทานห่างกันสองชั่วโมง"
+    }
+   ]
+  },
+  {
+   "id": "f-03",
+   "categoryId": "cat-gastro",
+   "name": "ไซเมทิโคน (ชนิดเม็ด)",
+   "genericTh": "ไซเมทิโคน",
+   "genericEn": "Simethicone",
+   "ingredients": [
+    {
+     "name": "SIMETHICONE",
+     "strength": ""
+    }
+   ],
+   "dosageForm": "ยาเม็ดเคี้ยว",
+   "dosageFormEn": "CHEWABLE TABLET",
+   "packaging": "blister",
+   "indications": [
+    "บรรเทาอาการท้องอืด ท้องเฟ้อ จุกเสียด"
+   ],
+   "dosage": "ผู้ใหญ่ รับประทานครั้งละ 1 เม็ด เมื่อมีอาการ วันละ 4 ครั้ง เคี้ยวก่อนกลืน",
+   "dosageAdult": "ผู้ใหญ่ รับประทานครั้งละ 1 เม็ด เมื่อมีอาการ วันละ 4 ครั้ง เคี้ยวก่อนกลืน",
+   "warnings": [
+    {
+     "level": "warn",
+     "text": "หากอาการไม่ดีขึ้นภายใน 3 วัน ควรปรึกษาแพทย์หรือเภสัชกร"
+    },
+    {
+     "level": "warn",
+     "text": "ยานี้ไม่ใช่ยาลดกรดเคลือบแผลในกระเพาะอาหาร"
+    }
+   ]
+  },
+  {
+   "id": "f-04",
+   "categoryId": "cat-gastro",
+   "name": "โซเดียมอัลจิเนต + โซเดียมไบคาร์บอเนต + แคลเซียมคาร์บอเนต (ชนิดเม็ด)",
+   "genericTh": "โซเดียมอัลจิเนต + โซเดียมไบคาร์บอเนต + แคลเซียมคาร์บอเนต",
+   "genericEn": "Sodium Alginate + Sodium Bicarbonate + Calcium Carbonate",
+   "ingredients": [
+    {
+     "name": "SODIUM ALGINATE",
+     "strength": ""
+    },
+    {
+     "name": "SODIUM BICARBONATE",
+     "strength": ""
+    },
+    {
+     "name": "CALCIUM CARBONATE",
+     "strength": ""
+    }
+   ],
+   "dosageForm": "ยาเม็ดเคี้ยว",
+   "dosageFormEn": "CHEWABLE TABLET",
+   "packaging": "blister",
+   "indications": [
+    "เพื่อบรรเทาอาการแสบร้อนบริเวณกลางอก ร่วมกับเรอเปรี้ยว และอาหารไม่ย่อยเนื่องจากกรดไหลย้อน"
+   ],
+   "dosage": "ผู้ใหญ่และเด็กอายุ 12 ปีขึ้นไป ครั้งละ 2-4 เม็ด วันละ 4 เวลา หลังอาหารและก่อนนอน เคี้ยวให้ละเอียดก่อนกลืน",
+   "dosageAdult": "ผู้ใหญ่และเด็กอายุ 12 ปีขึ้นไป ครั้งละ 2-4 เม็ด วันละ 4 เวลา หลังอาหารและก่อนนอน เคี้ยวให้ละเอียดก่อนกลืน",
+   "warnings": []
+  },
+  {
+   "id": "f-05",
+   "categoryId": "cat-laxative",
+   "name": "แมกนีเซียมไฮดรอกไซด์ (ชนิดน้ำ)",
+   "genericTh": "แมกนีเซียมไฮดรอกไซด์",
+   "genericEn": "Magnesium Hydroxide",
+   "ingredients": [
+    {
+     "name": "Magnesium Hydroxide",
+     "strength": ""
+    }
+   ],
+   "dosageForm": "ยาน้ำแขวนตะกอนสำหรับรับประทาน / ยาน้ำแขวนตะกอน",
+   "dosageFormEn": "ORAL SUSPENSION / SUSPENSION",
+   "packaging": "bottle",
+   "indications": [
+    "ยาระบาย"
+   ],
+   "dosage": "เขย่าขวดก่อนใช้ยา รับประทานก่อนนอนหรือตื่นนอนเช้า ผู้ใหญ่ รับประทานครั้งละ 2-3 ช้อนโต๊ะ (30-45 มิลลิลิตร) เด็ก 6-12 ปี รับประทานครั้งละ 1-2 ช้อนโต๊ะ (15-30 มิลลิลิตร) เด็ก 1-6 ปี รับประทานครั้งละ 1-3 ช้อนชา ( 5-15 มิลลิลิตร)",
+   "dosageAdult": "ผู้ใหญ่ รับประทานครั้งละ 2-3 ช้อนโต๊ะ (30-45 มิลลิลิตร)",
+   "warnings": [
+    {
+     "level": "danger",
+     "text": "ห้ามใช้เมื่อมีอาการปวดท้อง หรือคลื่นไส้อาเจียน"
+    },
+    {
+     "level": "warn",
+     "text": "ไม่ควรรับประทานเป็นประจำ"
+    }
+   ]
+  },
+  {
+   "id": "f-06",
+   "categoryId": "cat-analgesic",
+   "name": "พาราเซตามอล (ชนิดเม็ด)",
+   "genericTh": "พาราเซตามอล",
+   "genericEn": "Paracetamol",
+   "ingredients": [
+    {
+     "name": "PARACETAMOL",
+     "strength": ""
+    }
+   ],
+   "dosageForm": "ยาเม็ดอัด / ยาเม็ด",
+   "dosageFormEn": "COMPRESSED TABLET / TABLET",
+   "packaging": "blister",
+   "indications": [
+    "ลดไข้ บรรเทาอาการปวด"
+   ],
+   "dosage": "รับประทานหลังอาหารทันทีหรือขณะท้องไม่ว่างแล้วดื่มน้ำตามมากๆ รับประทานทุกๆ 4 –6 ชั่วโมงเมื่อมีอาการ ไม่ควรรับประทานเกินวันละ 5 ครั้ง ผู้ใหญ่ รับประทานครั้งละ 1-2 เม็ด เด็ก 6-12 ปี รับประทานครั้งละ 1 เม็ด เด็ก 3-6 ปี รับประทานครั้งละ 1/2 เม็ด",
+   "dosageAdult": "ผู้ใหญ่ รับประทานครั้งละ 1-2 เม็ด",
+   "warnings": [
+    {
+     "level": "danger",
+     "text": "ห้ามใช้ในเด็กอายุต่ำกว่า 1 ปี และหญิงมีครรภ์ระยะใกล้คลอด"
+    },
+    {
+     "level": "danger",
+     "text": "ห้ามใช้สำหรับลดไข้ในผู้ที่ป่วยเป็นโรคไข้หวัดใหญ่ อีสุกอีใส และไข้เลือดออก"
+    },
+    {
+     "level": "danger",
+     "text": "ห้ามใช้ในผู้ที่เป็นโรคแผลในระบบทางเดินอาหารและโรคหอบหืด"
+    },
+    {
+     "level": "danger",
+     "text": "ห้ามใช้สำหรับรักษาอาการปวดเมื่อยเนื่องจากการทำงานหนัก"
+    }
+   ]
+  },
+  {
+   "id": "f-07",
+   "categoryId": "cat-antihistamine",
+   "name": "คลอร์เฟนิรามีน มาลีเอต (ชนิดเม็ด)",
+   "genericTh": "คลอร์เฟนิรามีน มาลีเอต",
+   "genericEn": "Chlorpheniramine Maleate",
+   "ingredients": [
+    {
+     "name": "CHLORPHENIRAMINE MALEATE",
+     "strength": ""
+    }
+   ],
+   "dosageForm": "ยาเม็ดอัด / ยาเม็ด",
+   "dosageFormEn": "COMPRESSED TABLET / TABLET",
+   "packaging": "blister",
+   "indications": [
+    "บรรเทาอาการแพ้ เช่น ลมพิษ น้ำมูกไหล"
+   ],
+   "dosage": "รับประทานหลังอาหารทันทีหรือขณะท้องไม่ว่างแล้วดื่มน้ำตามมากๆ รับประทานทุกๆ 4 –6 ชั่วโมงเมื่อมีอาการ ไม่ควรรับประทานเกินวันละ 5 ครั้ง ผู้ใหญ่ รับประทานครั้งละ 1-2 เม็ด เด็ก 6-12 ปี รับประทานครั้งละ 1 เม็ด เด็ก 3-6 ปี รับประทานครั้งละ 1/2 เม็ด",
+   "dosageAdult": "ผู้ใหญ่ รับประทานครั้งละ 1-2 เม็ด",
+   "warnings": [
+    {
+     "level": "warn",
+     "text": "ไม่ควรใช้ยาติดต่อกันนานเกิน 7 วัน"
+    },
+    {
+     "level": "warn",
+     "text": "ยานี้อาจทำให้เกิดอาการง่วงซึม จึงไม่ควรขับขี่ยานยนต์หรือทำงานเกี่ยวกับเครื่อง จักรกล และหลีกเลี่ยงเครื่องดื่มที่มีแอลกอฮอล์ผสม"
+    }
+   ]
+  },
+  {
+   "id": "f-08",
+   "categoryId": "cat-cough",
+   "name": "สารสกัดชะเอมเทศ + แอนติโมนีโพแทสเซียมทาร์เทรต + ทิงเจอร์ฝิ่นการบูร (ชนิดน้ำ)",
+   "genericTh": "สารสกัดชะเอมเทศ + แอนติโมนีโพแทสเซียมทาร์เทรต + ทิงเจอร์ฝิ่นการบูร",
+   "genericEn": "Glycyrrhiza Fluid Extract + Antimony Potassium Tartrate + Camphorated Opium Tincture",
+   "ingredients": [
+    {
+     "name": "GLYCYRRHIZA FLUID EXTRACT",
+     "strength": ""
+    },
+    {
+     "name": "ANTIMONY POTASSIUM TARTRATE",
+     "strength": ""
+    },
+    {
+     "name": "CAMPHORATED OPIUM TINCTURE",
+     "strength": ""
+    }
+   ],
+   "dosageForm": "ยาน้ำใส (อิลิกเซอร์) / ยาน้ำสำหรับรับประทาน / ยาน้ำแขวนตะกอนสำหรับรับประทาน / ยาน้ำแขวนตะกอน",
+   "dosageFormEn": "ELIXIR / ORAL LIQUID / ORAL SUSPENSION / SUSPENSION",
+   "packaging": "bottle",
+   "indications": [
+    "บรรเทาอาการไอและช่วยขับเสมหะ"
+   ],
+   "dosage": "เขย่าขวดก่อนใช้ รับประทานวันละ 3-4 ครั้ง ผู้ใหญ่ รับประทานครั้งละ 1-2 ช้อนชา (5-10 มิลลิลิตร) เด็ก 6-12 ปี รับประทานครั้งละ 1/2 - 1 ช้อนชา (2.5-5 มิลลิลิตร)",
+   "dosageAdult": "ผู้ใหญ่ รับประทานครั้งละ 1-2 ช้อนชา (5-10 มิลลิลิตร)",
+   "warnings": [
+    {
+     "level": "danger",
+     "text": "ห้ามใช้ยานี้ในเด็กที่อายุต่ำกว่า 6 ปี คนชรา และหญิงมีครรภ์"
+    },
+    {
+     "level": "danger",
+     "text": "ห้ามใช้ยานี้ติดต่อกันนานเกิน 3 วัน"
+    }
+   ]
+  },
+  {
+   "id": "f-09",
+   "categoryId": "cat-oral",
+   "name": "เยนเชี่ยนไวโอเลต (ชนิดน้ำ)",
+   "genericTh": "เยนเชี่ยนไวโอเลต",
+   "genericEn": "Gentian Violet",
+   "ingredients": [
+    {
+     "name": "GENTIAN VIOLET",
+     "strength": ""
+    }
+   ],
+   "dosageForm": "สารละลายน้ำ / สารละลายสำหรับใช้ในช่องปาก",
+   "dosageFormEn": "AQUEOUS SOLUTION / OROMUCOSAL SOLUTION",
+   "packaging": "bottle",
+   "indications": [
+    "ใช้ทาแผลภายนอกที่เกิดจากเชื้อรา หรือใช้รักษาการติดเชื้อราที่ลิ้นและกระพุ้งแก้มในระยะสั้น"
+   ],
+   "dosage": "ใช้สำลีชุบยาทาตามบริเวณที่เป็น วันละ 2-3 ครั้ง",
+   "dosageAdult": "",
+   "warnings": [
+    {
+     "level": "warn",
+     "text": "ใช้สำหรับทาในปากเท่านั้น"
+    }
+   ]
+  }
+ ],
+ "brands": [
+  {
+   "id": "b-001",
+   "formulationId": "f-01",
+   "categoryId": "cat-gastro",
+   "productName": "ALMAG MILK แอลแม็ค มิลค์",
+   "licensee": "บริษัท บี.เอ็ล.ฮั้ว จำกัด",
+   "regNo": "2A 721/28",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำแขวนตะกอนสำหรับรับประทาน",
+   "dosageFormEn": "ORAL SUSPENSION",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-002",
+   "formulationId": "f-01",
+   "categoryId": "cat-gastro",
+   "productName": "ANTACIL GEL HH แอนตาซิล เยล เฮช เฮช",
+   "licensee": "บริษัท ไทยนครพัฒนา จำกัด",
+   "regNo": "2A 46/58",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำแขวนตะกอน",
+   "dosageFormEn": "SUSPENSION",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-003",
+   "formulationId": "f-01",
+   "categoryId": "cat-gastro",
+   "productName": "มาล็อกซ์ อะลั่ม มิ้ลค์ MAALOX ALUM MILK",
+   "licensee": "บริษัท อินเตอร์ไทย ฟาร์มาซูติเคิ้ล แมนูแฟคเจอริ่ง จำกัด",
+   "regNo": "2A 78/59",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำแขวนตะกอน",
+   "dosageFormEn": "SUSPENSION",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-004",
+   "formulationId": "f-02",
+   "categoryId": "cat-gastro",
+   "productName": "BELCID FORTE เบลสิด ฟอร์ท",
+   "licensee": "บริษัท ไบโอแลป จำกัด",
+   "regNo": "2A 16/60",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำแขวนตะกอนสำหรับรับประทาน",
+   "dosageFormEn": "ORAL SUSPENSION",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-005",
+   "formulationId": "f-03",
+   "categoryId": "cat-gastro",
+   "productName": "แอร์ - เอ็กซ์ AIR - X",
+   "licensee": "บริษัท อาร์เอ็กซ์ แมนูแฟคเจอริ่ง จำกัด",
+   "regNo": "1A 351/47",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาเม็ดเคี้ยว",
+   "dosageFormEn": "CHEWABLE TABLET",
+   "packaging": "blister",
+   "override": {}
+  },
+  {
+   "id": "b-006",
+   "formulationId": "f-04",
+   "categoryId": "cat-gastro",
+   "productName": "กาวิสคอน เปปเปอร์มินท์ ชนิดเม็ด GAVISCON PEPPERMINT TABLETS",
+   "licensee": "บริษัท เรกคิทท์ เบนคีเซอร์ (ประเทศไทย) จำกัด",
+   "regNo": "2C 90/50",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาเม็ดเคี้ยว",
+   "dosageFormEn": "CHEWABLE TABLET",
+   "packaging": "blister",
+   "override": {}
+  },
+  {
+   "id": "b-007",
+   "formulationId": "f-05",
+   "categoryId": "cat-laxative",
+   "productName": "ยาระบายแมกนีเซีย เอ็ม.โอ.เอ็ม.ที.เอส.โพลีโปรดักส์ MILK OF MAGNESIA M.O.M. T.S. POLYPRODUCTS",
+   "licensee": "บริษัท ที.เอส.โพลีโปรดักส์ จำกัด",
+   "regNo": "1A 113/60",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำแขวนตะกอน",
+   "dosageFormEn": "SUSPENSION",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-008",
+   "formulationId": "f-05",
+   "categoryId": "cat-laxative",
+   "productName": "ยาระบายแมกนีเซีย MILK OF MAGNESIA",
+   "licensee": "องค์การเภสัชกรรม",
+   "regNo": "1A 357/45",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำแขวนตะกอน",
+   "dosageFormEn": "SUSPENSION",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-009",
+   "formulationId": "f-05",
+   "categoryId": "cat-laxative",
+   "productName": "มิลค์ ออฟ แมกนีเซีย ซี.บี MILK OF MAGNESIA C.B",
+   "licensee": "บริษัท เจริญเภสัชแล็บ จำกัด",
+   "regNo": "1A 135/63",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำแขวนตะกอนสำหรับรับประทาน",
+   "dosageFormEn": "ORAL SUSPENSION",
+   "packaging": "bottle",
+   "override": {
+    "indications": [
+     "ใช้เป็นยาลดกรดในกระเพาะอาหาร มีประสิทธิภาพต่อการบรรเทาอาการปวดท้อง จุกเสียด แสบร้อนกลางอก ให้ผลรวดเร็ว ใช้เป็นยาระบาย บรรเทาอาการท้องผูก"
+    ],
+    "dosage": "ใช้เป็นยาลดกรด รับประทานครั้งละ 1 ช้อนโต๊ะ วันละ 4 ครั้ง\nใช้เป็นยาระบาย รับประทานครั้งละ 2-3 ช้อนโต๊ะ ก่อนนอนหรือตื่นนอนตอนเช้า",
+    "dosageAdult": ""
+   }
+  },
+  {
+   "id": "b-010",
+   "formulationId": "f-06",
+   "categoryId": "cat-analgesic",
+   "productName": "ซาร่า SARA (เม็ดกลม)",
+   "licensee": "บริษัท ไทยนครพัฒนา จำกัด",
+   "regNo": "1A 822/43",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาเม็ด",
+   "dosageFormEn": "TABLET",
+   "packaging": "blister",
+   "override": {}
+  },
+  {
+   "id": "b-011",
+   "formulationId": "f-06",
+   "categoryId": "cat-analgesic",
+   "productName": "ซาร่า SARA (เม็ดรี)",
+   "licensee": "บริษัท ไทยนครพัฒนา จำกัด",
+   "regNo": "1A 821/43",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาเม็ด",
+   "dosageFormEn": "TABLET",
+   "packaging": "blister",
+   "override": {}
+  },
+  {
+   "id": "b-012",
+   "formulationId": "f-06",
+   "categoryId": "cat-analgesic",
+   "productName": "ไทลินอล 500 TYLENOL 500",
+   "licensee": "บริษัท โอลิค (ประเทศไทย) จำกัด",
+   "regNo": "1A 844/39",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาเม็ด",
+   "dosageFormEn": "TABLET",
+   "packaging": "blister",
+   "override": {}
+  },
+  {
+   "id": "b-013",
+   "formulationId": "f-06",
+   "categoryId": "cat-analgesic",
+   "productName": "พารา จีพีโอ (ยาเม็ดบรรเทาปวด ลดไข้ พาราเซตามอล 500 มก.) PARA GPO",
+   "licensee": "บริษัท มิลลิเมด จำกัด",
+   "regNo": "1A 407/48",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาเม็ดอัด",
+   "dosageFormEn": "COMPRESSED TABLET",
+   "packaging": "blister",
+   "override": {
+    "indications": [
+     "ลดไข้ และบรรเทาอาการปวด"
+    ]
+   }
+  },
+  {
+   "id": "b-014",
+   "formulationId": "f-06",
+   "categoryId": "cat-analgesic",
+   "productName": "บาคามอล 500 BAKAMOL 500",
+   "licensee": "บริษัท สหแพทย์เภสัช จำกัด",
+   "regNo": "1A 79/62",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาเม็ดอัด",
+   "dosageFormEn": "COMPRESSED TABLET",
+   "packaging": "blister",
+   "override": {
+    "indications": [
+     "ลดไข้ และบรรเทาอาการปวด"
+    ]
+   }
+  },
+  {
+   "id": "b-015",
+   "formulationId": "f-06",
+   "categoryId": "cat-analgesic",
+   "productName": "ยันฮี พาราเทมป์ YANHEE PARATEMP",
+   "licensee": "บริษัท ยาอินไทย จำกัด",
+   "regNo": "1A 23/67",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาเม็ด",
+   "dosageFormEn": "TABLET",
+   "packaging": "blister",
+   "override": {
+    "indications": [
+     "เป็นยาในกลุ่มลดไข้ บรรเทาปวด"
+    ]
+   }
+  },
+  {
+   "id": "b-016",
+   "formulationId": "f-07",
+   "categoryId": "cat-antihistamine",
+   "productName": "ยาเม็ดแก้แพ้ ลดน้ำมูก คลอร์เฟนิรามีน CHLORPHENIRAMINE MALEATE TABLETS",
+   "licensee": "บริษัท บี.เอ็ล.ฮั้ว จำกัด",
+   "regNo": "1A 31/55",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาเม็ดอัด",
+   "dosageFormEn": "COMPRESSED TABLET",
+   "packaging": "blister",
+   "override": {}
+  },
+  {
+   "id": "b-017",
+   "formulationId": "f-07",
+   "categoryId": "cat-antihistamine",
+   "productName": "มูกฟี่ MOOKFY",
+   "licensee": "บริษัท ยาอินไทย จำกัด",
+   "regNo": "1A 298/65",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาเม็ด",
+   "dosageFormEn": "TABLET",
+   "packaging": "blister",
+   "override": {}
+  },
+  {
+   "id": "b-018",
+   "formulationId": "f-08",
+   "categoryId": "cat-cough",
+   "productName": "ยาแก้ไอน้ำดำ องค์การเภสัชกรรม BROWN MIXTURE GPO",
+   "licensee": "องค์การเภสัชกรรม",
+   "regNo": "2A 107/47",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำแขวนตะกอน",
+   "dosageFormEn": "SUSPENSION",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-019",
+   "formulationId": "f-08",
+   "categoryId": "cat-cough",
+   "productName": "ยาแก้ไอน้ำดำ ตราเสือดาว ยาสามัญประจำบ้าน Leopard Medical Brand Brown Mixture",
+   "licensee": "บริษัท ห้างขายยาตราเสือดาว จำกัด",
+   "regNo": "2A 368/27",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำสำหรับรับประทาน",
+   "dosageFormEn": "ORAL LIQUID",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-020",
+   "formulationId": "f-08",
+   "categoryId": "cat-cough",
+   "productName": "ยาแก้ไอน้ำดำ BROWN MIXTURE",
+   "licensee": "บริษัท บี.เอ็ล.ฮั้ว จำกัด",
+   "regNo": "2A 88/36",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำแขวนตะกอนสำหรับรับประทาน",
+   "dosageFormEn": "ORAL SUSPENSION",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-021",
+   "formulationId": "f-08",
+   "categoryId": "cat-cough",
+   "productName": "ยาแก้ไอน้ำดำ ตราไวกิ้ง VIKING BROWN MIXTURE",
+   "licensee": "บริษัท สหการโอสถ (1996) จำกัด",
+   "regNo": "2A 62/53",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "ยาน้ำใส (อิลิกเซอร์)",
+   "dosageFormEn": "ELIXIR",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-022",
+   "formulationId": "f-09",
+   "categoryId": "cat-oral",
+   "productName": "เยนเชี่ยนไวโอเลต สหการ GENTIAN VIOLET SAHAKARN",
+   "licensee": "บริษัท สหการโอสถ (1996) จำกัด",
+   "regNo": "1A 190/43",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "สารละลายสำหรับใช้ในช่องปาก",
+   "dosageFormEn": "OROMUCOSAL SOLUTION",
+   "packaging": "bottle",
+   "override": {}
+  },
+  {
+   "id": "b-023",
+   "formulationId": "f-09",
+   "categoryId": "cat-oral",
+   "productName": "เยนเชี่ยนไวโอเลตตราเสือดาว GENTIAN VIOLET LEOPARD BRAND",
+   "licensee": "บริษัท ห้างขายยาตราเสือดาว จำกัด",
+   "regNo": "1A 276/56",
+   "legalType": "ยาสามัญประจำบ้าน",
+   "status": "active",
+   "statusLabel": "คงอยู่",
+   "dosageForm": "สารละลายน้ำ",
+   "dosageFormEn": "AQUEOUS SOLUTION",
+   "packaging": "bottle",
+   "override": {
+    "indications": [
+     "ใช้ทาแผลภายนอกที่เกิดจากเชื้อราหรือใช้รักษาการติดเชื้อราที่ลิ้นและกระพุ้งแก้มในระยะสั้น"
+    ]
+   }
+  }
+ ]
+}
