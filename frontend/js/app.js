@@ -156,9 +156,11 @@ function route() {
         else a.removeAttribute('aria-current');
     });
 
-    document.title = TITLES[currentRoute.name] + '· MedCheck';
+    document.title = TITLES[currentRoute.name] + ' · MedCheck';
 
     if (currentRoute.name === 'home') renderHome();
+    if (currentRoute.name === 'search') renderSearch(currentRoute.param);   // ← เพิ่ม
+    if (currentRoute.name !== 'search') hideSuggest();    
     initReveal($('#view-' + currentRoute.name)); 
 
     closeDrawer();
@@ -257,28 +259,20 @@ function toneVars(cid) {
 }
 
 // home 
-
-// แสดงตัวเลขในฮีโร่
-const HOME_STATS = [
-    [6, 'กลุ่มอาการ'],
-    [9,'สูตรตำรับ'],
-    [23,'ยี่ห้อที่ตรวจสอบแล้ว'],
-];
-
-const HOME_CATS = [
-  { id:'cat-gastro',        icon:'stomach',  forms:4, brands:6, short:'ยาแก้ปวดท้อง ท้องอืด ท้องขึ้น ท้องเฟ้อ' },
-  { id:'cat-laxative',      icon:'laxative', forms:1, brands:3, short:'ยาระบาย' },
-  { id:'cat-analgesic',     icon:'fever',    forms:1, brands:6, short:'ยาแก้ปวดลดไข้' },
-  { id:'cat-antihistamine', icon:'allergy',  forms:1, brands:2, short:'ยาแก้แพ้ลดน้ำมูก' },
-  { id:'cat-cough',         icon:'cough',    forms:1, brands:4, short:'ยาแก้ไอ ขับเสมหะ' },
-  { id:'cat-oral',          icon:'mouth',    forms:1, brands:2, short:'ยาสำหรับโรคปากและลำคอ' },
-];
+// ตัวเลขในฮีโร่ — นับจากไฟล์ข้อมูล
+function homeStats() {
+  return [
+    [DB.categories.length,   'กลุ่มอาการ'],
+    [DB.formulations.length, 'สูตรตำรับ'],
+    [DB.brands.filter(b => b.status === 'active').length, 'ยี่ห้อที่ตรวจสอบแล้ว'],
+  ];
+}
 
 function catCard(c) {
-  return '<a class="catcard reveal" href="#/category/' + c.id + '" style="' + toneVars(c.id) + '">' +
-      '<span class="catcard-ico" data-ico="' + c.icon + '"></span>' +
-      '<span class="catcard-b"><b>' + c.short + '</b>' +
-        '<span>' + c.forms + ' สูตรตำรับ · ' + c.brands + ' ยี่ห้อ</span></span>' +
+  return '<a class="catcard reveal" href="#/category/' + encodeURIComponent(c.id) + '" style="' + toneVars(c.id) + '">' +
+      '<span class="catcard-ico" data-ico="' + esc(c.icon || 'pill') + '"></span>' +
+      '<span class="catcard-b"><b>' + esc(c.short) + '</b>' +
+        '<span>' + formsOf(c.id).length + ' สูตรตำรับ · ' + brandsInCat(c.id).length + ' ยี่ห้อ</span></span>' +
       '<span class="catcard-go" data-ico="caret"></span>' +
     '</a>';
 }
@@ -287,7 +281,7 @@ let homeDone = false;
 function renderHome() {
     if (homeDone) return;
 
-    $('#heroStats').innerHTML = HOME_STATS.map(s =>
+    $('#heroStats').innerHTML = homeStats().map(s =>
         '<div class="hero-stat"><b data-n="' + s[0] + '">0</b><span>' + s[1] + '</span></div>'
     ).join('');
 
@@ -295,13 +289,171 @@ function renderHome() {
         setTimeout(() => countUp(el, +el.dataset.n, 900), 260 + i * 130)
     );
 
-    $('#homeCats').innerHTML = HOME_CATS.map(catCard).join('');  
-    paintIcons($('#homeCats'));                                  
+    $('#homeCats').innerHTML = DB.categories.slice()
+    .sort((a, b) => a.order - b.order)   
+    .map(catCard).join('');
+    paintIcons($('#homeCats'));
 
 
     initSteps();
     initHeroTilt();
     homeDone = true;  
+}
+
+/* SHARED */
+// แถวผลลัพธ์ 1 แถว ใช้ทั้งหน้าค้นหา และ "ดูล่าสุด" ในวันถัดไป
+function rowItem(b) {
+  const c = content(b), ct = cat(b.categoryId);
+  return '<li><a class="row" href="#/drug/' + encodeURIComponent(b.id) + '" style="' + toneVars(b.categoryId) + '">' +
+      '<span class="row-ico" data-ico="' + (b.packaging === 'blister' ? 'blister' : 'bottle') + '"></span>' +
+      '<span class="row-b"><b>' + esc(b.productName) + '</b>' +
+        '<span class="gen">' + esc(c.genericEn || c.genericTh) + '</span>' +
+        '<span class="tags">' +
+          '<span class="pill pill-red">' + esc(ct ? ct.short : '') + '</span>' +
+          '<span class="pill pill-grey">Reg. No. ' + esc(b.regNo) + '</span>' +
+          (b.status === 'active' ? '' : '<span class="pill pill-bad">ยกเลิกทะเบียน</span>') +
+        '</span></span>' +
+      '<span class="row-go" data-ico="caret"></span>' +
+    '</a></li>';
+}
+
+/* SEARCH */
+let sState = { q: '', cat: '' };   // คำค้น และกลุ่มที่เลือก ('' = ทั้งหมด)
+let sBound = false;
+
+// ข้อความก้อนเดียวที่รวมทุกอย่างที่ค้นได้ของยี่ห้อนี้
+function sIndex(b) {
+  const c = content(b), ct = cat(b.categoryId);
+  const words = [
+    b.productName, b.licensee, b.regNo,
+    c.genericTh, c.genericEn, c.formName,
+    c.ingredients.map(i => i.name).join(' '),
+    ct ? ct.name : '', b.dosageForm,
+  ];
+  return norm(words.join(' ')) + '||' + regKey(b.regNo);
+}
+
+function runSearch() {
+  const q  = sState.q.trim();
+  const nq = norm(q);
+  const rq = regKey(q);
+
+  let list = DB.brands.slice();
+  if (sState.cat) list = list.filter(b => b.categoryId === sState.cat);
+  if (nq) list = list.filter(b => {
+    const idx = sIndex(b);
+    return idx.includes(nq) || (rq.length >= 3 && idx.includes(rq));
+  });
+
+  // ทะเบียนคงอยู่ขึ้นก่อน แล้วเรียงชื่อตามพจนานุกรมไทย
+  list.sort((a, b) =>
+    (a.status === b.status ? 0 : a.status === 'active' ? -1 : 1) ||
+    a.productName.localeCompare(b.productName, 'th')
+  );
+
+  $('#resCount').textContent = 'ผลการค้นหา (' + list.length + ' รายการ)';
+  $('#resRows').innerHTML = list.map(rowItem).join('');
+  $('#resEmpty').innerHTML = list.length ? '' :
+    '<div class="state mt-5">' +
+      '<div class="state-ico is-warn">' + svg('search') + '</div>' +
+      '<h2>ไม่พบยาที่ตรงกับคำค้นหา</h2>' +
+      '<p>ลองพิมพ์เพียงบางส่วนของชื่อยา เช่น “พารา” หรือพิมพ์ตัวยาสำคัญ เช่น “paracetamol” ' +
+        'และตรวจสอบว่ายาที่ค้นหาอยู่ในขอบเขต 6 กลุ่มอาการของระบบ</p>' +
+      '<div class="state-actions">' +
+        '<button class="btn btn-primary" type="button" id="clrAll">ล้างตัวกรองทั้งหมด</button>' +
+        '<a class="btn btn-outline" href="#/about">ดูขอบเขตของระบบ</a>' +
+      '</div>' +
+    '</div>';
+
+  paintIcons($('#view-search'));
+
+  const clr = $('#clrAll');
+  if (clr) clr.addEventListener('click', () => {
+    sState = { q: '', cat: '' };
+    $('#q').value = '';
+    syncChips();
+    runSearch();
+  });
+
+  $('#qClear').hidden = !q;
+}
+
+function syncChips() {
+  $$('#chipbar [data-cat]').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.cat === sState.cat))
+  );
+}
+
+function renderSearch(pre) {
+  if (!sBound) {
+    // ชิป: "ทั้งหมด" + 6 กลุ่มจากข้อมูล
+    $('#chipbar').innerHTML =
+      '<button class="chip" type="button" data-cat="" aria-pressed="true">' +
+        '<span class="c-ico">' + svg('list') + '</span>ทั้งหมด<span class="n">' + DB.brands.length + '</span></button>' +
+      DB.categories.slice().sort((a, b) => a.order - b.order).map(c =>
+        '<button class="chip" type="button" data-cat="' + esc(c.id) + '" aria-pressed="false" style="' + toneVars(c.id) + '">' +
+          '<span class="c-ico">' + svg(c.icon || 'pill') + '</span>' + esc(c.short) +
+          '<span class="n">' + brandsInCat(c.id).length + '</span></button>'
+      ).join('');
+
+    // คลิกชิปใดก็ได้: ฟังที่กล่องแม่ตัวเดียว
+    $('#chipbar').addEventListener('click', e => {
+      const b = e.target.closest('[data-cat]');
+      if (!b) return;
+      sState.cat = b.dataset.cat;
+      syncChips();
+      runSearch();
+    });
+
+    // พิมพ์: รอหยุดพิมพ์ 180ms ค่อยค้น
+    const onType = debounce(() => {
+      sState.q = $('#q').value;
+      runSearch();
+      renderSuggest();
+    }, 180);
+    $('#q').addEventListener('input', onType);
+    $('#q').addEventListener('focus', () => { if ($('#q').value.trim()) renderSuggest(); });
+    $('#q').addEventListener('blur', () => setTimeout(hideSuggest, 150));
+
+    $('#q').addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if ($('#qList').hidden) renderSuggest(); else moveSuggest(1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        moveSuggest(-1);
+      } else if (e.key === 'Enter' && sugIdx >= 0) {
+        e.preventDefault();
+        gotoSuggest(sugIdx);
+      } else if (e.key === 'Escape') {
+        hideSuggest();
+      }
+    });
+
+    $('#qList').addEventListener('mousedown', e => {
+      const li = e.target.closest('[data-sug]');
+      if (!li) return;
+      e.preventDefault();
+      gotoSuggest(+li.dataset.sug);
+    });
+
+    $('#qClear').addEventListener('click', () => {
+      $('#q').value = '';
+      sState.q = '';
+      runSearch();
+      hideSuggest();
+      $('#q').focus();
+    });
+
+    initMic();
+    sBound = true;
+  }
+
+  if (pre) sState.cat = pre;   // มาจาก #/category/…
+  $('#q').value = sState.q;
+  hideSuggest();
+  syncChips();
+  runSearch();
 }
 
 function initHeroTilt() {
@@ -409,225 +561,165 @@ function runIntro() {
 }
 
 
+/* คำแนะนำขณะพิมพ์  */
+let sugItems = [];   // ยาที่แสดงอยู่ในรายการตอนนี้
+let sugIdx = -1;     // ตัวที่เลือกด้วยลูกศร (-1 = ยังไม่เลือก)
+
+function hideSuggest() {
+  const list = $('#qList');
+  if (!list) return;
+  list.hidden = true;
+  list.innerHTML = '';
+  sugItems = [];
+  sugIdx = -1;
+  $('#q').setAttribute('aria-expanded', 'false');
+  $('#q').removeAttribute('aria-activedescendant');
+}
+
+function renderSuggest() {
+  const q = $('#q').value.trim();
+  const list = $('#qList');
+  if (!q) { hideSuggest(); return; }
+
+  const nq = norm(q), rq = regKey(q);
+  sugItems = DB.brands
+    .filter(b => { const idx = sIndex(b); return idx.includes(nq) || (rq.length >= 3 && idx.includes(rq)); })
+    .sort((a, b) => (a.status === b.status ? 0 : a.status === 'active' ? -1 : 1))
+    .slice(0, 6);
+
+  list.innerHTML = sugItems.length
+    ? '<li class="s-head" role="presentation">ยาที่ตรงกับ “' + esc(q) + '”</li>' +
+      sugItems.map((b, i) => {
+        const c = content(b), ct = cat(b.categoryId);
+        return '<li role="option" id="sug-' + i + '" aria-selected="false" data-sug="' + i + '" style="' + toneVars(b.categoryId) + '">' +
+            '<span class="s-ico">' + svg(b.packaging === 'blister' ? 'blister' : 'bottle') + '</span>' +
+            '<span class="s-b"><b>' + esc(b.productName) + '</b>' +
+              '<span>' + esc(c.genericEn || c.genericTh) + ' · ' + esc(ct ? ct.short : '') + '</span></span>' +
+            '<span class="s-go">' + svg('arrow') + '</span>' +
+          '</li>';
+      }).join('')
+    : '<li class="s-empty" role="presentation">ไม่พบยาที่ตรงกับ “' + esc(q) + '” ลองพิมพ์สั้นลง เช่น “พารา”</li>';
+
+  list.hidden = false;
+  $('#q').setAttribute('aria-expanded', 'true');
+  sugIdx = -1;
+}
+
+function moveSuggest(step) {
+  const n = sugItems.length;
+  if (!n) return;
+  // ยังไม่ได้เลือก แล้วกดขึ้น → ไปตัวสุดท้าย · นอกนั้นวนรอบ
+  sugIdx = (sugIdx < 0 && step < 0) ? n - 1 : (sugIdx + step + n) % n;
+
+  $$('#qList [data-sug]').forEach((el, i) => {
+    const on = i === sugIdx;
+    el.classList.toggle('hi', on);
+    el.setAttribute('aria-selected', String(on));
+    if (on) {
+      $('#q').setAttribute('aria-activedescendant', el.id);
+      el.scrollIntoView({ block: 'nearest' });
+    }
+  });
+}
+
+function gotoSuggest(i) {
+  const b = sugItems[i];
+  if (!b) return;
+  hideSuggest();
+  $('#q').blur();
+  location.hash = '#/drug/' + encodeURIComponent(b.id);
+}
+
+/*  พูดเพื่อค้นหา */
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recog = null;
+
+// ข้อความสถานะใต้ช่องค้นหา
+function sayMsg(text) {
+  const m = $('#qMsg');
+  m.textContent = text;
+  m.hidden = !text;
+}
+
+function initMic() {
+  const btn = $('#qMic');
+  const box = $('.searchwrap .searchbox');
+  if (!SpeechRec) {                 // เบราว์เซอร์ไม่รองรับ เช่น Firefox
+    btn.hidden = true;
+    box.classList.add('no-mic');
+    return;
+  }
+
+  btn.hidden = false;
+  btn.addEventListener('click', () => {
+    if (recog) { recog.stop(); return; }   // กำลังฟังอยู่ กดอีกครั้ง = หยุด
+
+    recog = new SpeechRec();
+    recog.lang = 'th-TH';
+    recog.interimResults = false;
+    recog.maxAlternatives = 1;
+
+    recog.onresult = e => {
+      const t = (e.results[0][0].transcript || '').trim();
+      if (!t) return;
+      $('#q').value = t;
+      sState.q = t;
+      runSearch();
+      renderSuggest();
+      sayMsg('ได้ยินว่า “' + t + '”');
+    };
+
+    recog.onerror = e => {
+      sayMsg(e.error === 'not-allowed' ? 'กรุณาอนุญาตให้เว็บไซต์ใช้ไมโครโฟน'
+           : e.error === 'no-speech'   ? 'ไม่ได้ยินเสียงพูด ลองใหม่อีกครั้ง'
+           : 'ฟังเสียงไม่สำเร็จ ลองใหม่อีกครั้ง');
+    };
+
+    recog.onend = () => {
+      recog = null;
+      btn.setAttribute('aria-pressed', 'false');
+      btn.setAttribute('aria-label', 'พูดเพื่อค้นหา');
+    };
+
+    try {
+      recog.start();
+      btn.setAttribute('aria-pressed', 'true');
+      btn.setAttribute('aria-label', 'หยุดฟัง');
+      sayMsg('กำลังฟัง… พูดชื่อยาที่ต้องการค้นหา');
+    } catch (err) {
+      recog = null;
+    }
+  });
+}
+
+
 // boot
-paintIcons();
-syncHeaderHeight();
-syncHeaderState();
-window.addEventListener('hashchange', route);
-route();
-runIntro();
-console.log('MedCheck พร้อมทำงาน');
+async function start() {
+  paintIcons();
+  syncHeaderHeight();
+  syncHeaderState();
+  runIntro();
 
+  try {
+    await loadDB();
+  } catch (err) {
+    showLoadError(err);
+    return;
+  }
 
-// 1. ตัวช่วยย่อ
-// หา element ตัวแรกที่ตรงเงื่อนไข
-// const $ = (sel) => document.querySelector(sel);
-// // หา element ทุกตัวที่ตรงเงือนไข แล้วคืนเป็น array
-// const $$ = (sel) => [...document.querySelectorAll(sel)];
+  window.addEventListener('hashchange', route);
+  route();
+  console.log('MedCheck พร้อมทำงาน · ยา ' + DB.brands.length + ' ยี่ห้อ');
+}
 
-// function normalize(text) {
-//     return String(text ?? "")
-//         .toLowerCase()                      // ตัวใหญ่ → ตัวเล็ก
-//         .replace(/[\u0E50-\u0E59]/g,        // เลขไทย → เลขอารบิก
-//             (d) => String(d.charCodeAt(0) - 0x0E50))
-//         .replace(/[\u0E47-\u0E4C]/g, "")   // ตัดวรรณยุกต์ ็ ่ ้ ๊ ๋ ์
-//     .replace(/[\s\-\/.,()+]/g, "");        // ตัดช่องว่างและเครื่องหมาย
-// }
-// function escapeHTML(text) {
-//     return String(text ?? "").replace(/[&<>"']/g, (ch) => ({
-//         "&": "&amp;",
-//         "<": "&lt;",
-//         ">": "&gt;",
-//         '"': "&quot;",
-//         "'": "&#39;",
-//     })[ch]);
-// }
+function showLoadError(err) {
+  console.error(err);
+  $('#main').innerHTML =
+    '<div class="wrap sec"><div class="state">' +
+      '<div class="state-ico is-warn">' + svg('info') + '</div>' +
+      '<h2>เปิดข้อมูลยาไม่ได้</h2>' +
+      '<p>' + esc(err.message) + ' — ถ้าเปิดไฟล์ด้วยการดับเบิลคลิก ให้เปิดผ่าน Live Server แทน</p>' +
+    '</div></div>';
+}
 
-// // 2. ข้อมูล 
-// // รายชื่อหน้าทั้งหมดที่มี 
-// const DB = {categories: [],items: [],}; // ที่เก็บข้อมูลทั้งหมดของเว็บ
-// async function loadData() {
-//     const res = await fetch("data/drugs.json");
-
-//     if (!res.ok) {
-//         throw new Error("โหลดข้อมูลไม่สำเร็จ รหัส " + res.status); 
-//     }
-
-//     const data = await res.json();
-//     buildIndex(data);
-// }
-// // ต่อข้อมูล 3 ตารางเข้าด้วยกัน
-// function buildIndex(data) {
-
-//     const formulationById = {};
-//     data.formulations.forEach((f) => {
-//         formulationById[f.id] = f;
-//     });
-
-//     const categoryById = {};
-//     data.categories.forEach((c) => {
-//         categoryById[c.id] = c;
-//     });
-//     // เก็บหมวดไว้ใช้สร้างชิป
-//     DB.categories = data.categories;
-//     // แปลงยี่ห้อทุกตัวให้มีข้อมูลครบในก้อนเดียว 
-//     DB.items = data.brands.map((b) => {
-//         const f = formulationById[b.formulationId];
-//         const c = categoryById[b.categoryId];
-
-//         return {
-//             ...b,
-//             formulation: f,
-//             category: c,
-//             haystack: normalize(
-//                 [b.productName, b.regNo, f.genericTh, f.gemericEn, c.short].join(" ")
-//             ),    
-//         };
-//     });
-// }
-
-// // 3. หน้าค้นหา 
-// const state = {query: "",category: "all",};
-
-// // ฟังก์ชันค้นหา
-// function searchDrugs(query, categoryId) {
-//     const q = normalize(query);
-
-//     return DB.items.filter((item) => {
-//         const matchCategory = categoryId === "all" || item.categoryId === categoryId;
-//         const matchText = q === "" || item.haystack.includes(q);
-//         return matchCategory && matchText;
-//     });
-// }
-// // สร้าง HTML ของการ์ด 1 ใบ
-// function cardHTML(item) {
-//   const tone = CATEGORY_TONE[item.categoryId] ?? "c1";
-//   const icon = PACKAGING_ICON[item.packaging] ?? "i-pill";
-
-//   return `
-//     <a class="row-item" href="#/drug/${item.id}">
-//       <span class="row-ico tone-${tone}" aria-hidden="true">
-//         <svg class="ico"><use href="#${icon}"/></svg>
-//       </span>
-//       <span class="row-main">
-//         <span class="row-title">${escapeHTML(item.productName)}</span>
-//         <span class="row-sub">${escapeHTML(item.formulation.genericEn)}</span>
-//         <span class="row-tags">
-//           <span class="tag-cat">${escapeHTML(item.category.short)}</span>
-//           <span class="tag-reg">Reg. No. ${escapeHTML(item.regNo)}</span>
-//         </span>
-//       </span>
-//       <svg class="ico row-arrow" aria-hidden="true"><use href="#i-chevron"/></svg>
-//     </a>`;
-// }
-
-// // สร้างชิปจากข้อมูลหมวด (ทำครั้งเดียว)
-// function renderChips() {
-//     const list = [{ id: "all", short: "ทั้งหมด"}, ...DB.categories];
-
-//         $("#chips").innerHTML = list
-//             .map((c) => `<button type="button" class="chip" data-cat="${c.id}">${escapeHTML(c.short)}</button>`).join("");
-// }
-
-// // วาดหน้าค้นหาใหม่ทั้งหมดจาก state
-// function renderSearch() {
-//     const results = searchDrugs(state.query, state.category);
-
-//     $$("#chips .chip").forEach((chip) => {
-//         chip.setAttribute("aria-pressed", String(chip.dataset.cat === state.category));
-//     });
-//     // จำนวนผลลัพธ์
-//     $("#resultCount").textContent = `พบ ${results.length} รายการ`;
-//     // การ์ด
-//     $("#results").innerHTML = results.map(cardHTML).join("");
-//     // กล่องไม่พบ
-//     $("#empty").hidden = results.length > 0;
-// }
-
-// // ต่อสายเหตุการณ์ (ทำครั้งเดียว)
-// function initSearch() {
-//     renderChips();
-
-//     $("#q").addEventListener("input", (e) => {
-//         state.query = e.target.value;
-//         renderSearch();
-//     });
-
-//     // กดชิป — ฟังที่กล่องแม่ตัวเดียว
-//     $("#chips").addEventListener("click", (e) => {
-//         const chip = e.target.closest(".chip");
-//         if (!chip) return;
-//         state.category = chip.dataset.cat;
-//         renderSearch();
-//     });
-
-//     renderSearch();
-// }
-
-// // 4. Router 
-// const ROUTES = {
-//     home: "หน้าแรก",
-//     scan: "สแกนฉลากยา",
-//     search: "ค้นหาฉลากยา",
-//     about: "เกี่ยวกับระบบ",
-// };
-// const DEFAULT_ROUTE = "home";
-
-// // อ่านชื่อหน้าจาก URL
-// function readRoute() {
-//     // location.hash ได้ "#/search"  →  slice(2) ตัด "#/" ทิ้ง → "search"
-//     const raw = location.hash.slice(2);
-//     // วันที่ 5 จะมี "#/drug/12" → split("/")[0] เอาแค่ "drug"
-//     const name = raw.split("/")[0];
-//     // ถ้าชื่อที่ได้ไม่มีในรายการ ให้กลับไปหน้าแรก
-//     return ROUTES[name] ? name : DEFAULT_ROUTE;
-// }
-// // แสดงหน้าที่ต้องการ ซ่อนหน้าที่เหลือ
-// function showRoute(name) {
-//     // วนดูทุก section.view
-//     $$(".view").forEach((section) => {
-//         // ถ้าชื่อไม่ตรง ให้ซ่อน (hidden = true)
-//         section.hidden = section.dataset.view !== name;
-//     });
-
-//     // วนดูลิงก์เมนูทุกอัน ทั้งบนและล่าง
-//     $$("[data-nav]").forEach((link) => {
-//         const isCurrent = link.dataset.nav === name;
-
-//         link.classList.toggle("is-active", isCurrent);
-
-//         if (isCurrent) link.setAttribute("aria-current", "page");
-//         else           link.removeAttribute("aria-current");
-//     });
-
-//     // เปลี่ยนชื่อบนและแท็บเบราว์เซอร์
-//     document.title = ROUTES[name] + " - MedCheck";
-
-//     // เลื่อนกลับขึ้นไปบนสุด
-//     window.scrollTo(0,0);
-// }
-// // ต่อสายให้ทำงานอัตโนมัติ
-// function handleRouteChange() {
-//     showRoute(readRoute());
-// }
-
-// // 5. เริ่มต้นระบบ
-// async function boot() {
-//     window.addEventListener("hashchange", handleRouteChange);
-//     handleRouteChange();
-
-//     try {
-//         await loadData();
-//         initSearch();
-//         console.log("MedCheck พร้อมทำงาน · ยา", DB.items.length, "รายการ");
-//     } catch (err) {
-//         console.error(err); 
-//         $("#resultCount").textContent = "";
-//         $("#results").innerHTML = `
-//             <div class="alert alert-danger" role="alert">
-//                 <p><strong>โหลดข้อมูลยาไม่สำเร็จ</strong>ตรวจว่าเปิดผ่าน Live Server (ขึ้นต้นด้วย http://) และมีไฟล์ data/drugs.json</p>
-//             </div>`;
-//     }
-// }
-
-// boot();
+start();

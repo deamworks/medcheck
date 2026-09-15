@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/shell.css">
+  <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
 </head>
 <body>
@@ -45,8 +46,8 @@
       <div class="hdr-act">
         <div class="fs-ctl" role="group" aria-label="ปรับขนาดตัวอักษร">
           <button type="button" data-fs="1" aria-pressed="true" title="ตัวอักษรขนาดปกติ">ก<span class="sr-only">ขนาดปกติ</span></button>
-          <button type="button" data-fs="2" aria-pressed="false" title="ตัวอักษรขนาดปกติ">กก<span class="sr-only">ขนาดใหญ่</span></button>
-          <button type="button" data-fs="3" aria-pressed="false" title="ตัวอักษรขนาดปกติ">กกก<span class="sr-only">ขนาดใหญ่พิเศษ</span></button>
+          <button type="button" data-fs="2" aria-pressed="false" title="ตัวอักษรขนาดใหญ่">กก<span class="sr-only">ขนาดใหญ่</span></button>
+          <button type="button" data-fs="3" aria-pressed="false" title="ตัวอักษรขนาดใหญ่พิเศษ">กกก<span class="sr-only">ขนาดใหญ่พิเศษ</span></button>
         </div>
 
         <button class="iconbtn" id="themeBtn" type="button" aria-label="สลับโหมดสีสว่างและมืด"> 
@@ -138,7 +139,7 @@
 
         <div class="wrap sec">
           <div class="center" style="max-width: 46ch; margin-inline:auto; margin-bottom:1.8rem;">
-            <span class="eyebrow"><span data-ico="clipboard" aria-hidden="ture"></span>วิธีใช้งาน</span>
+            <span class="eyebrow"><span data-ico="clipboard" aria-hidden="true"></span>วิธีใช้งาน</span>
             <h2>ใช้งานง่าย <span style="color: var(--primary)">3 ขั้นตอน</span></h2>
             <p class="muted mt-2">ไม่ต้องพิมพ์ชื่อยาให้ถูกต้อง แค่เปิดกล้องแล้วเล็งไปที่ฉลาก</p>
         </div>
@@ -151,7 +152,7 @@
               <span class="step-stage">
                 <span class="step-scene" aria-hidden="true">
                   <span class="sc">
-                    <span class="sc-gnd s1 gnd"></span>
+                    <span class="sc-gnd s1-gnd"></span>
                     <span class="s1-phone">
                       <span class="s1-screen">
                       <span class="s1-shadow"></span>
@@ -229,8 +230,22 @@
               <p>บอกข้อบ่งใช้ ขนาดการใช้ และคำเตือน ตัวอักษรใหญ่ พร้อมปุ่มฟังเสียง</p>
               <span class="step-hint"><span data-ico="play" aria-hidden="true"></span>ดูภาพเคลื่อนไหว</span>
           </button>
-        </div> 
-          
+        </div>
+
+        <div class="shortcuts">
+          <a class="shortcut is-primary" href="#/scan">
+            <span class="shortcut-ico" data-ico="camera" aria-hidden="true"></span>
+            <span class="shortcut-b"><b>ถ่ายรูปฉลากยา</b><span>เพื่ออ่านและตรวจสอบข้อมูล</span></span>
+            <span class="shortcut-go" data-ico="arrow" aria-hidden="true"></span>
+          </a>
+          <a class="shortcut" href="#/search">
+            <span class="shortcut-ico" data-ico="keyboard" aria-hidden="true"></span>
+            <span class="shortcut-b"><b>ค้นหาด้วยชื่อยา</b><span>ถ้าฉลากเลือนรางหรืออ่านไม่ออก</span></span>
+            <span class="shortcut-go" data-ico="arrow" aria-hidden="true"></span>
+          </a>
+        </div>
+        </div>
+
         <div class="wrap sec-sm">
           <div class="sec-head">
             <div class="ttl">
@@ -241,29 +256,47 @@
           </div>
           <div class="cats" id="homeCats"></div>
         </div>
-
-        <div class="shortcuts">
-            <a class="shortcut is-primary" href="#/scan">
-              <span class="shortcut-ico" data-ico="camera" aria-hidden="true"></span>
-              <span class="shortcut-b"><b>ถ่ายรูปฉลากยา</b><span>เพื่ออ่านและตรวจสอบข้อมูล</span></span>
-              <span class="shortcut-go" data-ico="arrow" aria-hidden="true"></span>
-            </a>
-            <a class="shortcut" href="#/search">
-              <span class="shortcut-ico" data-ico="keyboard" aria-hidden="true"></span>
-              <span class="shortcut-b"><b>ค้นหาด้วยชื่อยา</b><span>ถ้าฉลากเลือนรางหรืออ่านไม่ออก</span></span>
-              <span class="shortcut-go" data-ico="arrow" aria-hidden="true"></span>
-            </a>
-        </div>
     </section>
 
     <section class="view" id="view-scan" hidden><div class="wrap sec"><h1>ถ่ายรูปฉลากยา</h1></div></section>
-    <section class="view" id="view-search" hidden><div class="wrap sec"><h1>ค้นหายา</h1></div></section>
+
+    <section class="view" id="view-search" hidden>
+      <div class="wrap sec">
+        <div class="page-head">
+          <a class="backlink" href="#/" aria-label="กลับหน้าหลัก"><span data-ico="back" aria-hidden="true"></span></a>
+          <div style="flex:1 1 16rem">
+            <h1>ค้นหาข้อมูลยาสามัญประจำบ้าน</h1>
+            <p>ค้นหาด้วยชื่อการค้า ชื่อสามัญทางยา หรือเลขทะเบียน อย.</p>
+          </div>
+        </div>
+
+        <div class="searchwrap">
+          <div class="searchbox">
+            <span data-ico="search" aria-hidden="true"></span>
+            <label class="sr-only" for="q">ค้นหาชื่อยา ตัวยาสำคัญ หรือเลขทะเบียนตำรับยา</label>
+            <input id="q" type="search" inputmode="search" autocomplete="off"
+                  role="combobox" aria-expanded="false" aria-controls="qList" aria-autocomplete="list"
+                  placeholder="เช่น พาราเซตามอล, ซาร่า, 2A 721/28">
+            <button class="clr" id="qClear" type="button" aria-label="ล้างคำค้นหา" hidden>
+              <span data-ico="x" aria-hidden="true"></span></button>
+            <button class="mic" id="qMic" type="button" aria-pressed="false" aria-label="พูดเพื่อค้นหา" hidden>
+              <span data-ico="mic" aria-hidden="true"></span></button>
+          </div>
+          <ul class="suggest" id="qList" role="listbox" aria-label="คำแนะนำการค้นหา" hidden></ul>
+        </div>
+        <p class="q-msg" id="qMsg" aria-live="polite" hidden></p>
+
+        <div class="chipbar" id="chipbar" role="group" aria-label="กรองตามกลุ่มอาการ"></div>
+        <p class="text-sm muted mt-4" id="resCount" aria-live="polite"></p>
+        <ul class="rows" id="resRows"></ul>
+        <div id="resEmpty"></div>
+      </div>
+    </section>
+
     <section class="view" id="view-detail" hidden><div class="wrap sec"><h1>ข้อมูลยา</h1></div></section>
     <section class="view" id="view-about" hidden><div class="wrap sec"><h1>เกี่ยวกับระบบ</h1></div></section>
 
   </main>
-
-  
 
   
   <footer class="ftr">
@@ -276,10 +309,10 @@
   </footer>
 
   <nav class="botnav" aria-label="เมนูหลัก (อุปกรณ์พกพา)">
-    <a href="#/" data-nav="home"><span data-ico="home" aria-hidden="true">หน้าหลัก</span></a>
-    <a href="#/scan" data-nav="camera"><span data-ico="camera" aria-hidden="true">ถ่ายรูป</span></a>
-    <a href="#search/" data-nav="search"><span data-ico="search" aria-hidden="true">ค้นหา</span></a>
-    <a href="#/about" data-nav="info"><span data-ico="info" aria-hidden="true">เกี่ยวกับ</span></a>
+    <a href="#/"       data-nav="home"><span data-ico="home"   aria-hidden="true"></span>หน้าหลัก</a>
+    <a href="#/scan"   data-nav="scan"><span data-ico="camera" aria-hidden="true"></span>ถ่ายรูป</a>
+    <a href="#/search" data-nav="search"><span data-ico="search" aria-hidden="true"></span>ค้นหา</a>
+    <a href="#/about"  data-nav="about"><span data-ico="info"   aria-hidden="true"></span>เกี่ยวกับ</a>
   </nav>
 
   <div class="drawer-back" id="drawerBack"></div>
@@ -300,7 +333,8 @@
       <a href="#/about" data-nav="about" style="--dd:210ms"><span data-ico="info" aria-hidden="true"></span>เกี่ยวกับ</a>
     </nav>
   </aside>
-  
+
+  <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 
 </body>

@@ -1,0 +1,123 @@
+/* search */
+.searchwrap{position:relative}
+.searchbox{position:relative; display:flex; align-items:center}
+
+/* แว่นขยายวางซ้อนในช่องด้านซ้าย */
+.searchbox>span:not(.clr){position:absolute; inset-inline-start:1.2rem; display:grid; place-items:center;
+  color:var(--ink-3); pointer-events:none}
+.searchbox>span:not(.clr)>svg{width:1.4rem; height:1.4rem}
+
+.searchbox input{width:100%; min-height:3.85rem; padding-inline:3.6rem 6.8rem; border-radius:var(--r-full);
+  border:2px solid var(--line-2); background:var(--surface); font-size:1.05rem;
+  transition:border-color var(--d1) var(--ez), box-shadow var(--d1) var(--ez)}
+.searchbox input::placeholder{color:var(--ink-3)}
+.searchbox input:focus{border-color:var(--primary); box-shadow:0 0 0 5px var(--tint); outline:none}
+
+/* ปุ่มล้าง และปุ่มไมค์ วางซ้อนในช่องด้านขวา */
+.searchbox .clr,.searchbox .mic{position:absolute; width:2.7rem; height:2.7rem; border:0; border-radius:50%;
+  cursor:pointer; display:grid; place-items:center;
+  transition:background var(--d1) var(--ez), color var(--d1) var(--ez), border-color var(--d1) var(--ez)}
+.searchbox .clr{inset-inline-end:3.6rem; background:var(--surface-3); color:var(--ink-2)}
+.searchbox .clr:hover{background:var(--line)}
+.searchbox .clr svg{width:1.1rem; height:1.1rem}
+.searchbox .mic{inset-inline-end:.6rem; background:var(--tint); color:var(--primary); border:1.5px solid var(--tint-line)}
+.searchbox .mic svg{width:1.25rem; height:1.25rem}
+.searchbox .mic:hover{background:var(--primary); color:#fff; border-color:var(--primary)}
+
+/* เบราว์เซอร์ที่ฟังเสียงไม่ได้: ซ่อนไมค์ แล้วขยับปุ่มล้างไปชิดขวา */
+.searchbox.no-mic input{padding-inline-end:3.6rem}
+.searchbox.no-mic .clr{inset-inline-end:.6rem}
+
+/* กำลังฟัง: ไมค์แดง มีวงกระเพื่อม */
+.searchbox .mic[aria-pressed="true"]{background:var(--primary); color:#fff; border-color:var(--primary);
+  animation:micPulse 1.2s ease-in-out infinite}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(224,27,36,.5)} 70%{box-shadow:0 0 0 .7rem rgba(224,27,36,0)}}
+@media (prefers-reduced-motion:reduce){ .searchbox .mic[aria-pressed="true"]{animation:none} }
+
+/* ข้อความสถานะใต้ช่อง (ไมโครโฟน) */
+.q-msg{margin-top:.6rem; font-size:.92rem; color:var(--brand-ink)}
+
+/* คำแนะนำขณะพิมพ์  */
+.suggest{position:absolute; z-index:60; top:calc(100% + .5rem); inset-inline:0; max-height:24rem; overflow-y:auto; padding:.4rem;
+  background:var(--surface); border:1.5px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-3);
+  animation:sugIn 220ms var(--ez-out) both}
+@keyframes sugIn{from{opacity:0; transform:translateY(-.5rem)} to{opacity:1; transform:none}}
+
+.suggest li{display:flex; align-items:center; gap:.8rem; padding:.75rem .85rem; border-radius:var(--r-sm);
+  cursor:pointer; transition:background var(--d1) var(--ez)}
+.suggest li:hover,.suggest li.hi{background:var(--tint)}
+.suggest li .s-ico{width:2.5rem; height:2.5rem; flex:0 0 auto; border-radius:.8rem; display:grid; place-items:center;
+  background:var(--cbg,var(--tint)); color:var(--cc,var(--primary))}
+.suggest li .s-ico svg{width:1.35rem; height:1.35rem}
+.suggest li .s-b{flex:1; min-width:0}
+.suggest li .s-b b{display:block; font-family:var(--f-head); font-size:1rem; font-weight:600; line-height:1.35}
+.suggest li .s-b span{display:block; font-size:.85rem; color:var(--ink-3);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.suggest li .s-go{color:var(--ink-3)}
+.suggest li .s-go svg{width:1.2rem; height:1.2rem}
+.suggest li.hi .s-go{color:var(--primary)}
+.suggest .s-empty{padding:1.1rem .9rem; font-size:.95rem; color:var(--ink-3); text-align:center}
+.suggest .s-head{padding:.5rem .85rem .3rem; font-size:.8rem; font-weight:600; color:var(--ink-3)}
+
+/* ชิปกรองตามกลุ่มอาการ */
+.chipbar{display:flex; gap:.55rem; flex-wrap:wrap; margin-top:1.1rem}
+.chip{min-height:3rem; padding:0 1.05rem 0 .55rem; border-radius:var(--r-full); cursor:pointer;
+  border:1.5px solid var(--line-2); background:var(--surface); color:var(--ink-2);
+  font-size:.95rem; font-weight:500; display:inline-flex; align-items:center; gap:.55rem;
+  transition:background var(--d1) var(--ez), color var(--d1) var(--ez), border-color var(--d1) var(--ez),
+             transform var(--d1) var(--ez), box-shadow var(--d2) var(--ez)}
+.chip .c-ico{width:2rem; height:2rem; flex:0 0 auto; border-radius:50%; display:grid; place-items:center;
+  background:var(--cbg,var(--surface-3)); color:var(--cc,var(--ink-3));
+  transition:background var(--d1) var(--ez), color var(--d1) var(--ez), transform var(--d2) var(--ez-back)}
+.chip .c-ico svg{width:1.15rem; height:1.15rem}
+.chip:hover{border-color:var(--cc,var(--tint-line)); transform:translateY(-2px)}
+.chip:hover .c-ico{transform:scale(1.12) rotate(-6deg)}
+.chip[aria-pressed="true"]{background:var(--cc,var(--primary)); border-color:var(--cc,var(--primary)); color:#fff; font-weight:600;
+  box-shadow:0 6px 18px color-mix(in srgb,var(--cc,var(--primary)) 38%,transparent)}
+.chip[aria-pressed="true"] .c-ico{background:rgba(255,255,255,.24); color:#fff}
+.chip .n{font-size:.82rem; opacity:.75; font-variant-numeric:tabular-nums}
+
+/*  แถวผลลัพธ์ */
+.rows{display:grid; gap:.75rem; margin-top:1rem}
+.row{display:flex; align-items:center; gap:1rem; padding:1.15rem 1.2rem; position:relative; overflow:hidden;
+  border-radius:var(--r); border:1.5px solid var(--line); background:var(--surface); box-shadow:var(--sh-1);
+  text-decoration:none; color:inherit;
+  transition:transform var(--d2) var(--ez), box-shadow var(--d2) var(--ez), border-color var(--d2) var(--ez)}
+.row::before{content:""; position:absolute; inset-inline-start:0; top:0; bottom:0; width:4px;
+  background:var(--cc,var(--primary)); transform:scaleY(0); transition:transform var(--d2) var(--ez)}
+.row:hover{transform:translateY(-3px); box-shadow:var(--sh-2); border-color:var(--tint-line)}
+.row:hover::before{transform:scaleY(1)}
+.row-ico{width:3.2rem; height:3.2rem; flex:0 0 auto; border-radius:1rem; display:grid; place-items:center;
+  background:var(--cbg,var(--tint)); color:var(--cc,var(--primary)); transition:transform var(--d2) var(--ez-back)}
+.row:hover .row-ico{transform:scale(1.08) rotate(-5deg)}
+.row-ico svg{width:1.7rem; height:1.7rem}
+.row-b{flex:1; min-width:0}
+.row-b b{display:block; font-family:var(--f-head); font-size:1.08rem; font-weight:600; line-height:1.35}
+.row-b .gen{font-size:.9rem; color:var(--ink-3); margin-top:.1rem}
+.row-b .tags{display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.55rem}
+.row-go{color:var(--ink-3); transition:transform var(--d2) var(--ez), color var(--d2) var(--ez)}
+.row-go svg{width:1.4rem; height:1.4rem}
+.row:hover .row-go{color:var(--primary); transform:translateX(4px)}
+
+/*  RESULT CARD · ป้าย  */
+.pill{display:inline-flex; align-items:center; gap:.35rem; padding:.4rem .8rem; border-radius:var(--r-full);
+  font-family:var(--f-head); font-size:.85rem; font-weight:600; white-space:nowrap}
+.pill svg{width:1rem; height:1rem}
+.pill-ok{background:var(--ok-bg); color:var(--ok); border:1.5px solid var(--ok-line)}
+.pill-bad{background:var(--danger-bg); color:var(--danger); border:1.5px solid var(--danger-line)}
+.pill-red{background:var(--tint-2); color:var(--brand-ink)}
+.pill-grey{background:var(--surface-3); color:var(--ink-2); border:1px solid var(--line);
+  font-family:var(--f-mono); font-weight:500; font-size:.82rem}
+
+/*  STATES · กล่องสถานะ  */
+.state{max-width:42rem; margin-inline:auto; text-align:center; padding:clamp(1.8rem,4vw,2.8rem) clamp(1.2rem,3vw,2rem);
+  background:var(--surface); border:1.5px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-2)}
+.state-ico{width:5.5rem; height:5.5rem; margin:0 auto 1.2rem; border-radius:50%; display:grid; place-items:center;
+  background:var(--tint); color:var(--primary); border:2.5px solid var(--tint-line)}
+.state-ico svg{width:2.6rem; height:2.6rem}
+.state-ico.is-warn{background:var(--warn-bg); color:var(--warn); border-color:var(--warn-line)}
+.state-ico.is-ok{background:var(--ok-bg); color:var(--ok); border-color:var(--ok-line)}
+.state h2{font-size:clamp(1.3rem,2.8vw,1.75rem); margin-bottom:.55rem}
+.state>p{color:var(--ink-2); font-size:1.02rem; line-height:1.75; max-width:44ch; margin-inline:auto}
+.state-actions{display:flex; gap:.75rem; flex-wrap:wrap; justify-content:center; margin-top:1.4rem}
+.state-actions .btn{flex:1 1 13rem}
