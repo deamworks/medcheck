@@ -34,6 +34,26 @@ const form = id => byId(DB.formulations, id);
 const brand = id => byId(DB.brands, id);
 const formsOf = cid => DB.formulations.filter(f => f.categoryId === cid);
 const brandsInCat = cid => DB.brands.filter(b => b.categoryId === cid);
+const brandsOf = fid => DB.brands.filter(b => b.formulationId === fid);
+
+// storage
+function lsGet(key, fallback) {
+    try {
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+function lsSet(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
 
 // รวมข้อมูลสูตรตำรับกับข้อมูลเฉพาะยี่ห้อ — ถ้ายี่ห้อมี override ใช้ของยี่ห้อ
 function content(b) {

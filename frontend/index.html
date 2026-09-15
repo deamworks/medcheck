@@ -256,9 +256,18 @@
           </div>
           <div class="cats" id="homeCats"></div>
         </div>
+
+        <div class="wrap sec-sm" id="recentWrap" hidden>
+          <h2 style="font-size:clamp(1.2rem,2.4vw,1.6rem)">ดูล่าสุด</h2> 
+          <ul class="rows" id="recentRows"></ul>       
+        </div>
+
+
     </section>
 
-    <section class="view" id="view-scan" hidden><div class="wrap sec"><h1>ถ่ายรูปฉลากยา</h1></div></section>
+    <section class="view" id="view-scan" hidden>
+      <div class="wrap sec"><h1>ถ่ายรูปฉลากยา</h1></div>
+    </section>
 
     <section class="view" id="view-search" hidden>
       <div class="wrap sec">
@@ -293,8 +302,13 @@
       </div>
     </section>
 
-    <section class="view" id="view-detail" hidden><div class="wrap sec"><h1>ข้อมูลยา</h1></div></section>
-    <section class="view" id="view-about" hidden><div class="wrap sec"><h1>เกี่ยวกับระบบ</h1></div></section>
+    <section class="view" id="view-detail" hidden>
+      <div class="wrap sec" id="detailBody"></div>
+    </section>
+
+    <section class="view" id="view-about" hidden>
+      <div class="wrap sec" id="aboutBody"></div>
+    </section>
 
   </main>
 

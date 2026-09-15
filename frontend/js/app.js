@@ -139,10 +139,11 @@ function parseHash() {
     if (name === 'drug') name = 'detail';
     if (name === 'category') name = 'search';
     if (!VIEWS.includes(name)) name = 'home';
-    return { name, param: parts[1] || ''};
+    return { name, param: parts[1] || '', sub: parts[2] || '' };
 }
 
 function route() {
+    stopSpeech();   
     currentRoute = parseHash();
     const navName = currentRoute.name === 'detail' ? 'search' : currentRoute.name;
 
@@ -158,10 +159,12 @@ function route() {
 
     document.title = TITLES[currentRoute.name] + ' · MedCheck';
 
-    if (currentRoute.name === 'home') renderHome();
-    if (currentRoute.name === 'search') renderSearch(currentRoute.param);   // ← เพิ่ม
-    if (currentRoute.name !== 'search') hideSuggest();    
-    initReveal($('#view-' + currentRoute.name)); 
+    if (currentRoute.name === 'home')   { renderHome(); renderRecent(); }
+    if (currentRoute.name === 'search') renderSearch(currentRoute.param);
+    if (currentRoute.name === 'detail') renderDetail(currentRoute.param, currentRoute.sub);
+    if (currentRoute.name === 'about')  renderAbout();
+    if (currentRoute.name !== 'search') hideSuggest();
+    initReveal($('#view-' + currentRoute.name));
 
     closeDrawer();
     window.scrollTo(0,0);
@@ -692,6 +695,311 @@ function initMic() {
   });
 }
 
+// อ่านออกเสียง 
+const TTS_OK = 'speechSynthesis' in window;
+let ttsBtn = null;     // ปุ่มที่กำลังอ่านอยู่
+let ttsUtter = null;   // ประโยคที่กำลังอ่านอยู่
+
+// ลำดับเสียงที่อยากได้ · ใส่แค่บางส่วนของชื่อก็พอ
+const VOICE_PREF = ['Premwadee', 'Niwat', 'Natural', 'Online', 'Google', 'Kanya', 'Pattara'];
+
+// เลือกเสียงไทยที่ดีที่สุดที่เครื่องนี้มี
+// localOnly = true → ใช้เฉพาะเสียงในเครื่อง · ไม่มีเน็ตก็ข้ามเสียงออนไลน์เหมือนกัน
+function pickThaiVoice(localOnly) {
+  const th = speechSynthesis.getVoices().filter(v =>
+    /^th/i.test(v.lang) && (v.localService || (!localOnly && navigator.onLine))
+  );
+  for (const key of VOICE_PREF) {
+    const found = th.find(v => v.name.includes(key));
+    if (found) return found;
+  }
+  return th[0] || null;
+}
+
+
+function whenVoicesReady() {
+  if (speechSynthesis.getVoices().length) return Promise.resolve();
+  return new Promise(done => {
+    const t = setTimeout(done, 1500);
+    speechSynthesis.addEventListener('voiceschanged', () => { clearTimeout(t); done(); }, { once: true });
+  });
+}
+
+// อ่านเฉพาะส่วนภาษาไทย
+function speakName(name) {
+  const s = String(name || '');
+  if (!/[฀-๿]/.test(s)) return s;               
+  return s.replace(/[A-Za-z][A-Za-z.&'-]*(\s+\d+)?/g, '')  
+          .replace(/\(\s*\)/g, '')                          
+          .replace(/\s+-(\s+|$)/g, ' ')                      
+          .replace(/\s+/g, ' ')
+          .trim();
+}
+
+
+const SAY_AS = [
+  ['พาราเซตามอล', 'พารา เซ ตา มอล'],
+];
+
+// แปลงข้อความให้เสียงอ่านถูก
+function forSpeech(t) {
+  let s = String(t);
+  SAY_AS.forEach(([from, to]) => { s = s.split(from).join(to); });   // แทนทุกจุดที่เจอ
+  return s
+    .replace(/(\d)\s*-\s*(\d)/g, '$1 ถึง $2')        
+    .replace(/(\d+)\s*\/\s*(\d+)/g, '$1 ทับ $2')     
+    .replace(/(\d)([A-Z])/g, '$1 $2')                
+    .replace(/(\d)\s*mg\b/gi, '$1 มิลลิกรัม')       
+    .replace(/(\d)\s*ml\b/gi, '$1 มิลลิลิตร')       
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// ให้เบราว์เซอร์เริ่มโหลดรายชื่อเสียงตั้งแต่เปิดเว็บ
+if (TTS_OK) speechSynthesis.getVoices();
+
+function ttsReset() {
+  if (ttsBtn) {
+    ttsBtn.setAttribute('aria-pressed', 'false');
+    ttsBtn.querySelector('span').textContent = 'ฟังข้อมูลยา';
+  }
+  ttsBtn = null;
+  ttsUtter = null;
+}
+
+function stopSpeech() {
+  if (TTS_OK) speechSynthesis.cancel();
+  ttsReset();
+}
+
+function speakText(text, btn, localOnly) {
+  if (!TTS_OK) return;
+  const same = ttsBtn === btn;
+  stopSpeech();
+  if (same && !localOnly) return;                       // กดปุ่มเดิมระหว่างอ่าน = หยุด
+
+  // เปลี่ยนปุ่มทันที ผู้ใช้รู้ว่ากดติดแล้ว
+  ttsBtn = btn;
+  btn.setAttribute('aria-pressed', 'true');
+  btn.querySelector('span').textContent = 'หยุดอ่าน';
+
+  whenVoicesReady().then(() => {
+    if (ttsBtn !== btn) return;                                    // กดหยุดระหว่างรอ
+
+    const voice = pickThaiVoice(localOnly);                        // เลือกตอนกดปุ่ม
+    console.log('เสียงที่ใช้อ่าน:', voice ? voice.name : 'ไม่พบเสียงไทย · เบราว์เซอร์เลือกเอง');
+    const parts = forSpeech(text).split(/\.\s+/).filter(Boolean);  // แยกอ่านทีละประโยค
+    if (!parts.length) { ttsReset(); return; }
+
+    let last = null;
+    parts.forEach(p => {
+      const u = new SpeechSynthesisUtterance(p);
+      u.lang = 'th-TH';
+      u.rate = 0.9;
+      if (voice) u.voice = voice;
+
+      u.onerror = e => {
+        if (ttsUtter !== last) return;                             // หยุดเอง หรือเริ่มรอบใหม่แล้ว
+        const online = voice && !voice.localService;
+        if (online && !localOnly && e.error !== 'interrupted' && e.error !== 'canceled') {
+          console.warn('เสียงออนไลน์ใช้ไม่ได้ (' + e.error + ') → เปลี่ยนเป็นเสียงในเครื่อง');
+          speakText(text, btn, true);                              // อ่านใหม่ด้วยเสียงในเครื่อง
+          return;
+        }
+        ttsReset();
+      };
+
+      speechSynthesis.speak(u);            // เบราว์เซอร์ต่อคิวให้เอง
+      last = u;
+    });
+    last.onend = () => { if (ttsUtter === last) ttsReset(); };
+    ttsUtter = last;                       // จำประโยคสุดท้ายไว้ · จบตัวนี้ = อ่านจบทั้งหมด
+  });
+}
+
+/* ดูล่าสุด */
+const KEY_RECENT = 'mc.recent';
+
+function pushRecent(id) {
+  const list = lsGet(KEY_RECENT, []);
+  lsSet(KEY_RECENT, [id].concat(list.filter(x => x !== id)).slice(0, 5));
+}
+
+const getRecent = () => lsGet(KEY_RECENT, []).map(brand).filter(Boolean);
+
+function renderRecent() {
+  const rec = getRecent();
+  $('#recentWrap').hidden = rec.length === 0;
+  $('#recentRows').innerHTML = rec.map(rowItem).join('');
+  paintIcons($('#recentRows'));
+}
+
+/* detail */
+// ตอนที่ 1 — ค่าคงที่และหัวการ์ด
+const TABS = [
+  ['use',  'ข้อบ่งใช้',        'clipboard'],
+  ['dose', 'วิธีใช้และขนาดยา', 'clock'],
+  ['warn', 'คำเตือน',          'warning'],
+];
+
+const packLabel = p => p === 'blister' ? 'ยาเม็ดบรรจุแผง' : 'ยาน้ำบรรจุขวด';
+
+let inkFn = null;   // ฟังก์ชันขยับเส้นใต้แท็บของหน้าที่เปิดอยู่
+window.addEventListener('resize', debounce(() => { if (inkFn) inkFn(); }, 150));
+
+function detailHead(b, c, ct, active) {
+  const ok = b.status === 'active';
+  return '<div class="res-hero">' +
+    '<div class="res-badges">' +
+      (ok ? '<span class="pill pill-ok">' + svg('check-c') + 'ขึ้นทะเบียน อย. แล้ว</span>'
+          : '<span class="pill pill-bad">' + svg('ban') + 'ยกเลิกทะเบียนแล้ว</span>') +
+      (TTS_OK ? '<button class="speak" type="button" id="readDrug" aria-pressed="false" style="margin-inline-start:auto">' +
+                  svg('speaker') + '<span>ฟังข้อมูลยา</span></button>' : '') +
+    '</div>' +
+    '<h1 class="res-title">' + esc(b.productName) + '</h1>' +
+    '<p class="res-generic">' + esc(c.genericEn || c.genericTh) + '</p>' +
+    '<div class="res-tags">' +
+      '<span class="pill pill-red">' + esc(ct ? ct.short : '') + '</span>' +
+      '<span class="pill pill-grey">Reg. No. ' + esc(b.regNo) + '</span>' +
+      '<span class="pill pill-grey" style="font-family:var(--f-body)">' + esc(packLabel(b.packaging)) + '</span>' +
+    '</div>' +
+    '<div class="tabs" role="tablist" aria-label="ข้อมูลยา">' +
+      TABS.map(t =>
+        '<button class="tab" type="button" role="tab" id="tab-' + t[0] + '" data-tab="' + t[0] + '"' +
+        ' aria-selected="' + (t[0] === active) + '" aria-controls="panel-' + t[0] + '"' +
+        ' tabindex="' + (t[0] === active ? '0' : '-1') + '">' + svg(t[2]) + esc(t[1]) + '</button>'
+      ).join('') +
+      '<span class="tab-ink" id="tabInk" aria-hidden="true"></span>' +
+    '</div>' +
+  '</div>';
+}
+
+function tabPanel(name, active, inner) {
+  return '<div class="tabpanel" id="panel-' + name + '" role="tabpanel" aria-labelledby="tab-' + name + '"' +
+    (name === active ? '' : ' hidden') + '>' + inner + '</div>';
+}
+
+function infoRow(icon, label, value, pre) {
+  return '<div class="inforow"><span class="ico">' + svg(icon) + '</span><div>' +
+    '<b>' + label + '</b><span' + (pre ? ' class="pre"' : '') + '>' + esc(value || 'ไม่มีข้อมูล') + '</span>' +
+  '</div></div>';
+}
+
+// ตอนที่ 2 — เนื้อหา 3 แท็บและส่วนท้าย
+function panelUse(b, c) {
+  const acc = c.indications.length
+    ? '<div class="acc">' + c.indications.map((t, i) =>
+        '<div class="acc-item">' +
+          '<button class="acc-btn" type="button" aria-expanded="' + (i === 0) + '" aria-controls="acb-' + i + '">' +
+            '<span class="chev">' + svg('caret') + '</span><span>' + esc(t) + '</span></button>' +
+          '<div class="acc-body' + (i === 0 ? ' open' : '') + '" id="acb-' + i + '"><div>' +
+            '<p>อ้างอิงจากข้อมูลบนฉลากยาของสูตรตำรับ ' + esc(c.formName) + '</p>' +
+          '</div></div>' +
+        '</div>').join('') + '</div>'
+    : '<p class="muted">ไม่มีข้อมูลข้อบ่งใช้ในระบบ</p>';
+
+  const firstWarn = c.warnings.length
+    ? '<div class="warnbox"><h4>' + svg('warning') + 'ข้อควรระวังสำคัญ</h4>' +
+        '<ul><li>' + svg('alert') + '<span>' + esc(c.warnings[0].text) + '</span></li></ul>' +
+        '<p class="text-xs mt-3" style="color:var(--ink-3)">ดูคำเตือนทั้งหมด ' + c.warnings.length + ' ข้อในแท็บ “คำเตือน”</p>' +
+      '</div>'
+    : '';
+
+  return '<div class="panel-head"><h3>' + svg('clipboard') + 'ข้อบ่งใช้และสรรพคุณ</h3></div>' +
+    acc +
+    infoRow('pill', 'ตัวยาสำคัญและปริมาณ', c.ingredients.map(i => i.name + (i.strength ? ' ' + i.strength : '')).join(' + ')) +
+    infoRow('factory', 'ผู้ผลิต / ผู้รับอนุญาต', b.licensee) +
+    infoRow('box', 'รูปแบบยา', b.dosageForm || c.dosageForm) +
+    firstWarn;
+}
+
+function panelDose(b, c) {
+  const card = c.dosageAdult
+    ? '<div class="dosecard">' +
+        '<div class="dosecard-h"><b>สำหรับผู้ใหญ่</b><span class="pill">' + esc(packLabel(b.packaging)) + '</span></div>' +
+        '<dl class="dosecard-g">' +
+          '<div><dt>ขนาดรับประทาน</dt><dd>' + esc(c.dosageAdult) + '</dd></div>' +
+          '<div><dt>รูปแบบยา</dt><dd style="font-size:1rem">' + esc(b.dosageForm || c.dosageForm || '—') + '</dd></div>' +
+        '</dl>' +
+        '<p class="dosecard-f">ระบบครอบคลุมเฉพาะสูตรตำรับสำหรับผู้ใหญ่ กรณีใช้ในเด็กโปรดปรึกษาแพทย์หรือเภสัชกร</p>' +
+      '</div>'
+    : '';
+
+  return '<div class="panel-head"><h3>' + svg('clock') + 'ขนาดและวิธีใช้ยาที่ถูกต้อง</h3></div>' +
+    card +
+    infoRow('clipboard', 'ข้อความเต็มตามฉลากยา', c.dosage, true) +
+    '<div class="okbox">' + svg('check-c') + '<div><b>การเก็บรักษา</b>' +
+      '<p>เก็บที่อุณหภูมิห้อง ไม่เกิน 30°C ให้พ้นแสงแดดและความชื้น เก็บให้พ้นมือเด็ก</p></div></div>';
+}
+
+function panelWarn(c) {
+  const list = c.warnings.length
+    ? '<div class="warnbox"><h4>' + svg('warning') + 'อ่านก่อนใช้ยาทุกครั้ง</h4><ul>' +
+        c.warnings.map(w =>
+          '<li>' + svg(w.level === 'danger' ? 'ban' : 'alert') + '<span>' + esc(w.text) + '</span></li>'
+        ).join('') +
+      '</ul></div>'
+    : '<div class="notice is-warn">' + svg('warning') + '<div><p>ยังไม่มีข้อมูลคำเตือนของสูตรตำรับนี้ในฐานข้อมูล ' +
+        'โปรดอ่านคำเตือนจากฉลากและเอกสารกำกับยาของผลิตภัณฑ์จริง</p></div></div>';
+
+  return '<div class="panel-head"><h3>' + svg('warning') + 'ข้อควรระวังและคำเตือน</h3></div>' +
+    list +
+    '<div class="notice is-danger mt-4">' + svg('alert') + '<div><p>หากมีอาการแพ้ยา เช่น ผื่นขึ้น หน้าบวม หายใจลำบาก ' +
+      'หรืออาการไม่ดีขึ้นตามระยะเวลาที่ระบุ ให้หยุดใช้ยาและพบแพทย์หรือเภสัชกรทันที</p></div></div>';
+}
+
+function detailFoot() {
+  return '<div class="res-foot">' +
+    '<div class="res-actions">' +
+      '<a class="btn btn-primary" href="#/scan">' + svg('camera') + 'ถ่ายภาพฉลากใหม่</a>' +
+      '<a class="btn btn-outline" href="#/search">' + svg('search') + 'ค้นหายาชนิดอื่น</a>' +
+    '</div>' +
+    '<p class="disclaimer">' + svg('info') + '<span>ข้อมูลนี้เป็นข้อมูลอ้างอิงเพื่อการศึกษา ' +
+      'ชื่อผลิตภัณฑ์ เลขทะเบียน ผู้รับอนุญาต และสถานะทะเบียน อ้างอิงจากข้อมูลทะเบียนยาของ อย. ' +
+      'ส่วนข้อบ่งใช้ ขนาดการใช้ และคำเตือน จัดทำโดยคณะผู้จัดทำตามสูตรตำรับ ' +
+      'กรุณาอ่านฉลากจากผลิตภัณฑ์จริงและปรึกษาแพทย์หรือเภสัชกรก่อนใช้ยา</span></p>' +
+  '</div>';
+}
+
+// ตอนที่ 3 — ประกอบหน้า
+function renderDetail(id, tab) {
+  const host = $('#detailBody');
+  const b = brand(id);
+
+  if (!b) {
+    host.innerHTML = '<div class="state"><div class="state-ico is-warn">' + svg('search') + '</div>' +
+      '<h2>ไม่พบข้อมูลยาที่ต้องการ</h2><p>รายการนี้อาจถูกลบออกจากฐานข้อมูลแล้ว</p>' +
+      '<div class="state-actions"><a class="btn btn-primary" href="#/search">กลับไปหน้าค้นหา</a></div></div>';
+    inkFn = null;
+    return;
+  }
+
+  pushRecent(b.id);
+  const c = content(b), ct = cat(b.categoryId);
+  const active = TABS.some(t => t[0] === tab) ? tab : 'use';
+  const others = brandsOf(b.formulationId).filter(x => x.id !== b.id);
+
+  host.innerHTML =
+    '<div class="page-head"><a class="backlink" href="#/search" aria-label="กลับไปหน้าค้นหา">' + svg('back') + '</a></div>' +
+    '<div class="rescard">' +
+      detailHead(b, c, ct, active) +
+      tabPanel('use',  active, panelUse(b, c)) +
+      tabPanel('dose', active, panelDose(b, c)) +
+      tabPanel('warn', active, panelWarn(c)) +
+      detailFoot() +
+    '</div>' +
+    (others.length
+      ? '<div class="sec-sm" style="max-width:46rem; margin-inline:auto">' +
+          '<h2 style="font-size:1.35rem">ยี่ห้ออื่นที่ใช้สูตรตำรับเดียวกัน</h2>' +
+          '<p class="text-sm muted mt-2">ตัวยาสำคัญเหมือนกัน แต่คนละยี่ห้อและคนละเลขทะเบียนตำรับยา</p>' +
+          '<ul class="rows">' + others.map(rowItem).join('') + '</ul>' +
+        '</div>'
+      : '');
+
+  paintIcons(host);
+  bindDetail(host, b, c, ct);
+}
+
 
 // boot
 async function start() {
@@ -723,3 +1031,128 @@ function showLoadError(err) {
 }
 
 start();
+
+// ตอนที่ 4 — ผูกการทำงาน
+function bindDetail(host, b, c, ct) {
+  /* ---- แท็บ ---- */
+  const tabs = $$('[data-tab]', host);
+
+  function moveInk() {
+    const cur = $('[data-tab][aria-selected="true"]', host);
+    const ink = $('#tabInk', host);
+    if (!cur || !ink) return;
+    ink.style.width = cur.offsetWidth + 'px';
+    ink.style.transform = 'translateX(' + cur.offsetLeft + 'px)';
+  }
+
+  function switchTab(name) {
+    tabs.forEach(t => {
+      const on = t.dataset.tab === name;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+    });
+    TABS.forEach(t => { $('#panel-' + t[0], host).hidden = t[0] !== name; });
+    // ไม่หยุดเสียงตอนสลับแท็บ:: ปุ่มฟังข้อมูลยาอ่านข้อมูลทั้งหน้าอยู่แล้ว สลับแท็บแล้วอ่านต่อได้
+    moveInk();
+    history.replaceState(null, '', '#/drug/' + encodeURIComponent(b.id) + '/' + name);
+  }
+
+  $('.tabs', host).addEventListener('click', e => {
+    const t = e.target.closest('[data-tab]');
+    if (t) switchTab(t.dataset.tab);
+  });
+
+  $('.tabs', host).addEventListener('keydown', e => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    const i = tabs.indexOf(document.activeElement);
+    let n = e.key === 'Home'      ? 0
+          : e.key === 'End'       ? tabs.length - 1
+          : e.key === 'ArrowLeft' ? i - 1
+          : i + 1;
+    n = (n + tabs.length) % tabs.length;
+    tabs[n].focus();
+    switchTab(tabs[n].dataset.tab);
+  });
+
+  inkFn = moveInk;
+  requestAnimationFrame(moveInk);
+  setTimeout(moveInk, 340);   // วัดซ้ำหลังฟอนต์โหลดและแอนิเมชันเปลี่ยนหน้าจบ
+
+  /* ---- หัวข้อพับ-กาง ---- */
+  $$('.acc-btn', host).forEach(btn => btn.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    $('#' + btn.getAttribute('aria-controls'), host).classList.toggle('open', !open);
+  }));
+
+  /* ---- ฟังข้อมูลยา ---- */
+  const read = $('#readDrug', host);
+  if (read) read.addEventListener('click', () => {
+    speakText([
+      speakName(b.productName), c.genericTh,
+      'กลุ่ม ' + (ct ? ct.short : ''),
+      'เลขทะเบียน ' + b.regNo,
+      c.indications.length ? 'ข้อบ่งใช้ ' + c.indications.join(' ') : '',
+      c.dosageAdult ? 'ขนาดยา ' + c.dosageAdult : '',
+      c.warnings.length ? 'คำเตือน ' + c.warnings.map(w => w.text).join(' ') : '',
+    ].filter(Boolean).join('. '), read);
+  });
+}
+
+/*  ABOUT  */
+function renderAbout() {
+  const m = DB.meta || {};
+  $('#aboutBody').innerHTML =
+    '<div class="page-head"><a class="backlink" href="#/" aria-label="กลับหน้าหลัก">' + svg('back') + '</a>' +
+      '<div style="flex:1 1 16rem"><h1>เกี่ยวกับระบบ MedCheck</h1>' +
+      '<p>เครื่องมือต้นแบบที่ช่วยให้ผู้บริโภคตรวจสอบข้อมูลยาสามัญประจำบ้านได้ด้วยตนเอง ' +
+      'โดยเชื่อมโยงการอ่านฉลากด้วย OCR เข้ากับข้อมูลทะเบียนยาของหน่วยงานภาครัฐ</p></div>' +
+    '</div>' +
+
+    '<div style="display:grid; gap:1.1rem">' +
+      '<div class="notice is-ok reveal">' + svg('check-c') + '<div><h4>ระบบครอบคลุมอะไรบ้าง</h4><ul>' +
+        '<li>ยาสามัญประจำบ้าน (OTC) ที่ซื้อได้เองโดยไม่ต้องมีใบสั่งแพทย์</li>' +
+        '<li>' + DB.categories.length + ' กลุ่มอาการ ได้แก่ ' + DB.categories.map(x => esc(x.short)).join(', ') + '</li>' +
+        '<li>เฉพาะสูตรตำรับสำหรับผู้ใหญ่</li>' +
+        '<li>เฉพาะยาน้ำบรรจุขวด และยาเม็ดบรรจุแผง</li>' +
+      '</ul></div></div>' +
+
+      '<div class="notice is-danger reveal">' + svg('ban') + '<div><h4>ระบบไม่ครอบคลุมอะไรบ้าง</h4><ul>' +
+        '<li>ยาที่ต้องสั่งจ่ายโดยแพทย์</li>' +
+        '<li>ยากลุ่มเฉพาะทางอื่น เช่น ยาสำหรับโรคตา ยารักษาแผลไฟไหม้ ยาสำหรับโรคผิวหนัง และยาบรรเทาปวดกล้ามเนื้อ</li>' +
+        '<li>สูตรตำรับที่ระบุไว้เฉพาะสำหรับใช้ในเด็ก</li>' +
+        '<li>บรรจุภัณฑ์รูปแบบอื่น เช่น ยาขี้ผึ้งบรรจุกระปุก ยาผงบรรจุซอง ยาเหน็บทวาร และยาสวนทวาร</li>' +
+        '<li>ฉลากที่ชำรุด เลือนราง หรือมีคุณภาพภาพไม่เพียงพอต่อการอ่านด้วย OCR</li>' +
+      '</ul></div></div>' +
+
+      '<div class="notice is-warn reveal">' + svg('db') + '<div><h4>ข้อมูลแต่ละส่วนมาจากไหน</h4>' +
+        '<p><b>จากฐานข้อมูลทะเบียนยา อย.</b> — ชื่อผลิตภัณฑ์ เลขทะเบียนตำรับยา ชื่อผู้รับอนุญาต ประเภทยาตามกฎหมาย และสถานะทะเบียน</p>' +
+        '<p class="mt-2"><b>จัดทำโดยคณะผู้จัดทำ</b> — ชื่อสามัญทางยา ตัวยาสำคัญ ขนาดการใช้ ข้อบ่งใช้ คำเตือน และการจัดหมวดหมู่ตามกลุ่มอาการ ' +
+          'จัดเก็บตามสูตรตำรับ เนื่องจากข้อมูลส่วนนี้ไม่ได้แสดงไว้อย่างเป็นระบบในฐานข้อมูลของ อย.</p>' +
+        '<p class="text-sm mt-3" style="color:var(--ink-3)">' +
+          esc((m.sourceNote || '') + (m.updatedAt ? ' · ปรับปรุงล่าสุด ' + m.updatedAt : '')) +
+          ' · ปัจจุบันมี ' + DB.categories.length + ' กลุ่มอาการ ' + DB.formulations.length + ' สูตรตำรับ และ ' + DB.brands.length + ' ยี่ห้อ</p>' +
+      '</div></div>' +
+
+      '<div class="notice reveal">' + svg('eye') + '<div><h4>ความเป็นส่วนตัว</h4><ul>' +
+        '<li>รายการ "ดูล่าสุด" เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่เกิน 5 รายการ</li>' +
+        '<li>ปุ่มพูดเพื่อค้นหาใช้ระบบฟังเสียงของเบราว์เซอร์ ซึ่งบางเบราว์เซอร์ (เช่น Chrome) ส่งเสียงไปแปลงเป็นข้อความที่เซิร์ฟเวอร์ของผู้ให้บริการ</li>' +
+        '<li>ผู้ใช้เลือกพิมพ์ค้นหาแทนการพูดได้เสมอ</li>' +
+      '</ul></div></div>' +
+
+      '<div class="notice reveal">' + svg('link') + '<div><h4>แหล่งอ้างอิง</h4><ul>' +
+        (m.references || []).map(r =>
+          '<li><a href="' + esc(r.url) + '" target="_blank" rel="noopener noreferrer">' + esc(r.label) + '</a></li>'
+        ).join('') +
+      '</ul></div></div>' +
+
+      '<div class="notice is-danger reveal">' + svg('warning') + '<div><h4>ข้อจำกัดความรับผิดชอบ</h4>' +
+        '<p>ระบบนี้เป็นเครื่องมือต้นแบบเพื่อการศึกษาและช่วยอ่านฉลากยาเท่านั้น <b>ไม่ใช่คำแนะนำทางการแพทย์</b> ' +
+        'ข้อมูลที่แสดงอาจไม่ตรงกับฉลากยาฉบับล่าสุดของผลิตภัณฑ์ที่คุณถืออยู่ ' +
+        'โปรดอ่านฉลากและเอกสารกำกับยาจากผลิตภัณฑ์จริงเสมอ และปรึกษาแพทย์หรือเภสัชกรก่อนใช้ยา</p>' +
+      '</div></div>' +
+    '</div>';
+
+  paintIcons($('#view-about'));
+}
