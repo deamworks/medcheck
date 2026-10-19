@@ -143,7 +143,8 @@ function parseHash() {
 }
 
 function route() {
-    stopSpeech();   
+    stopSpeech();
+    camClose();     // ออกจากหน้าไหนก็ตาม ต้องปิดกล้องเสมอ
     currentRoute = parseHash();
     const navName = currentRoute.name === 'detail' ? 'search' : currentRoute.name;
 
@@ -1001,6 +1002,135 @@ function renderDetail(id, tab) {
 }
 
 
+/*  SCAN · หน้าถ่ายรูปฉลากยา  */
+let camStream = null;      // กระแสภาพจากกล้อง เก็บไว้เพื่อสั่งปิดทีหลัง
+let camUrl    = null;      // ที่อยู่ชั่วคราวของภาพที่ถ่ายได้
+
+// ข้อความสถานะใต้กรอบภาพ
+function camSay(text) {
+  const m = $('#camMsg');
+  if (!m) return;
+  m.textContent = text || '';
+  m.hidden = !text;
+}
+
+// idle = ยังไม่เปิดกล้อง · live = กล้องทำงาน · shot = ได้ภาพแล้ว
+function camState(state) {
+  const stage = $('#camStage');
+  if (!stage) return;
+  stage.dataset.state = state;
+  $('#camStart').hidden = state !== 'idle';
+  $('#camShoot').hidden = state !== 'live';
+  $('#camRetry').hidden = state !== 'shot';
+}
+
+async function camOpen() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    camSay('เบราว์เซอร์นี้ใช้กล้องไม่ได้ กรุณาเลือกภาพจากเครื่องแทน');
+    return;
+  }
+
+  camSay('กำลังเปิดกล้อง…');
+
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: { ideal: 'environment' },   // กล้องหลัง ถ้ามี
+               width:  { ideal: 1920 },
+               height: { ideal: 1080 } }
+    });
+  } catch (err) {
+    camFail(err);
+    return;
+  }
+
+  const v = $('#camView');
+  v.srcObject = camStream;
+  await v.play();
+
+  camState('live');
+  camSay('');
+}
+
+function camFail(err) {
+  console.error(err);
+  camStream = null;
+  camState('idle');
+
+  if (err.name === 'NotAllowedError') {
+    camSay('ไม่ได้รับอนุญาตให้ใช้กล้อง กรุณาอนุญาตในการตั้งค่าของเบราว์เซอร์ หรือเลือกภาพจากเครื่องแทน');
+  } else if (err.name === 'NotFoundError') {
+    camSay('ไม่พบกล้องในอุปกรณ์นี้ กรุณาเลือกภาพจากเครื่องแทน');
+  } else if (err.name === 'NotReadableError') {
+    camSay('กล้องกำลังถูกใช้งานโดยแอปอื่น กรุณาปิดแอปนั้นแล้วลองใหม่');
+  } else {
+    camSay('เปิดกล้องไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+  }
+}
+
+// คัดลอกภาพขณะนั้นลงพื้นที่วาดภาพ แล้วแปลงเป็นไฟล์
+function camShoot() {
+  const v = $('#camView');
+  const c = $('#camWork');
+  const w = v.videoWidth, h = v.videoHeight;   // ขนาดจริง ไม่ใช่ขนาดที่แสดง
+
+  if (!w || !h) { camSay('ภาพจากกล้องยังไม่พร้อม รอสักครู่แล้วลองใหม่'); return; }
+
+  c.width = w;
+  c.height = h;
+  c.getContext('2d').drawImage(v, 0, 0, w, h);
+
+  c.toBlob(blob => {
+    if (!blob) { camSay('บันทึกภาพไม่สำเร็จ กรุณาถ่ายใหม่'); return; }
+    camShow(blob);
+    readLabel(blob);
+  }, 'image/jpeg', 0.92);
+
+  camClose();          // ได้ภาพแล้วปิดกล้องทันที ไม่เปิดค้างไว้
+  camState('shot');
+}
+
+function camShow(file) {
+  if (camUrl) URL.revokeObjectURL(camUrl);    // คืนหน่วยความจำของภาพเดิม
+  camUrl = URL.createObjectURL(file);
+  $('#camShot').src = camUrl;
+  camState('shot');
+}
+
+function camClose() {
+  if (!camStream) return;
+  camStream.getTracks().forEach(t => t.stop());
+  camStream = null;
+  const v = $('#camView');
+  if (v) v.srcObject = null;
+}
+
+function camReset() {
+  if (camUrl) { URL.revokeObjectURL(camUrl); camUrl = null; }
+  $('#camShot').removeAttribute('src');
+  camSay('');
+  camOpen();
+}
+
+// ส่งภาพไปอ่านข้อความ — รอเส้นทางฝั่งเซิร์ฟเวอร์ จึงยังแจ้งสถานะไว้ก่อน
+function readLabel(file) {
+  camSay('ได้ภาพแล้ว ขนาด ' + Math.round(file.size / 1024) + ' กิโลไบต์ · ส่วนอ่านข้อความจากฉลากยังอยู่ระหว่างพัฒนา');
+}
+
+$('#camStart').addEventListener('click', camOpen);
+$('#camShoot').addEventListener('click', camShoot);
+$('#camRetry').addEventListener('click', camReset);
+
+$('#camFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  camClose();
+  camShow(file);
+  readLabel(file);
+  e.target.value = '';          // เลือกไฟล์เดิมซ้ำได้
+});
+
+
 // boot
 async function start() {
   paintIcons();
@@ -1034,7 +1164,7 @@ start();
 
 // ตอนที่ 4 — ผูกการทำงาน
 function bindDetail(host, b, c, ct) {
-  /* ---- แท็บ ---- */
+  /* แท็บ */
   const tabs = $$('[data-tab]', host);
 
   function moveInk() {
@@ -1079,14 +1209,14 @@ function bindDetail(host, b, c, ct) {
   requestAnimationFrame(moveInk);
   setTimeout(moveInk, 340);   // วัดซ้ำหลังฟอนต์โหลดและแอนิเมชันเปลี่ยนหน้าจบ
 
-  /* ---- หัวข้อพับ-กาง ---- */
+  /*  หัวข้อพับ-กาง */
   $$('.acc-btn', host).forEach(btn => btn.addEventListener('click', () => {
     const open = btn.getAttribute('aria-expanded') === 'true';
     btn.setAttribute('aria-expanded', String(!open));
     $('#' + btn.getAttribute('aria-controls'), host).classList.toggle('open', !open);
   }));
 
-  /* ---- ฟังข้อมูลยา ---- */
+  /*  ฟังข้อมูลยา */
   const read = $('#readDrug', host);
   if (read) read.addEventListener('click', () => {
     speakText([

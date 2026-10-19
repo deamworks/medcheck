@@ -1410,3 +1410,47 @@ html.entered .hero-note{animation-delay:380ms}
 
 html.entered .hdr{animation:hdrDrop 640ms var(--ez-out) both}
 @keyframes hdrDrop{from{opacity:0; transform:translateY(-100%)} to{opacity:1; transform:none}}
+
+/*  SCAN · หน้าถ่ายรูปฉลากยา  */
+.camstage{position:relative; margin-top:1.3rem; aspect-ratio:4/3; max-height:68vh;
+  border-radius:var(--r-lg); overflow:hidden; background:var(--dark); border:1.5px solid var(--dark-line);
+  display:grid; place-items:center}
+.camstage>video,.camstage>img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none}
+.camstage[data-state="live"]>video{display:block}
+.camstage[data-state="shot"]>img{display:block}
+
+/* ข้อความชวนกดก่อนเปิดกล้อง */
+.camhint{display:grid; justify-items:center; gap:.9rem; padding:1.5rem; text-align:center; color:var(--dark-ink-2)}
+.camhint svg{width:3.4rem; height:3.4rem}
+.camhint p{font-size:1rem; line-height:1.8}
+.camstage:not([data-state="idle"]) .camhint{display:none}
+
+/* กรอบนำถ่าย เห็นเฉพาะตอนกล้องทำงาน */
+.camframe{position:absolute; inset:12% 8%; border-radius:var(--r); pointer-events:none; opacity:0;
+  box-shadow:0 0 0 100vmax rgba(0,0,0,.28);
+  background:
+    linear-gradient(var(--primary),var(--primary)) left top/2.2rem .2rem no-repeat,
+    linear-gradient(var(--primary),var(--primary)) left top/.2rem 2.2rem no-repeat,
+    linear-gradient(var(--primary),var(--primary)) right top/2.2rem .2rem no-repeat,
+    linear-gradient(var(--primary),var(--primary)) right top/.2rem 2.2rem no-repeat,
+    linear-gradient(var(--primary),var(--primary)) left bottom/2.2rem .2rem no-repeat,
+    linear-gradient(var(--primary),var(--primary)) left bottom/.2rem 2.2rem no-repeat,
+    linear-gradient(var(--primary),var(--primary)) right bottom/2.2rem .2rem no-repeat,
+    linear-gradient(var(--primary),var(--primary)) right bottom/.2rem 2.2rem no-repeat;
+  transition:opacity 260ms var(--ez-out)}
+.camstage[data-state="live"] .camframe{opacity:1}
+
+/* แถวปุ่ม */
+.camctl{display:flex; gap:.75rem; flex-wrap:wrap; margin-top:1.1rem}
+.camctl .btn{flex:1 1 13rem}
+
+/* คำแนะนำการถ่าย */
+.camtips{margin-top:1.4rem; display:grid; gap:.55rem; color:var(--ink-2); font-size:.95rem; line-height:1.7}
+.camtips li{display:flex; gap:.6rem; align-items:flex-start}
+.camtips li::before{content:""; flex:none; width:.42rem; height:.42rem; margin-top:.62rem;
+  border-radius:50%; background:var(--primary)}
+
+@media (max-width:620px){
+  .camstage{aspect-ratio:3/4}
+  .camctl .btn{flex:1 1 100%}
+}
