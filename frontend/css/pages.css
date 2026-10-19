@@ -1454,3 +1454,17 @@ html.entered .hdr{animation:hdrDrop 640ms var(--ez-out) both}
   .camstage{aspect-ratio:3/4}
   .camctl .btn{flex:1 1 100%}
 }
+
+/* ผลการอ่านฉลาก */
+.camresult{margin-top:1.2rem}
+.camresult .state{padding-block:clamp(1.4rem,3vw,2rem)}
+.camresult .rows{margin-top:1rem}
+
+/* ระหว่างส่งภาพไปอ่าน */
+.camctl.is-busy{opacity:.55; pointer-events:none}
+.camstage.is-sending::after{content:""; position:absolute; inset:0; background:rgba(0,0,0,.45)}
+.camstage.is-sending::before{content:""; position:absolute; z-index:2; width:3rem; height:3rem;
+  border-radius:50%; border:3px solid rgba(255,255,255,.28); border-top-color:#fff;
+  animation:camSpin 760ms linear infinite}
+@keyframes camSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.camstage.is-sending::before{animation-duration:2.4s}}

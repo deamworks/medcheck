@@ -19,7 +19,6 @@ const norm = t => toArabic(t).toLowerCase().replace(RE_THAI_MARK, '').replace(/[
 const regKey = t => toArabic(t).toUpperCase().replace(/[^0-9A-Z/]/g, '');
 
 // database
-
 let DB = null;
 async function loadDB() {
     const res = await  fetch('data/drugs.json', { cache: 'no-cache' });
