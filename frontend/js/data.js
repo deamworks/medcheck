@@ -35,6 +35,19 @@ const formsOf = cid => DB.formulations.filter(f => f.categoryId === cid);
 const brandsInCat = cid => DB.brands.filter(b => b.categoryId === cid);
 const brandsOf = fid => DB.brands.filter(b => b.formulationId === fid);
 
+// รูปแบบเลขทะเบียนหลังจัดรูปแล้ว เช่น 2A721/28
+const RE_REG_KEY = /\d[A-Z]\d{1,4}\/\d{2,4}/;
+
+// ค้นยี่ห้อจากเลขทะเบียน · จัดรูปทั้งสองฝั่งก่อนเทียบ เพราะแต่ละที่เว้นวรรคไม่เหมือนกัน
+// รับข้อความที่มีคำนำหน้าได้ด้วย เช่น "Reg. No. 2A 721/28" จะดึงเฉพาะส่วนเลขทะเบียนมาเทียบ
+const brandByReg = reg => {
+    const raw = regKey(reg);
+    if (!raw) return null;
+    const m = raw.match(RE_REG_KEY);
+    const key = m ? m[0] : raw;
+    return DB.brands.find(b => regKey(b.regNo) === key) || null;
+};
+
 // storage
 function lsGet(key, fallback) {
     try {
