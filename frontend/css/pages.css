@@ -1412,7 +1412,10 @@ html.entered .hdr{animation:hdrDrop 640ms var(--ez-out) both}
 @keyframes hdrDrop{from{opacity:0; transform:translateY(-100%)} to{opacity:1; transform:none}}
 
 /*  SCAN · หน้าถ่ายรูปฉลากยา  */
-.camstage{position:relative; margin-top:1.3rem; aspect-ratio:4/3; max-height:68vh;
+/* คอลัมน์เดียวกึ่งกลาง · กรอบภาพถูกบีบตามสัดส่วนเมื่อชนเพดานความสูง จึงต้องจัดกึ่งกลางเอง */
+.camcol{max-width:46rem; margin-inline:auto}
+
+.camstage{position:relative; margin-top:1.3rem; aspect-ratio:4/3; max-height:68vh; margin-inline:auto;
   border-radius:var(--r-lg); overflow:hidden; background:var(--dark); border:1.5px solid var(--dark-line);
   display:grid; place-items:center}
 .camstage>video,.camstage>img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none}
