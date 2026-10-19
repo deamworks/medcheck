@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 
-  <!-- ลำดับสำคัญมาก ห้ามสลับ -->
+
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/shell.css">
@@ -266,7 +266,47 @@
     </section>
 
     <section class="view" id="view-scan" hidden>
-      <div class="wrap sec"><h1>ถ่ายรูปฉลากยา</h1></div>
+      <div class="wrap sec">
+        <div class="page-head">
+          <a class="backlink" href="#/" aria-label="กลับหน้าหลัก"><span data-ico="back" aria-hidden="true"></span></a>
+          <div style="flex:1 1 16rem">
+            <h1>ถ่ายรูปฉลากยา</h1>
+            <p>ถ่ายให้เห็นชื่อยาและเลขทะเบียน อย. ชัดเจน ในที่ที่มีแสงเพียงพอ</p>
+          </div>
+        </div>
+
+        <div class="camstage" id="camStage" data-state="idle">
+          <video id="camView" playsinline muted autoplay></video>
+          <img id="camShot" alt="ภาพฉลากยาที่ถ่ายไว้">
+          <div class="camhint">
+            <span data-ico="camera" aria-hidden="true"></span>
+            <p>กดเปิดกล้องเพื่อถ่ายภาพฉลากยา<br>หรือเลือกภาพที่มีอยู่แล้วในเครื่อง</p>
+          </div>
+          <div class="camframe" aria-hidden="true"></div>
+        </div>
+
+        <p class="q-msg" id="camMsg" aria-live="polite" hidden></p>
+
+        <div class="camctl">
+          <button class="btn btn-primary btn-lg" id="camStart" type="button">
+            <span data-ico="camera" aria-hidden="true"></span>เปิดกล้อง</button>
+          <button class="btn btn-primary btn-lg" id="camShoot" type="button" hidden>
+            <span data-ico="scan" aria-hidden="true"></span>ถ่ายภาพฉลาก</button>
+          <button class="btn btn-soft" id="camRetry" type="button" hidden>
+            <span data-ico="refresh" aria-hidden="true"></span>ถ่ายใหม่</button>
+          <label class="btn btn-outline" for="camFile">
+            <span data-ico="upload" aria-hidden="true"></span>เลือกภาพจากเครื่อง</label>
+          <input class="sr-only" id="camFile" type="file" accept="image/*" capture="environment">
+        </div>
+
+        <canvas id="camWork" class="sr-only" aria-hidden="true"></canvas>
+
+        <ul class="camtips">
+          <li>วางฉลากให้อยู่ในกรอบ และถือกล้องให้นิ่ง</li>
+          <li>เลี่ยงแสงสะท้อนจากแผงยาและฟิล์มพลาสติก</li>
+          <li>ถ้าตัวอักษรเล็กมาก ให้ถ่ายใกล้ขึ้นทีละส่วน</li>
+        </ul>
+      </div>
     </section>
 
     <section class="view" id="view-search" hidden>
