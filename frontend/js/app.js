@@ -161,6 +161,7 @@ function route() {
     document.title = TITLES[currentRoute.name] + ' · MedCheck';
 
     if (currentRoute.name === 'home')   { renderHome(); renderRecent(); }
+    if (currentRoute.name === 'scan')   camReset(false);   // เข้าหน้าสแกนทีไร เริ่มใหม่เสมอ
     if (currentRoute.name === 'search') renderSearch(currentRoute.param);
     if (currentRoute.name === 'detail') renderDetail(currentRoute.param, currentRoute.sub);
     if (currentRoute.name === 'about')  renderAbout();
@@ -1003,8 +1004,12 @@ function renderDetail(id, tab) {
 
 
 /*  SCAN · หน้าถ่ายรูปฉลากยา  */
-let camStream = null;      // กระแสภาพจากกล้อง เก็บไว้เพื่อสั่งปิดทีหลัง
-let camUrl    = null;      // ที่อยู่ชั่วคราวของภาพที่ถ่ายได้
+const SCAN_API = '';       // ที่อยู่เส้นทาง /scan ฝั่งเซิร์ฟเวอร์ · เว้นว่าง = ใช้ตัวจำลองคำตอบ
+
+let camStream   = null;    // กระแสภาพจากกล้อง เก็บไว้เพื่อสั่งปิดทีหลัง
+let camUrl      = null;    // ที่อยู่ชั่วคราวของภาพที่ถ่ายได้
+let camFileLast = null;    // ไฟล์ภาพล่าสุด ใช้ตอนกดลองใหม่
+let camFromCam  = false;   // ภาพล่าสุดมาจากกล้อง หรือจากการเลือกไฟล์
 
 // ข้อความสถานะใต้กรอบภาพ
 function camSay(text) {
@@ -1015,13 +1020,25 @@ function camSay(text) {
 }
 
 // idle = ยังไม่เปิดกล้อง · live = กล้องทำงาน · shot = ได้ภาพแล้ว
+// sending = กำลังส่งไปอ่าน · result = ได้ผลลัพธ์แล้ว
 function camState(state) {
   const stage = $('#camStage');
   if (!stage) return;
-  stage.dataset.state = state;
-  $('#camStart').hidden = state !== 'idle';
-  $('#camShoot').hidden = state !== 'live';
-  $('#camRetry').hidden = state !== 'shot';
+
+  // สองสถานะหลังยังคงให้เห็นภาพที่ถ่ายไว้
+  stage.dataset.state = (state === 'sending' || state === 'result') ? 'shot' : state;
+  stage.classList.toggle('is-sending', state === 'sending');
+
+  $('#camStart').hidden  = state !== 'idle';
+  $('#camShoot').hidden  = state !== 'live';
+  $('#camRetry').hidden  = !(state === 'shot' || state === 'sending');
+  $('#camCtl').hidden    = state === 'result';
+  $('#camResult').hidden = state !== 'result';
+
+  // ระหว่างส่ง ปิดปุ่มไว้ก่อน แต่ยังให้เห็นว่ามีปุ่มอะไรบ้าง
+  const busy = state === 'sending';
+  $$('#camCtl button').forEach(b => b.disabled = busy);
+  $('#camCtl').classList.toggle('is-busy', busy);
 }
 
 async function camOpen() {
@@ -1082,6 +1099,7 @@ function camShoot() {
 
   c.toBlob(blob => {
     if (!blob) { camSay('บันทึกภาพไม่สำเร็จ กรุณาถ่ายใหม่'); return; }
+    camFromCam = true;
     camShow(blob);
     readLabel(blob);
   }, 'image/jpeg', 0.92);
@@ -1105,26 +1123,128 @@ function camClose() {
   if (v) v.srcObject = null;
 }
 
-function camReset() {
+// ล้างทุกอย่างกลับสู่สถานะเริ่มต้น · reopen = เปิดกล้องต่อให้เลย
+function camReset(reopen) {
+  camClose();
   if (camUrl) { URL.revokeObjectURL(camUrl); camUrl = null; }
+  camFileLast = null;
   $('#camShot').removeAttribute('src');
+  $('#camResult').innerHTML = '';
   camSay('');
-  camOpen();
+  camState('idle');
+  if (reopen) camOpen();
 }
 
-// ส่งภาพไปอ่านข้อความ — รอเส้นทางฝั่งเซิร์ฟเวอร์ จึงยังแจ้งสถานะไว้ก่อน
-function readLabel(file) {
-  camSay('ได้ภาพแล้ว ขนาด ' + Math.round(file.size / 1024) + ' กิโลไบต์ · ส่วนอ่านข้อความจากฉลากยังอยู่ระหว่างพัฒนา');
+
+/*  SCAN · ส่งภาพไปอ่านข้อความ  */
+
+// ส่งภาพจริงไปยังเส้นทางฝั่งเซิร์ฟเวอร์
+async function sendLabel(file) {
+  if (!SCAN_API) return fakeScan();          // ยังไม่มีเส้นทางจริง จึงใช้ตัวจำลองไปก่อน
+
+  const fd = new FormData();
+  fd.append('image', file, 'label.jpg');
+
+  const res = await fetch(SCAN_API, { method: 'POST', body: fd });
+  if (!res.ok) throw new Error('อ่านฉลากไม่สำเร็จ (รหัส ' + res.status + ')');
+  return res.json();
+}
+
+// ตัวจำลองคำตอบระหว่างรอฝั่งเซิร์ฟเวอร์ · สุ่มให้ครบทั้ง 3 กรณี
+function fakeScan() {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const r = Math.random();
+      if (r < 0.2) { reject(new Error('เชื่อมต่อส่วนอ่านฉลากไม่ได้ กรุณาลองใหม่อีกครั้ง')); return; }
+      if (r < 0.4) { resolve({ found: false }); return; }
+      const b = DB.brands[Math.floor(Math.random() * DB.brands.length)];
+      resolve({ found: true, brandId: b.id });
+    }, 1200);
+  });
+}
+
+// ขั้นตอนทั้งหมดตั้งแต่ได้ภาพจนแสดงผล
+async function readLabel(file) {
+  camFileLast = file;
+  camState('sending');
+  camSay('กำลังอ่านข้อความบนฉลาก กรุณารอสักครู่');
+
+  let res;
+  try {
+    res = await sendLabel(file);
+  } catch (err) {
+    console.error(err);
+    res = { error: err.message || 'เชื่อมต่อไม่สำเร็จ' };
+  }
+
+  camSay('');
+  showResult(res);
+  camState('result');
+}
+
+// การ์ดผลลัพธ์ 3 แบบ ใช้คลาส state ชุดเดียวกับหน้าอื่น
+function showResult(res) {
+  const host = $('#camResult');
+  const b    = res.found ? brand(res.brandId) : null;
+
+  if (res.error) {
+    host.innerHTML =
+      '<div class="state">' +
+        '<div class="state-ico is-warn">' + svg('alert') + '</div>' +
+        '<h2>อ่านฉลากไม่สำเร็จ</h2>' +
+        '<p>' + esc(res.error) + '</p>' +
+        '<div class="state-actions">' +
+          '<button class="btn btn-primary" type="button" id="camAgain">ลองใหม่อีกครั้ง</button>' +
+          '<button class="btn btn-outline" type="button" id="camNew">ถ่ายใหม่</button>' +
+        '</div>' +
+      '</div>';
+
+  } else if (b) {
+    host.innerHTML =
+      '<div class="state">' +
+        '<div class="state-ico is-ok">' + svg('check-c') + '</div>' +
+        '<h2>พบข้อมูลยาที่ตรงกับฉลาก</h2>' +
+        '<p>โปรดตรวจสอบชื่อยาและเลขทะเบียนให้ตรงกับฉลากจริงก่อนใช้ข้อมูล</p>' +
+      '</div>' +
+      '<ul class="rows mt-4">' + rowItem(b) + '</ul>' +
+      '<div class="state-actions">' +
+        '<a class="btn btn-primary" href="#/drug/' + encodeURIComponent(b.id) + '">' +
+          svg('arrow') + 'ดูข้อมูลยา</a>' +
+        '<button class="btn btn-outline" type="button" id="camNew">ถ่ายใหม่</button>' +
+      '</div>';
+
+  } else {
+    host.innerHTML =
+      '<div class="state">' +
+        '<div class="state-ico is-warn">' + svg('search') + '</div>' +
+        '<h2>ไม่พบยาที่ตรงกับฉลากนี้</h2>' +
+        '<p>อาจเป็นเพราะภาพไม่ชัด มีแสงสะท้อนบนฉลาก หรือยานี้ยังไม่อยู่ในขอบเขตของระบบ ' +
+          'ลองถ่ายใหม่ให้เห็นชื่อยาและเลขทะเบียนชัดเจน หรือค้นหาด้วยชื่อยาแทน</p>' +
+        '<div class="state-actions">' +
+          '<button class="btn btn-primary" type="button" id="camNew">ถ่ายใหม่</button>' +
+          '<a class="btn btn-outline" href="#/search">' + svg('search') + 'ค้นหาด้วยชื่อยา</a>' +
+        '</div>' +
+      '</div>';
+  }
+
+  paintIcons(host);
+
+  const again = $('#camAgain', host);
+  if (again) again.addEventListener('click', () => { if (camFileLast) readLabel(camFileLast); });
+
+  const fresh = $('#camNew', host);
+  if (fresh) fresh.addEventListener('click', () => camReset(camFromCam));
 }
 
 $('#camStart').addEventListener('click', camOpen);
 $('#camShoot').addEventListener('click', camShoot);
-$('#camRetry').addEventListener('click', camReset);
+$('#camRetry').addEventListener('click', () => camReset(camFromCam));
 
 $('#camFile').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
   camClose();
+  camFromCam = false;
   camShow(file);
   readLabel(file);
   e.target.value = '';          // เลือกไฟล์เดิมซ้ำได้
