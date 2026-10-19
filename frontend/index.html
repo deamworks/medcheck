@@ -11,34 +11,398 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 
-  <!-- ลำดับสำคัญมาก ห้ามสลับ -->
+
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/shell.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- อ่านค่าที่ผู้ใช้เลือกไว้ก่อนวาดหน้าจอ ไม่งั้นหน้าจะกะพริบเป็นโหมดสว่างแวบหนึ่งก่อน -->
+  <script>
+    try {
+      var fs = JSON.parse(localStorage.getItem('mc.fs') || 'null');
+      if (fs === '2' || fs === '3') document.documentElement.dataset.fs = fs;
+
+      var th = JSON.parse(localStorage.getItem('mc.theme') || 'null');
+      if (th === 'dark' || th === 'light') document.documentElement.dataset.theme = th;
+    } catch (e) {}
+  </script>
 </head>
 <body>
 
-  <a class="skip" href="#app">ข้ามไปเนื้อหาหลัก</a>
+  <div id="intro" aria-hidden="true">
+    <span class="intro-mark" data-ico="scan"></span>
+    <div class="intro-name"><i>Med</i>Check</div>
+    <div class="intro-sub">ระบบสแกนฉลากยาสามัญประจำบ้าน</div>
+    <div class="intro-bar"><i></i></div>
+  </div>
 
-  <main id="app">
-    <section class="view">
+  <a class="skip" href="#main">ข้ามไปเนื้อหาหลัก</a>
+  <header class="hdr">
+    <div class="wrap hdr-in">
+      <a href="#/" class="logo">
+        <span class="logo-mark" data-ico="scan" aria-hidden="true"></span>
+        <span class="logo-tx"><b><i>Med</i>Check</b>
+        <span>ระบบสแกนฉลากยาสามัญประจำบ้าน</span></span>
+      </a>
+
+      <nav class="mainnav" aria-label="เมนูหลัก">
+        <a href="#/" data-nav="home"><span data-ico="home" aria-hidden="true"></span>หน้าหลัก</a>
+        <a href="#/scan" data-nav="scan"><span data-ico="camera" aria-hidden="true"></span>ถ่ายรูป</a>
+        <a href="#/search" data-nav="search"><span data-ico="search" aria-hidden="true"></span>ค้นหา</a>
+        <a href="#/about" data-nav="about"><span data-ico="info" aria-hidden="true"></span>เกี่ยวกับ</a>
+      </nav>
+
+      <div class="hdr-act">
+        <div class="fs-ctl" role="group" aria-label="ปรับขนาดตัวอักษร">
+          <button type="button" data-fs="1" aria-pressed="true" title="ตัวอักษรขนาดปกติ">ก<span class="sr-only">ขนาดปกติ</span></button>
+          <button type="button" data-fs="2" aria-pressed="false" title="ตัวอักษรขนาดใหญ่">กก<span class="sr-only">ขนาดใหญ่</span></button>
+          <button type="button" data-fs="3" aria-pressed="false" title="ตัวอักษรขนาดใหญ่พิเศษ">กกก<span class="sr-only">ขนาดใหญ่พิเศษ</span></button>
+        </div>
+
+        <button class="iconbtn" id="themeBtn" type="button" aria-label="สลับโหมดสีสว่างและมืด"> 
+          <span data-ico="moon" aria-hidden="true"></span></button>
+          <button class="iconbtn menu-btn" id="menuBtn" type="button"
+          aria-expanded="false" aria-controls="drawer" aria-label="เปิดเมนู">
+          <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="view" id="view-home">
+      <div class="hero">
+        <span class="blob b1" aria-hidden="true"></span>
+        <span class="blob b2" aria-hidden="true"></span>
+        <span class="blob b3" aria-hidden="true"></span>
+
+        <div class="wrap hero-in">
+          <div>
+            <span class="eyebrow"><span data-ico="shield" aria-hidden="true"></span>ตรวจสอบกับทะเบียนยา อย.</span>
+
+            <h1>ตรวจสอบยาง่ายๆ<br>แค่<em>ถ่ายรูปฉลากยา</em></h1>
+
+            <p class="hero-lead">
+              อ่านข้อความบนฉลากยาสามัญประจำบ้านด้วยเทคโนโลยี OCR
+              ตรวจสอบเลขทะเบียนตำรับยา แล้วบอกให้ชัดว่า<b>กินอย่างไร</b> และ<b>ต้องระวังอะไร</b>
+              ตัวอักษรใหญ่ อ่านง่าย ฟังเสียงได้
+            </p>
+
+            <div class="hero-cta">
+              <a href="#/scan" class="btn btn-primary btn-lg">
+                <span data-ico="camera" aria-hidden="true"></span>สแกนฉลากยา</a>
+              <a href="#/search" class="btn btn-outline btn-lg">
+                <span data-ico="search" aria-hidden="true"></span>ค้นหาด้วยชื่อยา</a>
+            </div>
+            
+            <div class="hero-stats" id="heroStats"></div>
+            <p class="hero-note">
+              <span data-ico="info" aria-hidden="true"></span>
+              <span>เครื่องมือช่วยอ่านฉลากเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์
+              และไม่ใช้แทนคำวินิจฉัยของแพทย์หรือเภสัชกร</span>
+            </p>
+          </div>
+        
+          
+          <div class="art" aria-hidden="true">
+            <span class="art-gnd"></span>
+
+            <span class="art-bub red p1" data-tip="สแกนฉลากยาด้วยกล้อง"><span class="art-bub-in" data-ico="scan"></span></span>
+            <span class="art-bub p2" data-tip="ฟังเสียงอ่านข้อมูลยา"><span class="art-bub-in" data-ico="speaker"></span></span>
+            <span class="art-bub txt p3" data-tip="ขยายตัวอักษรให้อ่านง่าย"><span class="art-bub-in">กก</span></span>
+
+            <div class="box3d">
+              <div class="box3d-in">
+                <div class="face front">
+                  <div class="fr-band">ยาสามัญประจำบ้าน</div>
+                  <div class="fr-body">
+                    <b class="fr-brand">ชื่อยา</b>
+                    <span class="fr-en">MEDICINE</span>
+                    <span class="fr-gen">ชื่อสามัญ</span>
+                    <span class="fr-ln"></span><span class="fr-ln s"></span>
+                    <span class="fr-pill"><i></i><i></i><i></i><i></i></span>
+                  </div>
+                  <div class="fr-reg"><span>Reg. No.</span><i></i></div>
+                  <i class="art-shine"></i>
+                </div>
+                <div class="face back"></div>
+                <div class="face right"><span class="rl"></span><span class="rl"></span><span class="rl"></span><span class="rb"></span></div>
+                <div class="face left"></div>
+                <div class="face top"></div>
+                <div class="face bottom"></div>
+              </div>
+            </div>
+
+            <div class="art-scan"><i class="k1"></i><i class="k2"></i><i class="k3"></i><i class="k4"></i><i class="bm"></i></div>
+
+            <div class="art-chip c1">
+              <i data-ico="check"></i>
+              <div><b>เลขทะเบียนถูกต้อง</b><span>ตรงกับทะเบียน อย.</span></div>
+            </div>
+            <div class="art-chip c2">
+              <i data-ico="clipboard"></i>
+              <div><b>แสดงข้อมูลยา</b><span>ข้อบ่งใช้ · วิธีใช้ · คำเตือน</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <div class="wrap sec">
+          <div class="center" style="max-width: 46ch; margin-inline:auto; margin-bottom:1.8rem;">
+            <span class="eyebrow"><span data-ico="clipboard" aria-hidden="true"></span>วิธีใช้งาน</span>
+            <h2>ใช้งานง่าย <span style="color: var(--primary)">3 ขั้นตอน</span></h2>
+            <p class="muted mt-2">ไม่ต้องพิมพ์ชื่อยาให้ถูกต้อง แค่เปิดกล้องแล้วเล็งไปที่ฉลาก</p>
+        </div>
+
+
+        <div class="steps" id="stepList">
+
+          <button class="step" type="button" data-step="0" aria-expanded="false">
+              <span class="step-num" aria-hidden="true">01</span>
+              <span class="step-stage">
+                <span class="step-scene" aria-hidden="true">
+                  <span class="sc">
+                    <span class="sc-gnd s1-gnd"></span>
+                    <span class="s1-phone">
+                      <span class="s1-screen">
+                      <span class="s1-shadow"></span>
+                      <span class="s1-label">
+                        <span class="lb-band"></span>
+                        <span class="lb-body">
+                          <span class="lb-title"></span><span class="lb-sub"></span><span class="lb-pill"></span>
+                          <span class="lb-line"></span><span class="lb-line s"></span>
+                          <span class="lb-dots"><i></i><i></i><i></i></span>
+                        </span>
+                        <span class="lb-reg"><i></i></span>
+                      </span>
+                      <span class="s1-vf"><i class="k1"></i><i class="k2"></i><i class="k3"></i><i class="k4"></i><span class="s1-beam"></span></span>
+                      <span class="s1-hint"></span>
+                      <span class="s1-shutter"><i></i></span>
+                      <span class="s1-flash"></span>
+                      </span>
+                    </span>
+                  </span>
+                </span>
+              </span>
+              <h3>ถ่ายรูปฉลากยา</h3>
+              <p>จัดกรอบให้เห็นเลขทะเบียนตำรับยาและชื่อผลิตภัณฑ์บนฉลากให้ชัดเจน</p>
+              <span class="step-hint"><span data-ico="play" aria-hidden="true"></span>ดูภาพเคลื่อนไหว</span>
+          </button>
+
+          <button class="step" type="button" data-step="1" aria-expanded="false">
+              <span class="step-num" aria-hidden="true">02</span>
+              <span class="step-stage">
+                <span class="step-scene" aria-hidden="true">
+                  <span class="sc">
+                    <span class="sc-gnd s2-gnd"></span>
+                    <span class="s2-stage">
+                      <span class="s2-card">
+                      <span class="lb-band"></span>
+                      <span class="s2-body">
+                        <span class="lb-title"></span><span class="lb-sub"></span>
+                        <span class="lb-line"></span><span class="lb-line"></span><span class="lb-line s"></span>
+                        <span class="s2-reg"><span class="s2-hl"></span><em>Reg. No.</em><i></i></span>
+                      </span>
+                      <span class="s2-beam"></span>
+                    </span>
+                    </span>
+                    <span class="sc-chip">
+                      <span class="ci" data-ico="check"></span>
+                      <span><b>เลขทะเบียนถูกต้อง</b><small>ตรงกับทะเบียน อย.</small></span>
+                    </span>                    
+                  </span>
+                </span>
+              </span>
+              <h3>ระบบประมวลผล</h3>
+              <p>OCR อ่านข้อความจากฉลาก แล้วตรวจสอบเลขทะเบียนกับข้อมูลทะเบียนยาของ อย.</p>
+              <span class="step-hint"><span data-ico="play" aria-hidden="true"></span>ดูภาพเคลื่อนไหว</span>
+          </button>
+
+          <button class="step" type="button" data-step="2" aria-expanded="false">
+              <span class="step-num" aria-hidden="true">03</span>
+              <span class="step-stage">
+                <span class="step-scene" aria-hidden="true">
+                  <span class="sc">
+                    <span class="s3-card">
+                      <span class="s3-head">
+                        <span class="ic" data-ico="clipboard"></span>
+                        <span><b>แสดงข้อมูลยา</b><small>อ่านง่าย ฟังเสียงได้</small></span>
+                      </span>
+                      <span class="s3-row"><em>ข้อบ่งใช้</em><i></i></span>
+                      <span class="s3-row"><em>วิธีใช้</em><i></i><i class="s"></i></span>
+                      <span class="s3-row warn"><em>คำเตือน</em><i></i></span>
+                    </span>
+                  </span>
+                </span>
+              </span>
+
+              <h3>แสดงผลข้อมูลยา</h3>
+              <p>บอกข้อบ่งใช้ ขนาดการใช้ และคำเตือน ตัวอักษรใหญ่ พร้อมปุ่มฟังเสียง</p>
+              <span class="step-hint"><span data-ico="play" aria-hidden="true"></span>ดูภาพเคลื่อนไหว</span>
+          </button>
+        </div>
+
+        <div class="shortcuts">
+          <a class="shortcut is-primary" href="#/scan">
+            <span class="shortcut-ico" data-ico="camera" aria-hidden="true"></span>
+            <span class="shortcut-b"><b>ถ่ายรูปฉลากยา</b><span>เพื่ออ่านและตรวจสอบข้อมูล</span></span>
+            <span class="shortcut-go" data-ico="arrow" aria-hidden="true"></span>
+          </a>
+          <a class="shortcut" href="#/search">
+            <span class="shortcut-ico" data-ico="keyboard" aria-hidden="true"></span>
+            <span class="shortcut-b"><b>ค้นหาด้วยชื่อยา</b><span>ถ้าฉลากเลือนรางหรืออ่านไม่ออก</span></span>
+            <span class="shortcut-go" data-ico="arrow" aria-hidden="true"></span>
+          </a>
+        </div>
+        </div>
+
+        <div class="wrap sec-sm">
+          <div class="sec-head">
+            <div class="ttl">
+              <span class="eyebrow"><span data-ico="list" aria-hidden="true"></span>กลุ่มอาการ</span>
+              <h2>เลือกดูตามอาการที่เป็น</h2>
+              <p>ครอบคลุมยาสามัญประจำบ้าน 6 กลุ่มอาการที่พบบ่อยที่สุด</p>
+            </div>
+          </div>
+          <div class="cats" id="homeCats"></div>
+        </div>
+
+        <div class="wrap sec-sm" id="recentWrap" hidden>
+          <h2 style="font-size:clamp(1.2rem,2.4vw,1.6rem)">ดูล่าสุด</h2> 
+          <ul class="rows" id="recentRows"></ul>       
+        </div>
+
+
+    </section>
+
+    <section class="view" id="view-scan" hidden>
       <div class="wrap sec">
+        <div class="page-head">
+          <a class="backlink" href="#/" aria-label="กลับหน้าหลัก"><span data-ico="back" aria-hidden="true"></span></a>
+          <div style="flex:1 1 16rem">
+            <h1>ถ่ายรูปฉลากยา</h1>
+            <p>ถ่ายให้เห็นชื่อยาและเลขทะเบียน อย. ชัดเจน ในที่ที่มีแสงเพียงพอ</p>
+          </div>
+        </div>
 
-        <!-- หน้าทดสอบ วันที่ 2 จะลบทิ้ง -->
-        <span class="eyebrow">หน้าทดสอบ</span>
-        <h1>ตรวจสอบยาสามัญประจำบ้าน</h1>
-        <p class="mt-3">ถ่ายภาพฉลากยา แล้วดูข้อบ่งใช้ ขนาดการใช้ และคำเตือน</p>
+        <div class="camstage" id="camStage" data-state="idle">
+          <video id="camView" playsinline muted autoplay></video>
+          <img id="camShot" alt="ภาพฉลากยาที่ถ่ายไว้">
+          <div class="camhint">
+            <span data-ico="camera" aria-hidden="true"></span>
+            <p>กดเปิดกล้องเพื่อถ่ายภาพฉลากยา<br>หรือเลือกภาพที่มีอยู่แล้วในเครื่อง</p>
+          </div>
+          <div class="camframe" aria-hidden="true"></div>
+        </div>
 
-        <h2 class="mt-5">หัวข้อรอง</h2>
-        <p class="mt-2 muted">ยาแก้ปวดลดไข้ พาราเซตามอล 500 มิลลิกรัม</p>
-        <p class="mt-2 mono">Reg. No. 1A 822/43</p>
+        <p class="q-msg" id="camMsg" aria-live="polite" hidden></p>
 
-        <h3 class="mt-5">หัวข้อย่อย</h3>
-        <p class="mt-2">ควรอ่านฉลากก่อนใช้ยาทุกครั้ง
-          <a href="#">ดูข้อมูลเพิ่มเติม</a></p>
+        <div class="camresult" id="camResult" aria-live="polite" hidden></div>
 
+        <div class="camctl" id="camCtl">
+          <button class="btn btn-primary btn-lg" id="camStart" type="button">
+            <span data-ico="camera" aria-hidden="true"></span>เปิดกล้อง</button>
+          <button class="btn btn-primary btn-lg" id="camShoot" type="button" hidden>
+            <span data-ico="scan" aria-hidden="true"></span>ถ่ายภาพฉลาก</button>
+          <button class="btn btn-soft" id="camRetry" type="button" hidden>
+            <span data-ico="refresh" aria-hidden="true"></span>ถ่ายใหม่</button>
+          <label class="btn btn-outline" for="camFile">
+            <span data-ico="upload" aria-hidden="true"></span>เลือกภาพจากเครื่อง</label>
+          <input class="sr-only" id="camFile" type="file" accept="image/*" capture="environment">
+        </div>
+
+        <canvas id="camWork" class="sr-only" aria-hidden="true"></canvas>
+
+        <ul class="camtips">
+          <li>วางฉลากให้อยู่ในกรอบ และถือกล้องให้นิ่ง</li>
+          <li>เลี่ยงแสงสะท้อนจากแผงยาและฟิล์มพลาสติก</li>
+          <li>ถ้าตัวอักษรเล็กมาก ให้ถ่ายใกล้ขึ้นทีละส่วน</li>
+        </ul>
       </div>
     </section>
+
+    <section class="view" id="view-search" hidden>
+      <div class="wrap sec">
+        <div class="page-head">
+          <a class="backlink" href="#/" aria-label="กลับหน้าหลัก"><span data-ico="back" aria-hidden="true"></span></a>
+          <div style="flex:1 1 16rem">
+            <h1>ค้นหาข้อมูลยาสามัญประจำบ้าน</h1>
+            <p>ค้นหาด้วยชื่อการค้า ชื่อสามัญทางยา หรือเลขทะเบียน อย.</p>
+          </div>
+        </div>
+
+        <div class="searchwrap">
+          <div class="searchbox">
+            <span data-ico="search" aria-hidden="true"></span>
+            <label class="sr-only" for="q">ค้นหาชื่อยา ตัวยาสำคัญ หรือเลขทะเบียนตำรับยา</label>
+            <input id="q" type="search" inputmode="search" autocomplete="off"
+                  role="combobox" aria-expanded="false" aria-controls="qList" aria-autocomplete="list"
+                  placeholder="เช่น พาราเซตามอล, ซาร่า, 2A 721/28">
+            <button class="clr" id="qClear" type="button" aria-label="ล้างคำค้นหา" hidden>
+              <span data-ico="x" aria-hidden="true"></span></button>
+            <button class="mic" id="qMic" type="button" aria-pressed="false" aria-label="พูดเพื่อค้นหา" hidden>
+              <span data-ico="mic" aria-hidden="true"></span></button>
+          </div>
+          <ul class="suggest" id="qList" role="listbox" aria-label="คำแนะนำการค้นหา" hidden></ul>
+        </div>
+        <p class="q-msg" id="qMsg" aria-live="polite" hidden></p>
+
+        <div class="chipbar" id="chipbar" role="group" aria-label="กรองตามกลุ่มอาการ"></div>
+        <p class="text-sm muted mt-4" id="resCount" aria-live="polite"></p>
+        <ul class="rows" id="resRows"></ul>
+        <div id="resEmpty"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-detail" hidden>
+      <div class="wrap sec" id="detailBody"></div>
+    </section>
+
+    <section class="view" id="view-about" hidden>
+      <div class="wrap sec" id="aboutBody"></div>
+    </section>
+
   </main>
+
+  
+  <footer class="ftr">
+    <div class="wrap ftr-in">
+      <span>ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำทางการแพทย์ · ปรึกษาแพทย์หรือเภสัชกรก่อนใช้ยา</span>
+      <nav aria-label="เมนูส่วนท้าย">
+        <a href="#/about">เกี่ยวกับระบบ</a>
+      </nav>
+    </div>
+  </footer>
+
+  <nav class="botnav" aria-label="เมนูหลัก (อุปกรณ์พกพา)">
+    <a href="#/"       data-nav="home"><span data-ico="home"   aria-hidden="true"></span>หน้าหลัก</a>
+    <a href="#/scan"   data-nav="scan"><span data-ico="camera" aria-hidden="true"></span>ถ่ายรูป</a>
+    <a href="#/search" data-nav="search"><span data-ico="search" aria-hidden="true"></span>ค้นหา</a>
+    <a href="#/about"  data-nav="about"><span data-ico="info"   aria-hidden="true"></span>เกี่ยวกับ</a>
+  </nav>
+
+  <div class="drawer-back" id="drawerBack"></div>
+  <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="เมนูหลัก">
+    <div class="drawer-head">
+      <span class="logo">
+        <span class="logo-mark" data-ico="scan" aria-hidden="true"></span>
+        <span class="logo-tx"><b><i>Med</i>Check</b></span>
+      </span>
+      <button class="iconbtn" id="drawerClose" type="button" aria-label="ปิดเมนู">
+        <span data-ico="x" aria-hidden="true"></span>
+      </button>
+    </div>
+    <nav class="drawer-nav" aria-label="เมนูหลัก">
+      <a href="#/" data-nav="home" style="--dd:60ms"><span data-ico="home" aria-hidden="true"></span>หน้าหลัก</a>
+      <a href="#/scan" data-nav="scan" style="--dd:110ms"><span data-ico="camera" aria-hidden="true"></span>ถ่ายรูป</a>
+      <a href="#/search" data-nav="search" style="--dd:160ms"><span data-ico="search" aria-hidden="true"></span>ค้นหา</a>
+      <a href="#/about" data-nav="about" style="--dd:210ms"><span data-ico="info" aria-hidden="true"></span>เกี่ยวกับ</a>
+    </nav>
+  </aside>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
 
 </body>
 </html>
