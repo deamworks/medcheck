@@ -197,6 +197,81 @@ window.addEventListener('resize', debounce(() => {
 
 if (window.ResizeObserver) new ResizeObserver(syncHeaderHeight).observe($('.hdr'));
 
+
+/*  THEME · โหมดสว่างและโหมดมืด  */
+// ถ้าผู้ใช้ยังไม่เคยกดเลือกเอง จะไม่มีแอตทริบิวต์ data-theme และหน้าเว็บจะตามการตั้งค่าของเครื่อง
+const KEY_THEME = 'mc.theme';
+const prefersDark = matchMedia('(prefers-color-scheme: dark)');
+
+function currentTheme() {
+    const set = document.documentElement.dataset.theme;
+    if (set === 'dark' || set === 'light') return set;
+    return prefersDark.matches ? 'dark' : 'light';
+}
+
+// ปุ่มต้องบอกว่า "กดแล้วจะได้อะไร" ไม่ใช่บอกว่าตอนนี้เป็นโหมดอะไร
+function syncThemeBtn() {
+    const btn = $('#themeBtn');
+    if (!btn) return;
+    const dark = currentTheme() === 'dark';
+    const ico = btn.querySelector('[data-ico]');
+    if (ico) {
+        ico.dataset.ico = dark ? 'sun' : 'moon';
+        ico.innerHTML = svg(ico.dataset.ico);
+        ico.dataset.icoDone = '1';
+    }
+    btn.setAttribute('aria-label', dark ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
+}
+
+function setTheme(mode) {
+    document.documentElement.dataset.theme = mode;
+    lsSet(KEY_THEME, mode);
+    syncThemeBtn();
+}
+
+$('#themeBtn').addEventListener('click', () => {
+    setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+});
+
+// ผู้ใช้สลับโหมดที่เครื่องระหว่างเปิดเว็บอยู่ · ตามให้เฉพาะคนที่ยังไม่เคยเลือกเอง
+prefersDark.addEventListener('change', () => {
+    if (!document.documentElement.dataset.theme) syncThemeBtn();
+});
+
+
+/*  FONT SIZE · ขนาดตัวอักษร 3 ระดับ  */
+// ระดับ 1 คือขนาดปกติ จึงไม่ต้องมีแอตทริบิวต์ ส่วน 2 กับ 3 ขยายขนาดพื้นฐานของเอกสาร
+// ทุกอย่างในเว็บใช้หน่วยสัมพัทธ์ จึงขยายตามพร้อมกันทั้งหน้าโดยแก้ที่เดียว
+const KEY_FS = 'mc.fs';
+
+function currentFs() {
+    return document.documentElement.dataset.fs || '1';
+}
+
+function syncFsBtn() {
+    const now = currentFs();
+    $$('.fs-ctl [data-fs]').forEach(b =>
+        b.setAttribute('aria-pressed', String(b.dataset.fs === now)));
+}
+
+function setFs(level) {
+    const v = String(level);
+    if (v === '1') delete document.documentElement.dataset.fs;
+    else document.documentElement.dataset.fs = v;
+
+    lsSet(KEY_FS, v);
+    syncFsBtn();
+    syncHeaderHeight();     // ตัวอักษรโตขึ้น แถบบนสูงขึ้นตาม ต้องวัดใหม่
+    syncDrawerForWidth();   // ขนาดใหญ่สุดจะเปลี่ยนไปใช้เมนูแบบลิ้นชักแทนเมนูแถวบน
+}
+
+$$('.fs-ctl [data-fs]').forEach(b =>
+    b.addEventListener('click', () => setFs(b.dataset.fs)));
+
+// ตั้งปุ่มให้ตรงกับค่าที่สคริปต์ในส่วนหัวใส่ไว้ตั้งแต่ก่อนวาดหน้าจอ
+syncThemeBtn();
+syncFsBtn();
+
 // drawer
 let drawerPrev = null;
 function drawerOpen() { return $('#drawer').classList.contains('open'); }
@@ -1150,15 +1225,29 @@ async function sendLabel(file) {
   return res.json();
 }
 
-// ตัวจำลองคำตอบระหว่างรอฝั่งเซิร์ฟเวอร์ · สุ่มให้ครบทั้ง 3 กรณี
+// ตัวจำลองคำตอบระหว่างรอฝั่งเซิร์ฟเวอร์ · สุ่มให้ครบทุกกรณีที่ matcher.py คืนค่าได้
 function fakeScan() {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       const r = Math.random();
-      if (r < 0.2) { reject(new Error('เชื่อมต่อส่วนอ่านฉลากไม่ได้ กรุณาลองใหม่อีกครั้ง')); return; }
-      if (r < 0.4) { resolve({ found: false }); return; }
+
+      if (r < 0.15) { reject(new Error('เชื่อมต่อส่วนอ่านฉลากไม่ได้ กรุณาลองใหม่อีกครั้ง')); return; }
+      if (r < 0.30) { resolve({ found: false, matchType: 'not_found', regNos: [] }); return; }
+
+      // จับคู่จากตัวยาสำคัญ ได้หลายยี่ห้อที่ใช้สูตรตำรับเดียวกัน
+      if (r < 0.55) {
+        const groups = DB.formulations.map(f => brandsOf(f.id)).filter(g => g.length > 1);
+        const group  = groups.length ? groups[Math.floor(Math.random() * groups.length)] : [DB.brands[0]];
+        resolve({ found: true, matchType: 'active_ingredient', regNos: group.map(b => b.regNo) });
+        return;
+      }
+
       const b = DB.brands[Math.floor(Math.random() * DB.brands.length)];
-      resolve({ found: true, brandId: b.id });
+      resolve({
+        found: true,
+        matchType: r < 0.80 ? 'reg_no' : 'brand_name',
+        regNos: [b.regNo],
+      });
     }, 1200);
   });
 }
@@ -1182,10 +1271,36 @@ async function readLabel(file) {
   camState('result');
 }
 
-// การ์ดผลลัพธ์ 3 แบบ ใช้คลาส state ชุดเดียวกับหน้าอื่น
+// ข้อความของการ์ดผลลัพธ์ แยกตามวิธีที่ระบบจับคู่ยาได้
+const MATCH_INFO = {
+  reg_no: {
+    tone: 'is-ok', icon: 'check-c',
+    head: 'พบข้อมูลยาที่ตรงกับฉลาก',
+    note: 'ระบบอ่านเลขทะเบียนตำรับยาบนฉลากได้ และตรงกับข้อมูลในระบบ',
+  },
+  brand_name: {
+    tone: 'is-ok', icon: 'check-c',
+    head: 'พบยาที่ชื่อตรงกับฉลาก',
+    note: 'ระบบจับคู่จากชื่อยี่ห้อ โปรดตรวจเลขทะเบียนบนฉลากให้ตรงกันอีกครั้งก่อนใช้ข้อมูล',
+  },
+  active_ingredient: {
+    tone: 'is-warn', icon: 'alert',
+    head: 'พบยาที่มีตัวยาสำคัญตรงกัน',
+    note: 'ระบบอ่านชื่อยี่ห้อและเลขทะเบียนไม่ได้ จึงจับคู่จากตัวยาสำคัญแทน ' +
+          'โปรดเลือกรายการที่ตรงกับฉลากที่ถืออยู่',
+  },
+};
+
+// การ์ดผลลัพธ์ ใช้คลาส state ชุดเดียวกับหน้าอื่น
 function showResult(res) {
   const host = $('#camResult');
-  const b    = res.found ? brand(res.brandId) : null;
+
+  // เซิร์ฟเวอร์ส่งเลขทะเบียนกลับมา จึงต้องแปลงเป็นรายการยาที่มีในระบบก่อน
+  const list = (res.regNos || []).map(brandByReg).filter(Boolean);
+
+  if (res.found && !list.length) {
+    console.warn('เซิร์ฟเวอร์แจ้งว่าพบยา แต่ไม่มีเลขทะเบียนนี้ในไฟล์ข้อมูล', res.regNos);
+  }
 
   if (res.error) {
     host.innerHTML =
@@ -1199,18 +1314,23 @@ function showResult(res) {
         '</div>' +
       '</div>';
 
-  } else if (b) {
+  } else if (list.length) {
+    const info = MATCH_INFO[res.matchType] || MATCH_INFO.reg_no;
+    const many = list.length > 1;
+
     host.innerHTML =
       '<div class="state">' +
-        '<div class="state-ico is-ok">' + svg('check-c') + '</div>' +
-        '<h2>พบข้อมูลยาที่ตรงกับฉลาก</h2>' +
-        '<p>โปรดตรวจสอบชื่อยาและเลขทะเบียนให้ตรงกับฉลากจริงก่อนใช้ข้อมูล</p>' +
+        '<div class="state-ico ' + info.tone + '">' + svg(info.icon) + '</div>' +
+        '<h2>' + info.head + (many ? ' ' + list.length + ' รายการ' : '') + '</h2>' +
+        '<p>' + info.note + '</p>' +
       '</div>' +
-      '<ul class="rows mt-4">' + rowItem(b) + '</ul>' +
+      '<ul class="rows mt-4">' + list.map(rowItem).join('') + '</ul>' +
       '<div class="state-actions">' +
-        '<a class="btn btn-primary" href="#/drug/' + encodeURIComponent(b.id) + '">' +
-          svg('arrow') + 'ดูข้อมูลยา</a>' +
-        '<button class="btn btn-outline" type="button" id="camNew">ถ่ายใหม่</button>' +
+        (many ? '' :
+          '<a class="btn btn-primary" href="#/drug/' + encodeURIComponent(list[0].id) + '">' +
+            svg('arrow') + 'ดูข้อมูลยา</a>') +
+        '<button class="btn ' + (many ? 'btn-soft' : 'btn-outline') + '" type="button" id="camNew">' +
+          'ถ่ายใหม่</button>' +
       '</div>';
 
   } else {

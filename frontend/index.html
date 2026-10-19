@@ -17,6 +17,17 @@
   <link rel="stylesheet" href="css/shell.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
+
+  <!-- อ่านค่าที่ผู้ใช้เลือกไว้ก่อนวาดหน้าจอ ไม่งั้นหน้าจะกะพริบเป็นโหมดสว่างแวบหนึ่งก่อน -->
+  <script>
+    try {
+      var fs = JSON.parse(localStorage.getItem('mc.fs') || 'null');
+      if (fs === '2' || fs === '3') document.documentElement.dataset.fs = fs;
+
+      var th = JSON.parse(localStorage.getItem('mc.theme') || 'null');
+      if (th === 'dark' || th === 'light') document.documentElement.dataset.theme = th;
+    } catch (e) {}
+  </script>
 </head>
 <body>
 
