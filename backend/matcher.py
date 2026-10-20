@@ -1,6 +1,7 @@
 import re
 from typing import Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from models import Brand, ActiveIngredient, MedicineIngredient, Medicine
 
 def extract_reg_no(ocr_text: str) -> Optional[str]:
@@ -13,6 +14,9 @@ def extract_reg_no(ocr_text: str) -> Optional[str]:
         return found
 
     return None
+
+def normalize_reg_no(reg_no: str) -> str:
+    return re.sub(r"\s+", "", reg_no).upper()
 
 
 def match_brand_name(ocr_text: str, db: Session):
@@ -75,37 +79,54 @@ def match_active_ingredient(ocr_text: str, db: Session):
     return medicines
 
 def identify_medicine(ocr_text: str, db: Session):
-    reg_no = extract_reg_no(ocr_text)
-    if reg_no:
-        brand = db.query(Brand).filter(Brand.reg_no == reg_no).first()
+    ocr_reg_no = extract_reg_no(ocr_text)
+
+    # ขั้น 1: เลขทะเบียน (เทียบแบบตัดช่องว่างออกทั้งสองฝั่ง)
+    if ocr_reg_no:
+        key = normalize_reg_no(ocr_reg_no)
+        brand = (
+            db.query(Brand)
+            .filter(func.upper(func.replace(Brand.reg_no, " ", "")) == key)
+            .first()
+        )
         if brand:
             return {
                 "match_type": "reg_no",
-                "reg_no": reg_no,
+                "ocr_reg_no": ocr_reg_no,
                 "brands": [brand],
             }
 
+    # ขั้น 2: ชื่อยี่ห้อ
     brand = match_brand_name(ocr_text, db)
     if brand:
         return {
             "match_type": "brand_name",
-            "reg_no": brand.reg_no,
+            "ocr_reg_no": ocr_reg_no,
             "brands": [brand],
         }
 
+    # อ่านเลขทะเบียนได้ชัด แต่ไม่ใช่ยาในระบบ → ไม่อยู่ในขอบเขต
+    if ocr_reg_no:
+        return {
+            "match_type": "out_of_scope",
+            "ocr_reg_no": ocr_reg_no,
+            "brands": [],
+        }
+
+    # ขั้น 3: ตัวยาสำคัญ
     medicines = match_active_ingredient(ocr_text, db)
     if medicines:
         medicine_ids = [m.id for m in medicines]
         brands = db.query(Brand).filter(Brand.medicine_id.in_(medicine_ids)).all()
         return {
             "match_type": "active_ingredient",
-            "reg_no": None,
+            "ocr_reg_no": None,
             "brands": brands,
         }
 
     return {
         "match_type": "not_found",
-        "reg_no": None,
+        "ocr_reg_no": None,
         "brands": [],
     }
 
@@ -135,5 +156,13 @@ if __name__ == "__main__":
     text4 = "xyz abc random text"
     result4 = identify_medicine(text4, db)
     print(result4["match_type"], "| จำนวนยี่ห้อ:", len(result4["brands"]))
+
+    print("=== ทดสอบ 5: เลขทะเบียนไม่มีเว้นวรรค ===")
+    r5 = identify_medicine("Reg. No. 1A844/39", db)
+    print(r5["match_type"], "| คาดว่า: reg_no")
+
+    print("=== ทดสอบ 6: เลขทะเบียนที่ไม่อยู่ในระบบ ===")
+    r6 = identify_medicine("Reg. No. 9Z 999/99 some other drug", db)
+    print(r6["match_type"], "| คาดว่า: out_of_scope")
 
     db.close()
