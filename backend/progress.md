@@ -1,82 +1,67 @@
 # สรุปความคืบหน้า — เว็บไซต์อ่านฉลากยาสามัญประจำบ้าน (Backend)
 
 ## สถานะโดยรวม
-Backend เริ่มจาก 0 จนถึงตอนนี้ใช้งานได้จริงหลายส่วน เชื่อมฐานข้อมูลจริง (Neon PostgreSQL)
-และ Google Cloud Vision OCR สำเร็จแล้ว เหลือแค่ประกอบร่างเป็น endpoint หลัก `/scan`
+Flow หลักของระบบใช้งานได้ครบแล้ว: อัปโหลดภาพ → OCR → จับคู่ยา → แสดงข้อมูลยา →
+ยืนยันสถานะกับ อย. แบบเรียลไทม์ ทดสอบกับฉลากจริง (TYLENOL 500) ผ่าน
+โค้ดอยู่ใน repo deamworks/medcheck โฟลเดอร์ backend/
 
-## Stack ที่ใช้
+## Stack
 - Backend: FastAPI (Python 3.9) + SQLAlchemy
 - Database: Neon (PostgreSQL serverless)
 - OCR: Google Cloud Vision API
-- Dev tools: VS Code, Git, DBeaver
+- Dev tools: VS Code, Git/GitHub, DBeaver
 
-## โครงสร้างไฟล์ปัจจุบัน
+## โครงสร้างไฟล์
 ```
-medicine-scanner-backend/
-├── venv/
-├── main.py              # FastAPI app + endpoints
-├── database.py           # การเชื่อมต่อฐานข้อมูล (SQLAlchemy engine, session)
-├── models.py              # SQLAlchemy models ทั้ง 7 ตาราง + relationships
-├── matcher.py             # Logic จับคู่ยาจากข้อความ OCR (3 ลำดับความสำคัญ)
-├── ocr_test.py            # ไฟล์ทดสอบ Google Cloud Vision (แยกจาก main app)
-├── .env                   # DATABASE_URL, GOOGLE_APPLICATION_CREDENTIALS (ไม่ push ขึ้น git)
-├── .gitignore
-└── <google-credentials>.json   # Service account key (ไม่ push ขึ้น git)
+medcheck/backend/
+├── main.py         # endpoints + serialize helpers
+├── matcher.py      # จับคู่ยาจาก OCR (reg_no / brand_name / out_of_scope / active_ingredient)
+├── fda_api.py      # เรียก อย. API + แปลงผล
+├── database.py
+├── models.py
+├── ocr_test.py
+├── requirements.txt
+├── venv/           # ไม่ขึ้น git (สร้างจาก /usr/bin/python3)
+├── .env            # ไม่ขึ้น git
+└── <credentials>.json  # ไม่ขึ้น git
 ```
 
-## Database — 7 ตาราง (ครบ ตรงกับ ER Diagram)
-category, medicine, active_ingredient, medicine_ingredient, warning, brand, admin_user
-
-โครงสร้างจริงอยู่ใน `models.py` — ทุกตารางมี relationship เชื่อมกันแล้ว
-(เช่น `medicine.brands`, `medicine.warnings`, `medicine.category`,
-`medicine.medicine_ingredients[].ingredient`)
-
-## Endpoints ที่ทำงานได้จริงแล้ว
+## Endpoints
 | Endpoint | หน้าที่ |
 |---|---|
-| `GET /` | ทดสอบเซิร์ฟเวอร์ |
-| `GET /test-db` | ทดสอบเชื่อมต่อฐานข้อมูล |
-| `GET /test-category` | ดึงหมวดหมู่ทั้งหมด (ทดสอบ model) |
-| `GET /test-all-tables` | นับจำนวนแถวทุกตาราง (ทดสอบ model ทั้งหมด) |
-| `GET /medicines/search?name=...` | ค้นหายาด้วยชื่อ (ilike) |
-| `GET /medicines/by-category?category_id=...` | ค้นหายาด้วยหมวดหมู่กลุ่มอาการ |
-| `GET /medicines/{medicine_id}` | ดึงข้อมูลยาแบบเต็ม (join ทุกตาราง) |
+| `POST /scan` | รับภาพ → OCR → จับคู่ยา → คืนข้อมูลยาเต็มหรือรายการยี่ห้อให้เลือก |
+| `GET /verify/{brand_id}` | ยืนยันสถานะทะเบียนกับ อย. (แยกจาก /scan เพราะ อย. ตอบช้าบางครั้ง) |
+| `GET /medicines/{medicine_id}` | ข้อมูลยาเต็ม |
+| `GET /medicines/search?name=...` | ค้นหาด้วยชื่อ |
+| `GET /medicines/by-category?category_id=...` | ค้นหาด้วยหมวดหมู่ |
+| `GET /`, `/test-db`, `/test-category`, `/test-all-tables` | ทดสอบระบบ |
 
-## matcher.py — Logic การจับคู่ยา (เขียนเสร็จ + ทดสอบผ่านแล้ว)
-ลำดับความสำคัญ 3 ขั้น ตามที่ออกแบบไว้ใน DFD Level 2 Process 1:
+## match_type ที่ /scan คืนกลับ
+- `reg_no` / `brand_name` → มี `brand` + `medicine` → frontend เรียก /verify ต่อ
+- `active_ingredient` → มี `candidates` ให้ผู้ใช้เลือก แล้วเรียก /verify หลังเลือก
+- `out_of_scope` → อ่านเลขทะเบียนได้ แต่ไม่ใช่ยาในระบบ
+- `not_found` → อ่านฉลากไม่ได้
 
-1. **`extract_reg_no(ocr_text)`** — ใช้ regex หา pattern เลขทะเบียน (`1A 844/39` รูปแบบ)
-2. **`match_brand_name(ocr_text, db)`** — แตกชื่อยี่ห้อเป็นคำย่อย เทียบกับ OCR text
-   (กรองคำสั้น <5 ตัวอักษรและตัวเลขล้วนออก กัน false positive)
-3. **`match_active_ingredient(ocr_text, db)`** — หาชื่อตัวยาสำคัญ คืนค่าเป็น list ของยาที่เป็นไปได้
-   (เพราะตัวยาเดียวมีได้หลายยี่ห้อ)
-4. **`identify_medicine(ocr_text, db)`** — ฟังก์ชันหลัก ลองทั้ง 3 วิธีตามลำดับ หยุดที่เจอก่อน
-   คืนค่า `{match_type, reg_no, brands}` เสมอ
+## ผลทดสอบ
+- matcher.py ผ่าน 6/6 เคส (รวมเลขทะเบียนไม่มีเว้นวรรค และเลขที่อยู่นอกระบบ)
+- fda_api.py ผ่าน 3/3 เคส (มีเว้นวรรค / ไม่มีเว้นวรรค / ไม่มีในระบบ อย.)
 
-### บั๊กที่เจอและแก้ไปแล้วระหว่างทาง
-- Python 3.9 ไม่รองรับ `str | None` syntax → ใช้ `Optional[str]` จาก `typing` แทน
-- เทียบชื่อยี่ห้อแบบ "ทั้งก้อน" ไม่เจอ เพราะชื่อจริงมีทั้งไทย+อังกฤษปนกัน
-  (เช่น "ไทลินอล 500 TYLENOL 500") → แก้เป็นแตกคำย่อยแล้วเทียบทีละคำ
-- คำว่า "500" (ตัวเลขขนาดยา) ถูกจับเป็นตัวบ่งชี้ยี่ห้อผิดๆ → กรอง `.isdigit()` ออก
-- คำว่า "พารา" ไปตรงกับ "พาราเซตามอล" (คำไทยไม่มีเว้นวรรค ซ้อนกันได้)
-  → เพิ่มความยาวขั้นต่ำของคำที่ใช้เทียบจาก 3 เป็น 5 ตัวอักษร
+## บั๊กและข้อค้นพบระหว่างทาง
+- Python 3.9 ไม่รองรับ `str | None` → ใช้ `Optional[str]`
+- เทียบชื่อยี่ห้อทั้งก้อนไม่เจอ → แตกคำย่อย, กรองตัวเลขล้วน, ความยาวขั้นต่ำ 5
+- "พารา" ซ้อนกับ "พาราเซตามอล" → เพิ่มความยาวขั้นต่ำ
+- เลขทะเบียนจาก OCR มี/ไม่มีเว้นวรรคไม่แน่นอน → ตัดช่องว่างก่อนเทียบ
+- อย. ค้นหาด้วยเลขไม่มีเว้นวรรคไม่เจอ → จัดรูปเป็น "1A 844/39" ก่อนส่ง
+- อย. API timeout เป็นบางครั้ง (แม้ 30 วินาที) → แยก /verify ออกจาก /scan
+- เดิม /scan เป็น async แต่เรียกโค้ด blocking → เปลี่ยนเป็น def ธรรมดา
+- เลขทะเบียนมักอยู่ด้านหลังแผงยา ต้องคำนึงถึงตอนออกแบบ UX การถ่ายภาพ
+- ย้ายโค้ดจากโฟลเดอร์ medicine-scanner-backend (ไม่มี remote) เข้า medcheck/backend
+  และสร้าง venv ใหม่ด้วย /usr/bin/python3 เพราะเครื่องไม่มีคำสั่ง python3.9
 
-## Google Cloud Vision — เชื่อมต่อสำเร็จ
-- สร้าง Project, เปิด Vision API, ผูก Billing (ต้องใช้บัตรที่ไม่ใช่ prepaid — เคยติดปัญหานี้)
-- สร้าง Service Account + JSON key เก็บไว้ในโฟลเดอร์โปรเจค (กันไว้ใน .gitignore แล้ว)
-- ทดสอบกับภาพฉลากยาจริง (TYLENOL 500) อ่านเลขทะเบียน "1A 844/39" ได้แม่นยำ
-- ข้อสังเกตสำคัญ: เลขทะเบียนมักอยู่ "อีกด้าน" ของแผงยา (ด้านที่มีตารางขนาดใช้/คำเตือน)
-  ไม่ใช่ด้านหน้าที่มีแค่โลโก้ยี่ห้อ — ต้องคำนึงถึงตอนออกแบบ UX การถ่ายภาพ
-
-## งานที่ค้างอยู่ (Next steps)
-1. **สร้าง endpoint `/scan`** — endpoint หลักที่รวมทุกอย่าง:
-   รับภาพอัปโหลด → ส่งเข้า Vision API OCR → เข้า `identify_medicine()` →
-   ถ้าได้ยี่ห้อเดียวชัดเจน (reg_no/brand_name) → เชื่อมต่อ อย. API ยืนยันสถานะ →
-   คืนข้อมูลยาเต็ม + สถานะยืนยันกลับไป
-2. เชื่อมต่อ อย. API จริง (มีรูปแบบ request ที่ทดสอบไว้แล้วว่าใช้ได้ — POST แบบ Form Data
-   พร้อม MODEL เป็น JSON string, ค้นด้วยเลขทะเบียนได้โดยตรง)
-3. Endpoint สำหรับ Admin (login, CRUD ทั้ง 6 ตารางข้อมูลยา) — ยังไม่เริ่ม
-4. Deploy: Google Cloud Run (backend) + Vercel (frontend) — ยังไม่เริ่ม
-
-## Git
-Commit เป็นระยะตลอดการทำงาน ใช้ `git log --oneline` ดูประวัติทั้งหมดได้
+## งานถัดไป
+1. เพิ่ม CORS + ตกลง API contract กับ frontend
+2. เช็ค schema: ตาราง `ingredient_alias` ยังไม่มีใน models.py,
+   admin_user ใช้ email หรือ username ให้ตรงกับรายงาน
+3. Admin endpoints (login ด้วย JWT + CRUD) — ต้องเพิ่ม python-jose, passlib[bcrypt]
+4. ทดสอบ OCR กับภาพจริงครบ 23 ยี่ห้อ (หน้า/หลัง, แผงพลาสติก/ฟอยล์) → ตารางบทที่ 4
+5. Deploy: Cloud Run (Python 3.12, ผูก service account แทนไฟล์ key) + Vercel
