@@ -3,6 +3,8 @@ from fastapi import FastAPI, Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from google.cloud import vision
+import os
+from fastapi.middleware.cors import CORSMiddleware
 
 from database import get_db
 from models import Category, Medicine, Brand, ActiveIngredient, Warning, MedicineIngredient, AdminUser
@@ -13,6 +15,19 @@ load_dotenv()
 
 app = FastAPI()
 vision_client = vision.ImageAnnotatorClient()
+
+ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
+    if o.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 
 def serialize_brand(b: Brand) -> dict:
     return {
