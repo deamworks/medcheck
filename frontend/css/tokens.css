@@ -22,7 +22,7 @@
     --tint-line:#FFC4C4; 
     --brand-ink:#BE0F18;
 
-    /* สีประจำกลุ่มอาการ ช่วยให้จำและกวาดตาหาได้เร็ว */
+    /* สีประจำกลุ่มอาการ */
     --c1:#E0432B; 
     --c1-bg:#FFF0EC; 
     --c2:#0E8A6A; 
@@ -87,7 +87,7 @@
     color-scheme:light;
 }
 
-/* โหมดมืด — ตามการตั้งค่าของเครื่อง */
+/* โหมดมืดตามค่าของเครื่อง */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){ color-scheme:dark;
     --primary:#F2444C; --primary-2:#D01B24; --primary-hover:#FF5A62; --primary-active:#BE0F18;
     --tint:#2C1618; --tint-2:#3D1D20; --tint-line:#5A2A2E; --brand-ink:#FF9494;
@@ -105,7 +105,7 @@
     --glow:0 8px 28px rgba(242,68,76,.28);
 }}
 
-/* โหมดมืด — ผู้ใช้กดเลือกเอง */
+/* โหมดมืดที่ผู้ใช้เลือกเอง */
 :root[data-theme="dark"]{ color-scheme:dark;
   --primary:#F2444C; --primary-2:#D01B24; --primary-hover:#FF5A62; --primary-active:#BE0F18;
   --tint:#2C1618; --tint-2:#3D1D20; --tint-line:#5A2A2E; --brand-ink:#FF9494;

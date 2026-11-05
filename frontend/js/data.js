@@ -1,6 +1,4 @@
-// ชั้นข้อมูล: โหลดไฟล์ยา หาข้อมูล จัดรูปข้อความให้ค้นได้
-
-// กันข้อความจากไฟล์ข้อมูลกลายเป็นแท็ก HTML
+// แปลงอักขระพิเศษให้ปลอดภัยก่อนต่อเป็น HTML
 const esc = s => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -9,17 +7,18 @@ const THAI_DIGITS   = '๐๑๒๓๔๕๖๗๘๙';
 const RE_THAI_DIGIT = /[\u0E50-\u0E59]/g;
 const RE_THAI_MARK  = /[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/g;
 
-// เลขไทย → เลขอารบิก
+// เลขไทยเป็นเลขอารบิก
 const toArabic = t => String(t || '').replace(RE_THAI_DIGIT, d => String(THAI_DIGITS.indexOf(d)));
 
-// ทำให้ข้อความเทียบกันได้: ตัวเล็ก ตัดสระบน-ล่างและวรรณยุกต์ ตัดช่องว่างและเครื่องหมาย
+// จัดรูปข้อความให้เทียบกันได้
 const norm = t => toArabic(t).toLowerCase().replace(RE_THAI_MARK, '').replace(/[\s\-.,()/]+/g, '');
 
-// รูปแบบเลขทะเบียน: ตัวใหญ่ · เหลือแค่ 0-9 A-Z และ /
+// จัดรูปเลขทะเบียนให้เทียบกันได้
 const regKey = t => toArabic(t).toUpperCase().replace(/[^0-9A-Z/]/g, '');
 
-// database
 let DB = null;
+
+// โหลดข้อมูลยาจากไฟล์
 async function loadDB() {
     const res = await  fetch('data/drugs.json', { cache: 'no-cache' });
     if (!res.ok) throw new Error('โหลดข้อมูลยาไม่สำเร็จ (รหัส ' + res.status + ')');
@@ -27,19 +26,30 @@ async function loadDB() {
     return DB;
 }
 
+// ค้นรายการจาก id
 const byId = (list, id) => list.find(x => x.id === id) || null;
+
+// ข้อมูลกลุ่มอาการ
 const cat = id => byId(DB.categories, id);
+
+// ข้อมูลสูตรตำรับ
 const form = id => byId(DB.formulations, id);
+
+// ข้อมูลยี่ห้อ
 const brand = id => byId(DB.brands, id);
+
+// สูตรตำรับในกลุ่มอาการ
 const formsOf = cid => DB.formulations.filter(f => f.categoryId === cid);
+
+// ยี่ห้อในกลุ่มอาการ
 const brandsInCat = cid => DB.brands.filter(b => b.categoryId === cid);
+
+// ยี่ห้อที่ใช้สูตรตำรับเดียวกัน
 const brandsOf = fid => DB.brands.filter(b => b.formulationId === fid);
 
-// รูปแบบเลขทะเบียนหลังจัดรูปแล้ว เช่น 2A721/28
 const RE_REG_KEY = /\d[A-Z]\d{1,4}\/\d{2,4}/;
 
-// ค้นยี่ห้อจากเลขทะเบียน · จัดรูปทั้งสองฝั่งก่อนเทียบ เพราะแต่ละที่เว้นวรรคไม่เหมือนกัน
-// รับข้อความที่มีคำนำหน้าได้ด้วย เช่น "Reg. No. 2A 721/28" จะดึงเฉพาะส่วนเลขทะเบียนมาเทียบ
+// ค้นยี่ห้อจากเลขทะเบียน
 const brandByReg = reg => {
     const raw = regKey(reg);
     if (!raw) return null;
@@ -48,7 +58,7 @@ const brandByReg = reg => {
     return DB.brands.find(b => regKey(b.regNo) === key) || null;
 };
 
-// storage
+// อ่านค่าจากที่เก็บข้อมูลในเบราว์เซอร์
 function lsGet(key, fallback) {
     try {
         const v = localStorage.getItem(key);
@@ -58,6 +68,7 @@ function lsGet(key, fallback) {
     }
 }
 
+// เขียนค่าลงที่เก็บข้อมูลในเบราว์เซอร์
 function lsSet(key, value) {
     try {
         localStorage.setItem(key, JSON.stringify(value));
@@ -67,7 +78,7 @@ function lsSet(key, value) {
     }
 }
 
-// รวมข้อมูลสูตรตำรับกับข้อมูลเฉพาะยี่ห้อ — ถ้ายี่ห้อมี override ใช้ของยี่ห้อ
+// รวมข้อมูลสูตรตำรับกับข้อมูลเฉพาะยี่ห้อ
 function content(b) {
     const f = form(b.formulationId) || {};
     const o = b.override || {};

@@ -154,7 +154,7 @@
 }
 
 /* hero art */
-/* เวที: ขนาดกล่องเก็บเป็นตัวแปร 3 ตัว แก้ที่เดียวทั้งกล่องเปลี่ยนตาม */
+/* เวทีกล่องยา */
 .art{
   position:relative; 
   justify-self:center; 
@@ -179,7 +179,7 @@
   background:radial-gradient(closest-side,rgba(120,10,16,.32),transparent); filter:blur(5px);
 }
 
-/* ชั้นนอก = เอียงตามเมาส์ (JS เปลี่ยน --rx --ry) · ชั้นใน = แกว่งช้าๆ ด้วย CSS */
+/* ชั้นเอียงและชั้นแกว่ง */
 .box3d{
   position:relative; 
   width:var(--w); 
@@ -323,7 +323,7 @@
   background:#E9D8D8;
 }
 
-/* ด้านขวา: ข้อความจางๆ + บาร์โค้ด */
+/* ด้านขวาของกล่อง */
 .face.right .rl{
   position:absolute; 
   left:22%; 
@@ -353,7 +353,7 @@
   background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.75) 47%,transparent 60%);
 }
 
-/* กรอบสแกน 4 มุม + เส้นสแกน */
+/* กรอบสแกนและเส้นสแกน */
 .art-scan{
   position:absolute; 
   left:50%; 
@@ -485,7 +485,7 @@
 .art-bub.p3{left:24%; bottom:4%; --r:-6deg; width:2.3rem; height:2.3rem}
 .art-bub.p2 .art-bub-in,.art-bub.p3 .art-bub-in{border-radius:.8rem}
 
-/* ป้ายบอกชื่อ: ข้อความมาจาก data-tip ใน HTML */
+/* ป้ายบอกชื่อ */
 .art-bub::after{
   content:attr(data-tip); 
   position:absolute; 
@@ -590,7 +590,7 @@
              border-color var(--d2) var(--ez);
 }
 
-/* เลขขั้นตอน: ซ้ายบน ขนาด 4rem */
+/* เลขขั้นตอน */
 .step-num{
   position:absolute; 
   top:.6rem; 
@@ -635,7 +635,7 @@
   height:1rem;
 }
 
-/* ตัวเลขสูง 4rem เริ่มที่ .6rem → จบที่ 4.6rem · กรอบภาพจึงเริ่มหลังจากนั้น */
+/* กรอบภาพใต้เลขขั้นตอน */
 .step-stage{display:block; margin:4rem 0 1rem}
 
 .step-scene{
@@ -651,7 +651,7 @@
   transition:border-color var(--d2) var(--ez);
 }
 
-/* ลายจุดจางที่ขอบ — เทคนิคเดียวกับพื้นหลังฮีโร่ */
+/* ลายจุดจางที่ขอบ */
 .step-scene::before{
   content:""; 
   position:absolute;
@@ -663,7 +663,7 @@
   -webkit-mask-image:radial-gradient(70% 70% at 50% 50%,#000 20%,transparent 80%);
 }
 
-/* ทุกชิ้นในฉากวัดเป็น em · 1em = 5% ของความกว้างกรอบ */
+/* หน่วยของฉาก */
 .sc{
   position:absolute; 
   inset:0; 
@@ -689,7 +689,7 @@
 .step.is-open .step-hint{opacity:0}
 
 /*  STEPS · ภาพในการ์ด  */
-/*  หน้าฉลาก: ใช้ทั้งฉาก 1 และ 2 */
+/* หน้าฉลาก */
 .lb-band{
   height:17%; 
   background:linear-gradient(90deg,#EE2B33,#BE0F18);
@@ -766,7 +766,7 @@
   height:1em;
 }
 
-/* ตัวเครื่อง: สูง 11.4em กว้าง 5.9em (ราว 1:2 เหมือนมือถือจริง) วางกลางฉาก */
+/* ตัวเครื่องโทรศัพท์ */
 .s1-phone{
   position:absolute; 
   left:calc(50% - 2.95em); 
@@ -789,7 +789,7 @@
   border-radius:0 .1em .1em 0; background:#2A2C33;
 }
 
-/* หน้าจอ: ภาพจากกล้อง = พื้นโต๊ะสีอุ่นๆ */
+/* หน้าจอโทรศัพท์ */
 .s1-screen{
   position:relative; 
   height:100%; 
@@ -816,7 +816,7 @@
   background:linear-gradient(118deg,rgba(255,255,255,.13) 0,rgba(255,255,255,0) 38%);
 }
 
-/* หน้ากล่องยาที่กล้องเห็น + เงาบนโต๊ะ */
+/* กล่องยาในภาพกล้อง */
 .s1-shadow{
   position:absolute; 
   left:50%; 
@@ -891,7 +891,7 @@
   background:linear-gradient(to bottom,transparent 46%,rgba(255,80,88,.25) 49%,#FF4D55 50%,transparent 51%);
 }
 
-/* แถบคำแนะนำ + ปุ่มชัตเตอร์ + แสงแฟลช */
+/* แถบคำแนะนำและปุ่มชัตเตอร์ */
 .s1-hint{
   position:absolute; 
   bottom:2.25em; 
@@ -963,7 +963,7 @@
 .s2-body .lb-sub{width:34%}
 .s2-body .lb-line{height:.2em}
 
-/* ช่องเลขทะเบียน + กรอบเขียวตอนตรวจผ่าน */
+/* ช่องเลขทะเบียน */
 .s2-reg{
   position:relative; 
   margin-top:.25em; 
@@ -1110,19 +1110,19 @@
 .s3-row.warn i{background:var(--warn-line)}
 
 @media (prefers-reduced-motion:no-preference){
-  /* ฉาก 1: กรอบจับฉลาก → เส้นสแกนวิ่ง → กดชัตเตอร์ → แฟลช */
+  /* ฉาก 1 */
   .step.is-open .s1-vf{animation:scLock 3.2s var(--ez-out) infinite}
   .step.is-open .s1-beam{animation:scBeam 1.6s cubic-bezier(.45,0,.55,1) infinite}
   .step.is-open .s1-shutter i{animation:scPress 3.2s ease-in-out infinite}
   .step.is-open .s1-flash{animation:scFlash 3.2s ease-out infinite}
 
-  /* ฉาก 2: ฉลากขยับ → สแกนผ่าน → ช่องเลขทะเบียนเขียว → ป้ายเด้ง */
+  /* ฉาก 2 */
   .step.is-open .s2-card{animation:scTilt 3s var(--ez) infinite}
   .step.is-open .s2-beam{animation:scSweep 3s cubic-bezier(.45,0,.55,1) infinite}
   .step.is-open .s2-hl{animation:scMark 3s var(--ez-out) infinite}
   .step.is-open .sc-chip{animation:scPop 3s var(--ez-back) infinite}
 
-  /* ฉาก 3: การ์ดลอย → แถวข้อมูลเลื่อนเข้าทีละแถว */
+  /* ฉาก 3 */
   .step.is-open .s3-card{animation:scLift 3s var(--ez-out) infinite}
   .step.is-open .s3-row{animation:scRow 3s var(--ez-out) infinite}
   .step.is-open .s3-row:nth-of-type(3){animation-delay:.12s}
@@ -1174,7 +1174,7 @@
   border-color:var(--tint-line);
 }
 
-/* ปุ่มหลัก: พื้นแดงไล่สี ตัวอักษรขาว */
+/* ปุ่มหลัก */
 .shortcut.is-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2)); border-color:transparent; color:#fff}
 .shortcut.is-primary:hover{box-shadow:0 16px 40px rgba(224,27,36,.4)}
 
@@ -1251,7 +1251,7 @@
   transition:transform var(--d2) var(--ez), box-shadow var(--d2) var(--ez), border-color var(--d2) var(--ez);
 }
 
-/* แถบสีประจำกลุ่มที่ขอบซ้าย */
+/* แถบสีประจำกลุ่ม */
 .catcard::before{
   content:""; 
   position:absolute; 
@@ -1412,7 +1412,7 @@ html.entered .hdr{animation:hdrDrop 640ms var(--ez-out) both}
 @keyframes hdrDrop{from{opacity:0; transform:translateY(-100%)} to{opacity:1; transform:none}}
 
 /*  SCAN · หน้าถ่ายรูปฉลากยา  */
-/* คอลัมน์เดียวกึ่งกลาง · กรอบภาพถูกบีบตามสัดส่วนเมื่อชนเพดานความสูง จึงต้องจัดกึ่งกลางเอง */
+/* คอลัมน์กึ่งกลาง */
 .camcol{max-width:46rem; margin-inline:auto}
 
 .camstage{position:relative; margin-top:1.3rem; aspect-ratio:4/3; max-height:68vh; margin-inline:auto;
@@ -1422,13 +1422,13 @@ html.entered .hdr{animation:hdrDrop 640ms var(--ez-out) both}
 .camstage[data-state="live"]>video{display:block}
 .camstage[data-state="shot"]>img{display:block}
 
-/* ข้อความชวนกดก่อนเปิดกล้อง */
+/* ข้อความก่อนเปิดกล้อง */
 .camhint{display:grid; justify-items:center; gap:.9rem; padding:1.5rem; text-align:center; color:var(--dark-ink-2)}
 .camhint svg{width:3.4rem; height:3.4rem}
 .camhint p{font-size:1rem; line-height:1.8}
 .camstage:not([data-state="idle"]) .camhint{display:none}
 
-/* กรอบนำถ่าย เห็นเฉพาะตอนกล้องทำงาน */
+/* กรอบนำถ่าย */
 .camframe{position:absolute; inset:12% 8%; border-radius:var(--r); pointer-events:none; opacity:0;
   box-shadow:0 0 0 100vmax rgba(0,0,0,.28);
   background:
@@ -1471,3 +1471,11 @@ html.entered .hdr{animation:hdrDrop 640ms var(--ez-out) both}
   animation:camSpin 760ms linear infinite}
 @keyframes camSpin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.camstage.is-sending::before{animation-duration:2.4s}}
+
+/* กล่องผลตรวจทะเบียน อย. */
+.vfy{margin-top:1.1rem; text-align:left}
+.vfy-spin{width:1.35rem; height:1.35rem; flex:0 0 auto; margin-top:.15rem;
+  border-radius:50%; border:2.5px solid var(--info-line); border-top-color:var(--info)}
+@media (prefers-reduced-motion:no-preference){
+  .vfy-spin{animation:camSpin 760ms linear infinite} }
+.vfy-act{display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.85rem}

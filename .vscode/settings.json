@@ -1,5 +1,12 @@
 {
     "json.schemas": [
-        
-    ]
+
+    ],
+
+    // Live Server ต้องเปิดที่ localhost:5173 เท่านั้น
+    // เพราะฝั่ง Backend อนุญาตให้เรียกข้ามต้นทางได้แค่ localhost:5173 กับ localhost:3000
+    // ใช้ 127.0.0.1 แทน localhost ไม่ได้ เบราว์เซอร์ถือว่าเป็นคนละต้นทางกัน
+    "liveServer.settings.host": "localhost",
+    "liveServer.settings.port": 5173,
+    "liveServer.settings.root": "/frontend"
 }

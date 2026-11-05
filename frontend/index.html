@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
 
-  <!-- อ่านค่าที่ผู้ใช้เลือกไว้ก่อนวาดหน้าจอ ไม่งั้นหน้าจะกะพริบเป็นโหมดสว่างแวบหนึ่งก่อน -->
+  <!-- ตั้งโหมดสีและขนาดตัวอักษรก่อนวาดหน้าจอ -->
   <script>
     try {
       var fs = JSON.parse(localStorage.getItem('mc.fs') || 'null');
@@ -403,6 +403,7 @@
     </nav>
   </aside>
 
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 
