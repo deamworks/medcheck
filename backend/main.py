@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import text
+from sqlalchemy import text, or_
 from google.cloud import vision
 import os
 from fastapi.middleware.cors import CORSMiddleware
@@ -82,9 +82,22 @@ def test_all_tables(db: Session = Depends(get_db)):
         "admin_user_count": db.query(AdminUser).count(),
     }
 
+@app.get("/categories")
+def list_categories(db: Session = Depends(get_db)):
+    categories = db.query(Category).order_by(Category.id).all()
+    return [{"id": c.id, "name_th": c.name_th} for c in categories]
+
 @app.get("/medicines/search")
 def search_medicine(name: str, db: Session = Depends(get_db)):
-    results = db.query(Medicine).filter(Medicine.name_th.ilike(f"%{name}%")).all()
+    pattern = f"%{name}%"
+    results = (
+        db.query(Medicine)
+        .outerjoin(Brand, Brand.medicine_id == Medicine.id)
+        .filter(or_(Medicine.name_th.ilike(pattern), Brand.brand_name.ilike(pattern)))
+        .distinct()
+        .order_by(Medicine.id)
+        .all()
+    )
 
     return [
         {
