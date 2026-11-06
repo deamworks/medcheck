@@ -47,6 +47,42 @@ const brandsInCat = cid => DB.brands.filter(b => b.categoryId === cid);
 // ยี่ห้อที่ใช้สูตรตำรับเดียวกัน
 const brandsOf = fid => DB.brands.filter(b => b.formulationId === fid);
 
+const RE_THAI  = /[฀-๿]/;
+const RE_LATIN = /[A-Za-z]/;
+
+// แยกข้อความที่ปนสองภาษาออกเป็นส่วนไทยกับส่วนอังกฤษ
+function splitLang(text) {
+  const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+  const lang = words.map(w => RE_THAI.test(w) ? 'th' : RE_LATIN.test(w) ? 'en' : '');
+  let last = '';
+  for (let i = 0; i < lang.length; i++) {
+    if (lang[i]) last = lang[i]; else lang[i] = last;
+  }
+  for (let i = lang.length - 1; i >= 0; i--) {
+    if (!lang[i]) lang[i] = lang[i + 1] || '';
+  }
+  const pick = k => words.filter((w, i) => lang[i] === k).join(' ').trim();
+  return { th: pick('th'), en: pick('en') };
+}
+
+// ชื่อยาเฉพาะส่วนภาษาไทย
+const thName = t => splitLang(t).th || String(t || '');
+
+// ชื่อยาเฉพาะส่วนภาษาอังกฤษ
+const enName = t => splitLang(t).en;
+
+// รูปแบบยาเฉพาะภาษาไทย
+const thForm = t => String(t || '').split('/').map(x => x.trim())
+  .filter(x => x && RE_THAI.test(x))[0] || String(t || '');
+
+// ชื่อตัวยาสำคัญภาษาไทย จับคู่ตามลำดับที่เขียนไว้ใน genericTh
+function ingredientsTh(c) {
+  const th = String(c.genericTh || '').split('+').map(x => x.trim()).filter(Boolean);
+  const use = th.length === c.ingredients.length;
+  return c.ingredients.map((ing, i) =>
+    (use ? th[i] : ing.name) + (ing.strength ? ' ' + ing.strength : ''));
+}
+
 const RE_REG_KEY = /\d[A-Z]\d{1,4}\/\d{2,4}/;
 
 // ค้นยี่ห้อจากเลขทะเบียน

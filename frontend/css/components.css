@@ -11,6 +11,7 @@
   border:2px solid var(--line-2); background:var(--surface); font-size:1.05rem;
   transition:border-color var(--d1) var(--ez), box-shadow var(--d1) var(--ez)}
 .searchbox input::placeholder{color:var(--ink-3)}
+.searchbox input{caret-color:var(--primary)}
 .searchbox input:focus{border-color:var(--primary); box-shadow:0 0 0 5px var(--tint); outline:none}
 
 /* ปุ่มล้างและปุ่มไมค์ */
@@ -79,6 +80,7 @@
 
 /*  แถวผลลัพธ์ */
 .rows{display:grid; gap:.75rem; margin-top:1rem}
+.rows>li{min-width:0}
 .row{display:flex; align-items:center; gap:1rem; padding:1.15rem 1.2rem; position:relative; overflow:hidden;
   border-radius:var(--r); border:1.5px solid var(--line); background:var(--surface); box-shadow:var(--sh-1);
   text-decoration:none; color:inherit;
@@ -95,6 +97,8 @@
 .row-b b{display:block; font-family:var(--f-head); font-size:1.08rem; font-weight:600; line-height:1.35}
 .row-b .gen{font-size:.9rem; color:var(--ink-3); margin-top:.1rem}
 .row-b .tags{display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.55rem}
+.row-b .tags .pill{max-width:100%}
+.row-b .tags .pill-red{white-space:normal}
 .row-go{color:var(--ink-3); transition:transform var(--d2) var(--ez), color var(--d2) var(--ez)}
 .row-go svg{width:1.4rem; height:1.4rem}
 .row:hover .row-go{color:var(--primary); transform:translateX(4px)}
@@ -107,7 +111,7 @@
 .pill-bad{background:var(--danger-bg); color:var(--danger); border:1.5px solid var(--danger-line)}
 .pill-red{background:var(--tint-2); color:var(--brand-ink)}
 .pill-grey{background:var(--surface-3); color:var(--ink-2); border:1px solid var(--line);
-  font-family:var(--f-mono); font-weight:500; font-size:.82rem}
+  font-family:var(--f-body); font-weight:500; font-size:.86rem; font-variant-numeric:tabular-nums}
 
 /*  STATES · กล่องสถานะ  */
 .state{max-width:42rem; margin-inline:auto; text-align:center; padding:clamp(1.8rem,4vw,2.8rem) clamp(1.2rem,3vw,2rem);
@@ -129,6 +133,7 @@
 .res-badges{display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; margin-bottom:1rem}
 .res-title{font-size:clamp(1.5rem,3.4vw,2.15rem); line-height:1.25}
 .res-generic{color:var(--ink-3); font-size:1.02rem; margin-top:.25rem}
+.res-en{color:var(--ink-3); font-size:.86rem; margin-top:.3rem; opacity:.75; font-family:var(--f-body)}
 .res-tags{display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.9rem}
 
 /* แท็บ */

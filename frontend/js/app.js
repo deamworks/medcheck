@@ -134,6 +134,9 @@ const VIEWS = ['home', 'scan', 'search', 'detail', 'about',];
 const TITLES = {home:'หน้าหลัก',scan:'ถ่ายรูปฉลากยา', search:'ค้นหายา', detail:'ข้อมูลยา', about:'เกี่ยวกับระบบ',};
 let currentRoute = {name:'home', param:''};
 
+// หน้าที่ผู้ใช้มาก่อนเข้าหน้าข้อมูลยา ใช้ตั้งปลายทางของปุ่มย้อนกลับ
+let detailFrom = 'search';
+
 // อ่านเส้นทางจาก hash
 function parseHash() {
     const raw = location.hash.replace(/^#\/?/, '');
@@ -149,7 +152,9 @@ function parseHash() {
 function route() {
     stopSpeech();
     camClose();
+    const prev = currentRoute.name;
     currentRoute = parseHash();
+    if (currentRoute.name === 'detail' && prev !== 'detail') detailFrom = prev;
     const navName = currentRoute.name === 'detail' ? 'search' : currentRoute.name;
 
     VIEWS.forEach(v => {
@@ -165,7 +170,7 @@ function route() {
     document.title = TITLES[currentRoute.name] + ' · MedCheck';
 
     if (currentRoute.name === 'home')   { renderHome(); renderRecent(); }
-    if (currentRoute.name === 'scan')   camReset(false);
+    if (currentRoute.name === 'scan' && !(prev === 'detail' && detailFrom === 'scan')) camReset(false);
     if (currentRoute.name === 'search') renderSearch(currentRoute.param);
     if (currentRoute.name === 'detail') renderDetail(currentRoute.param, currentRoute.sub);
     if (currentRoute.name === 'about')  renderAbout();
@@ -392,11 +397,11 @@ function rowItem(b) {
   const c = content(b), ct = cat(b.categoryId);
   return '<li><a class="row" href="#/drug/' + encodeURIComponent(b.id) + '" style="' + toneVars(b.categoryId) + '">' +
       '<span class="row-ico" data-ico="' + (b.packaging === 'blister' ? 'blister' : 'bottle') + '"></span>' +
-      '<span class="row-b"><b>' + esc(b.productName) + '</b>' +
-        '<span class="gen">' + esc(c.genericEn || c.genericTh) + '</span>' +
+      '<span class="row-b"><b>' + esc(thName(b.productName)) + '</b>' +
+        '<span class="gen">' + esc(c.genericTh || c.genericEn) + '</span>' +
         '<span class="tags">' +
           '<span class="pill pill-red">' + esc(ct ? ct.short : '') + '</span>' +
-          '<span class="pill pill-grey">Reg. No. ' + esc(b.regNo) + '</span>' +
+          '<span class="pill pill-grey">เลขทะเบียน ' + esc(b.regNo) + '</span>' +
           (b.status === 'active' ? '' : '<span class="pill pill-bad">ยกเลิกทะเบียน</span>') +
         '</span></span>' +
       '<span class="row-go" data-ico="caret"></span>' +
@@ -534,7 +539,7 @@ function renderSearch(pre) {
     sBound = true;
   }
 
-  if (pre) sState.cat = pre;
+  if (pre) sState.cat = cat(pre) ? pre : '';
   $('#q').value = sState.q;
   hideSuggest();
   syncChips();
@@ -680,8 +685,8 @@ function renderSuggest() {
         const c = content(b), ct = cat(b.categoryId);
         return '<li role="option" id="sug-' + i + '" aria-selected="false" data-sug="' + i + '" style="' + toneVars(b.categoryId) + '">' +
             '<span class="s-ico">' + svg(b.packaging === 'blister' ? 'blister' : 'bottle') + '</span>' +
-            '<span class="s-b"><b>' + esc(b.productName) + '</b>' +
-              '<span>' + esc(c.genericEn || c.genericTh) + ' · ' + esc(ct ? ct.short : '') + '</span></span>' +
+            '<span class="s-b"><b>' + esc(thName(b.productName)) + '</b>' +
+              '<span>' + esc(c.genericTh || c.genericEn) + ' · ' + esc(ct ? ct.short : '') + '</span></span>' +
             '<span class="s-go">' + svg('arrow') + '</span>' +
           '</li>';
       }).join('')
@@ -934,6 +939,7 @@ window.addEventListener('resize', debounce(() => { if (inkFn) inkFn(); }, 150));
 // ส่วนหัวของหน้าข้อมูลยา
 function detailHead(b, c, ct, active) {
   const ok = b.status === 'active';
+  const nameEn = enName(b.productName);
   return '<div class="res-hero">' +
     '<div class="res-badges">' +
       (ok ? '<span class="pill pill-ok">' + svg('check-c') + 'ขึ้นทะเบียน อย. แล้ว</span>'
@@ -941,12 +947,14 @@ function detailHead(b, c, ct, active) {
       (TTS_OK ? '<button class="speak" type="button" id="readDrug" aria-pressed="false" style="margin-inline-start:auto">' +
                   svg('speaker') + '<span>ฟังข้อมูลยา</span></button>' : '') +
     '</div>' +
-    '<h1 class="res-title">' + esc(b.productName) + '</h1>' +
-    '<p class="res-generic">' + esc(c.genericEn || c.genericTh) + '</p>' +
+    '<h1 class="res-title">' + esc(thName(b.productName)) + '</h1>' +
+    '<p class="res-generic">' + esc(c.genericTh || c.genericEn) + '</p>' +
+    (nameEn ? '<p class="res-en">' + esc(nameEn) +
+              (c.genericEn ? ' · ' + esc(c.genericEn) : '') + '</p>' : '') +
     '<div class="res-tags">' +
       '<span class="pill pill-red">' + esc(ct ? ct.short : '') + '</span>' +
-      '<span class="pill pill-grey">Reg. No. ' + esc(b.regNo) + '</span>' +
-      '<span class="pill pill-grey" style="font-family:var(--f-body)">' + esc(packLabel(b.packaging)) + '</span>' +
+      '<span class="pill pill-grey">เลขทะเบียน ' + esc(b.regNo) + '</span>' +
+      '<span class="pill pill-grey">' + esc(packLabel(b.packaging)) + '</span>' +
     '</div>' +
     '<div class="tabs" role="tablist" aria-label="ข้อมูลยา">' +
       TABS.map(t =>
@@ -994,9 +1002,9 @@ function panelUse(b, c) {
 
   return '<div class="panel-head"><h3>' + svg('clipboard') + 'ข้อบ่งใช้และสรรพคุณ</h3></div>' +
     acc +
-    infoRow('pill', 'ตัวยาสำคัญและปริมาณ', c.ingredients.map(i => i.name + (i.strength ? ' ' + i.strength : '')).join(' + ')) +
+    infoRow('pill', 'ตัวยาสำคัญและปริมาณ', ingredientsTh(c).join(' + ')) +
     infoRow('factory', 'ผู้ผลิต / ผู้รับอนุญาต', b.licensee) +
-    infoRow('box', 'รูปแบบยา', b.dosageForm || c.dosageForm) +
+    infoRow('box', 'รูปแบบยา', thForm(b.dosageForm || c.dosageForm)) +
     firstWarn;
 }
 
@@ -1007,7 +1015,7 @@ function panelDose(b, c) {
         '<div class="dosecard-h"><b>สำหรับผู้ใหญ่</b><span class="pill">' + esc(packLabel(b.packaging)) + '</span></div>' +
         '<dl class="dosecard-g">' +
           '<div><dt>ขนาดรับประทาน</dt><dd>' + esc(c.dosageAdult) + '</dd></div>' +
-          '<div><dt>รูปแบบยา</dt><dd style="font-size:1rem">' + esc(b.dosageForm || c.dosageForm || '—') + '</dd></div>' +
+          '<div><dt>รูปแบบยา</dt><dd style="font-size:1rem">' + esc(thForm(b.dosageForm || c.dosageForm) || '—') + '</dd></div>' +
         '</dl>' +
         '<p class="dosecard-f">ระบบครอบคลุมเฉพาะสูตรตำรับสำหรับผู้ใหญ่ กรณีใช้ในเด็กโปรดปรึกษาแพทย์หรือเภสัชกร</p>' +
       '</div>'
@@ -1051,6 +1059,13 @@ function detailFoot() {
   '</div>';
 }
 
+// ปลายทางของปุ่มย้อนกลับ แยกตามหน้าที่ผู้ใช้มา
+const BACK_TO = {
+  scan:   ['scan',   'กลับไปหน้าถ่ายรูปฉลากยา'],
+  home:   ['',       'กลับหน้าหลัก'],
+  search: ['search', 'กลับไปหน้าค้นหา'],
+};
+
 // วาดหน้าข้อมูลยา
 function renderDetail(id, tab) {
   const host = $('#detailBody');
@@ -1068,9 +1083,11 @@ function renderDetail(id, tab) {
   const c = content(b), ct = cat(b.categoryId);
   const active = TABS.some(t => t[0] === tab) ? tab : 'use';
   const others = brandsOf(b.formulationId).filter(x => x.id !== b.id);
+  const backTo = BACK_TO[detailFrom] || BACK_TO.search;
 
   host.innerHTML =
-    '<div class="page-head"><a class="backlink" href="#/search" aria-label="กลับไปหน้าค้นหา">' + svg('back') + '</a></div>' +
+    '<div class="page-head"><a class="backlink" href="#/' + backTo[0] + '" aria-label="' + backTo[1] + '">' +
+      svg('back') + '</a></div>' +
     '<div class="rescard">' +
       detailHead(b, c, ct, active) +
       tabPanel('use',  active, panelUse(b, c)) +
@@ -1237,19 +1254,54 @@ async function errText(res) {
   return 'อ่านฉลากไม่สำเร็จ (รหัส ' + res.status + ')';
 }
 
+// ด้านยาวสุดของภาพที่ส่งขึ้นเซิร์ฟเวอร์ และเวลารอสูงสุด
+const MAX_EDGE = 1600;
+const SCAN_TIMEOUT = 60000;
+
+// ย่อภาพก่อนส่ง ภาพจากกล้องมือถือใหญ่หลายเมกะไบต์ ทำให้อัปโหลดช้าโดยไม่จำเป็น
+function shrink(file) {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const long  = Math.max(img.width, img.height);
+      const scale = Math.min(1, MAX_EDGE / long);
+      if (scale === 1 && file.size <= 900 * 1024) { resolve(file); return; }
+
+      const c = document.createElement('canvas');
+      c.width  = Math.round(img.width  * scale);
+      c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => resolve(b || file), 'image/jpeg', 0.85);
+    };
+
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
 // ส่งภาพฉลากไปให้เซิร์ฟเวอร์อ่าน
 async function sendLabel(file) {
   if (!SCAN_API) return fakeScan();
 
   const fd = new FormData();
-  fd.append('file', file, 'label.jpg');
+  fd.append('file', await shrink(file), 'label.jpg');
+
+  // ตัดการรอเองเมื่อครบเวลา ไม่งั้นถ้าเซิร์ฟเวอร์เงียบ หน้าเว็บจะหมุนค้างไปเรื่อย ๆ
+  const ctrl  = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), SCAN_TIMEOUT);
 
   let res;
   try {
-    res = await fetch(SCAN_API, { method: 'POST', body: fd });
+    res = await fetch(SCAN_API, { method: 'POST', body: fd, signal: ctrl.signal });
   } catch (e) {
-
-    throw new Error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง');
+    throw new Error(e.name === 'AbortError'
+      ? 'เซิร์ฟเวอร์ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง'
+      : 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง');
+  } finally {
+    clearTimeout(timer);
   }
 
   if (!res.ok) throw new Error(await errText(res));
@@ -1593,7 +1645,7 @@ function bindDetail(host, b, c, ct) {
   const read = $('#readDrug', host);
   if (read) read.addEventListener('click', () => {
     speakText([
-      speakName(b.productName), c.genericTh,
+      speakName(thName(b.productName)), c.genericTh,
       'กลุ่ม ' + (ct ? ct.short : ''),
       'เลขทะเบียน ' + b.regNo,
       c.indications.length ? 'ข้อบ่งใช้ ' + c.indications.join(' ') : '',

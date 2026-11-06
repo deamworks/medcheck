@@ -13,6 +13,7 @@
 
     /* สีที่บอกหน้าที่ */
     --primary:#E01B24; 
+    --cta:#E01B24; --cta-2:#B4121A;
     --primary-2:#BE0F18; 
     --primary-hover:#BE0F18; 
     --primary-active:#960C13;
@@ -90,6 +91,7 @@
 /* โหมดมืดตามค่าของเครื่อง */
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){ color-scheme:dark;
     --primary:#F2444C; --primary-2:#D01B24; --primary-hover:#FF5A62; --primary-active:#BE0F18;
+    --cta:#C8141D; --cta-2:#9E0F16;
     --tint:#2C1618; --tint-2:#3D1D20; --tint-line:#5A2A2E; --brand-ink:#FF9494;
     --c1:#FF9E86; --c1-bg:#33201B; --c2:#66D6B4; --c2-bg:#123028; --c3:#FF9494; --c3-bg:#331A1A;
     --c4:#BFA3F5; --c4-bg:#241C38; --c5:#8CBAEE; --c5-bg:#132738; --c6:#F0C476; --c6-bg:#332715;
@@ -102,12 +104,13 @@
     --info:#8FBDEE; --info-bg:#112336; --info-line:#274461;
     --dark:#0C0E11; --dark-2:#14171B; --dark-line:#252A31;
     --sh-1:0 1px 2px rgba(0,0,0,.5); --sh-2:0 6px 20px rgba(0,0,0,.55); --sh-3:0 20px 48px rgba(0,0,0,.68);
-    --glow:0 8px 28px rgba(242,68,76,.28);
+    --glow:0 8px 24px rgba(0,0,0,.6);
 }}
 
 /* โหมดมืดที่ผู้ใช้เลือกเอง */
 :root[data-theme="dark"]{ color-scheme:dark;
   --primary:#F2444C; --primary-2:#D01B24; --primary-hover:#FF5A62; --primary-active:#BE0F18;
+  --cta:#C8141D; --cta-2:#9E0F16;
   --tint:#2C1618; --tint-2:#3D1D20; --tint-line:#5A2A2E; --brand-ink:#FF9494;
   --c1:#FF9E86; --c1-bg:#33201B; --c2:#66D6B4; --c2-bg:#123028; --c3:#FF9494; --c3-bg:#331A1A;
   --c4:#BFA3F5; --c4-bg:#241C38; --c5:#8CBAEE; --c5-bg:#132738; --c6:#F0C476; --c6-bg:#332715;
@@ -120,7 +123,7 @@
   --info:#8FBDEE; --info-bg:#112336; --info-line:#274461;
   --dark:#0C0E11; --dark-2:#14171B; --dark-line:#252A31;
   --sh-1:0 1px 2px rgba(0,0,0,.5); --sh-2:0 6px 20px rgba(0,0,0,.55); --sh-3:0 20px 48px rgba(0,0,0,.68);
-  --glow:0 8px 28px rgba(242,68,76,.28);
+  --glow:0 8px 24px rgba(0,0,0,.6);
 }
 
 /* ระดับขนาดตัวอักษร */
