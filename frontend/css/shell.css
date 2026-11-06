@@ -20,7 +20,7 @@
 @supports (backdrop-filter:blur(8px)){
   .hdr.is-scrolled{backdrop-filter:saturate(1.5) blur(16px)};}
 
-/* ฮีโร่เลื่อนขึ้นไปอยู่ใต้แถบบน จะได้เห็นพื้นหลังทะลุแถบโปร่ง */
+/* ฮีโร่ใต้แถบบน */
 #view-home .hero{margin-top:calc(-1 * var(--hdr-h,0px)); padding-top:var(--hdr-h,0px)}
 
 .hdr .wrap{max-width:min(84rem,100%);}
@@ -65,7 +65,6 @@
     inset:0;
     background:linear-gradient(120deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%);
     transform:translateX(-120%); 
-    animation:sheen 10s var(--ez) 1.4s infinite;
 }
 @keyframes sheen{0%,72%{transform:translateX(-120%)} 88%,100%{transform:translateX(120%)}}
 
@@ -89,7 +88,7 @@
   transition:background var(--d1) var(--ez), color var(--d1) var(--ez)}
 .mainnav a svg{width:1.2rem;height:1.2rem}
 .mainnav a:hover{background:var(--surface-3); color:var(--ink)}
-.mainnav a[aria-current="page"]{color:var(--primary); font-weight:600;
+.mainnav a[aria-current="page"]{color:var(--brand-ink); font-weight:600;
   background:var(--tint)}
 
 .hdr-act{display:flex; align-items:center; gap:.4rem; margin-inline-start:auto}
@@ -124,7 +123,7 @@
 .menu-btn .bars i:nth-child(2){top:calc(50% - 1.25px)}
 .menu-btn .bars i:nth-child(3){bottom:0}
 
-.menu-btn[aria-expanded="true"]{background:var(--primary); color:#fff;
+.menu-btn[aria-expanded="true"]{background:var(--cta); color:#fff;
   border-color:var(--primary)}
 .menu-btn[aria-expanded="true"] .bars i:nth-child(1){transform:translateY(.5rem) rotate(45deg)}
 .menu-btn[aria-expanded="true"] .bars i:nth-child(2){opacity:0; transform:scaleX(.2)}
@@ -165,7 +164,7 @@
 .drawer-nav a:hover{background:var(--tint); border-color:var(--tint-line);
   color:var(--primary)}
 .drawer-nav a[aria-current="page"]{
-  background:linear-gradient(135deg,var(--primary),var(--primary-2));
+  background:linear-gradient(135deg,var(--cta),var(--cta-2));
   color:#fff; border-color:transparent; box-shadow:var(--glow)}
 
 body.locked{overflow:hidden}
@@ -189,14 +188,18 @@ body.locked{overflow:hidden}
 .fs-ctl button:nth-child(2){font-size:.95rem}
 .fs-ctl button:nth-child(3){font-size:1.1rem}
 .fs-ctl button:hover{background:var(--surface-3); color:var(--ink-2)}
-.fs-ctl button[aria-pressed="true"]{background:var(--primary); color:#fff;
+.fs-ctl button[aria-pressed="true"]{background:var(--cta); color:#fff;
   box-shadow:var(--glow)}
 .fs-ctl button:active{transform:scale(.9)}
+/* ขยายพื้นที่กดให้ถึง 44px โดยไม่ดันแถบบนให้สูงขึ้น */
+.fs-ctl button{position:relative}
+.fs-ctl button::after{content:""; position:absolute; left:50%; top:50%;
+  width:100%; height:2.75rem; transform:translate(-50%,-50%)}
 
 
 @media (max-width:400px){
-  .fs-ctl button{min-width:2rem; height:2.1rem; padding:0 .2rem}
-  .hdr-in{gap:.5rem}
+  .fs-ctl button{min-width:2.3rem; height:2.4rem; padding:0 .2rem}
+  .hdr-in{gap:.4rem}
 }
 
 /* button */
@@ -212,7 +215,7 @@ body.locked{overflow:hidden}
 .btn svg{width:1.25rem;height:1.25rem}
 .btn:active{transform:scale(.97)}
 
-.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));
+.btn-primary{background:linear-gradient(135deg,var(--cta),var(--cta-2));
   color:#fff; box-shadow:var(--glow)}
 .btn-primary:hover{box-shadow:0 12px 34px rgba(224,27,36,.42);
   transform:translateY(-2px)}
@@ -236,7 +239,7 @@ body.locked{overflow:hidden}
 .btn[disabled],.btn[aria-disabled="true"]{opacity:.45; cursor:not-allowed;
   box-shadow:none; transform:none}
 
-/* ระลอกคลื่นตอนกด ให้รู้ว่าระบบรับคำสั่งแล้ว */
+/* ระลอกคลื่นตอนกด */
 .btn::after{content:""; position:absolute; inset:0; border-radius:inherit;
   background:radial-gradient(circle,#fff 12%,transparent 12.5%);
   background-position:50%; background-size:220%; opacity:0;
@@ -275,6 +278,7 @@ body.locked{overflow:hidden}
   padding-block:1.6rem; font-size:.9rem}
 .ftr-in{display:flex; gap:.85rem 1.6rem; flex-wrap:wrap; align-items:center;
   justify-content:space-between; color:var(--ink-3)}
-.ftr a{color:var(--ink-2); text-decoration:none}
+.ftr a{display:inline-flex; align-items:center; min-height:2.75rem; padding-inline:.2rem;
+  color:var(--ink-2); text-decoration:none}
 .ftr a:hover{color:var(--primary); text-decoration:underline}
 .ftr nav{display:flex; gap:1.1rem; flex-wrap:wrap}

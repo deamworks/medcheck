@@ -1,7 +1,5 @@
-
 "use strict";
 
-// icons
 const P = {
   scan:'<path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16M3.5 12h17"/>',
   home:'<path d="M3 10.6 12 3.2l9 7.4"/><path d="M5.6 9.6V19a2 2 0 0 0 2 2h2.3v-5.6h4.2V21h2.3a2 2 0 0 0 2-2V9.6"/>',
@@ -52,7 +50,7 @@ const P = {
   pause:'<rect x="7.4" y="5.4" width="3.4" height="13.2" rx="1.3"/><rect x="13.2" y="5.4" width="3.4" height="13.2" rx="1.3"/>',
   play:'<path d="M8.2 5.5 18.6 12 8.2 18.5V5.5Z"/>',
   box:'<path d="M20.4 7.6 12 3.4 3.6 7.6v8.8L12 20.6l8.4-4.2V7.6Z"/><path d="M3.6 7.6 12 11.8l8.4-4.2M12 11.8v8.8"/>',
-  /* ไอคอนกลุ่มอาการ */
+
   stomach:'<path d="M12 3.4s6 6.2 6 10.2a6 6 0 1 1-12 0c0-4 6-10.2 6-10.2Z"/><path d="M8.8 14.6a3.2 3.2 0 0 0 3.2 3.2"/>',
   laxative:'<path d="M12 3.6v11.2M7.6 10.6 12 15l4.4-4.4M5.4 20.4h13.2"/>',
   fever:'<path d="M14.2 14.8V5.6a2.2 2.2 0 1 0-4.4 0v9.2a4.2 4.2 0 1 0 4.4 0Z"/><path d="M12 8.6v7.6"/>',
@@ -61,12 +59,14 @@ const P = {
   mouth:'<path d="M4.4 10.4c2.1-1 4.7-1.5 7.6-1.5s5.5.5 7.6 1.5c-.7 3.7-3.8 6.5-7.6 6.5s-6.9-2.8-7.6-6.5Z"/><path d="M4.6 10.6h14.8"/>',
 };
 
+// สร้างแท็ก svg ของไอคอน
 function svg(n, cls) {
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
        + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"'
        + (cls ? ' class="' + cls + '"' : '') + '>' + (P[n] || P.info) + '</svg>';
 }
 
+// ใส่ไอคอนให้อิลิเมนต์ที่มี data-ico
 function paintIcons(root) {
     (root || document).querySelectorAll('[data-ico]').forEach(el => {
         if (el.dataset.icoDone) return;
@@ -75,10 +75,11 @@ function paintIcons(root) {
     });
 }
 
-// utils
+// ตัวช่วยเลือกอิลิเมนต์
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 
+// หน่วงเวลาก่อนเรียกฟังก์ชัน
 function debounce(fn, ms) {
     let t;
     return function () {
@@ -88,8 +89,10 @@ function debounce(fn, ms) {
     };
 }
 
+// ผู้ใช้ตั้งค่าให้ลดการเคลื่อนไหวหรือไม่
 const REDUCED  = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// นับตัวเลขขึ้นทีละขั้น
 function countUp(el, to, ms) {
     if (REDUCED()) {el.textContent = to; return;}
 
@@ -106,6 +109,7 @@ function countUp(el, to, ms) {
 
 let io = null;
 
+// แสดงอิลิเมนต์เมื่อเลื่อนมาถึง
 function initReveal(scope) {
   if (REDUCED()) {
     $$('.reveal,.pop', scope).forEach(el => el.classList.add('in'));
@@ -126,12 +130,14 @@ function initReveal(scope) {
   $$('.reveal:not(.in),.pop:not(.in)', scope).forEach(el => io.observe(el));
 }
 
-
-// router
 const VIEWS = ['home', 'scan', 'search', 'detail', 'about',];
 const TITLES = {home:'หน้าหลัก',scan:'ถ่ายรูปฉลากยา', search:'ค้นหายา', detail:'ข้อมูลยา', about:'เกี่ยวกับระบบ',};
 let currentRoute = {name:'home', param:''};
 
+// หน้าที่ผู้ใช้มาก่อนเข้าหน้าข้อมูลยา ใช้ตั้งปลายทางของปุ่มย้อนกลับ
+let detailFrom = 'search';
+
+// อ่านเส้นทางจาก hash
 function parseHash() {
     const raw = location.hash.replace(/^#\/?/, '');
     const parts = raw.split('/');
@@ -142,10 +148,13 @@ function parseHash() {
     return { name, param: parts[1] || '', sub: parts[2] || '' };
 }
 
+// สลับหน้าตามเส้นทาง
 function route() {
     stopSpeech();
-    camClose();     // ออกจากหน้าไหนก็ตาม ต้องปิดกล้องเสมอ
+    camClose();
+    const prev = currentRoute.name;
     currentRoute = parseHash();
+    if (currentRoute.name === 'detail' && prev !== 'detail') detailFrom = prev;
     const navName = currentRoute.name === 'detail' ? 'search' : currentRoute.name;
 
     VIEWS.forEach(v => {
@@ -161,7 +170,7 @@ function route() {
     document.title = TITLES[currentRoute.name] + ' · MedCheck';
 
     if (currentRoute.name === 'home')   { renderHome(); renderRecent(); }
-    if (currentRoute.name === 'scan')   camReset(false);   // เข้าหน้าสแกนทีไร เริ่มใหม่เสมอ
+    if (currentRoute.name === 'scan' && !(prev === 'detail' && detailFrom === 'scan')) camReset(false);
     if (currentRoute.name === 'search') renderSearch(currentRoute.param);
     if (currentRoute.name === 'detail') renderDetail(currentRoute.param, currentRoute.sub);
     if (currentRoute.name === 'about')  renderAbout();
@@ -172,13 +181,15 @@ function route() {
     window.scrollTo(0,0);
 }
 
-// header
+// วัดความสูงแถบบน
 function syncHeaderHeight() {
     const h = Math.round($('.hdr').getBoundingClientRect().height);
     document.documentElement.style.setProperty('--hdr-h', h + 'px');
 }
 
 let scrollTick = false;
+
+// ปรับแถบบนตามการเลื่อนหน้า
 function syncHeaderState() {
     $('.hdr').classList.toggle('is-scrolled', window.scrollY > 8);
     scrollTick = false;
@@ -197,19 +208,17 @@ window.addEventListener('resize', debounce(() => {
 
 if (window.ResizeObserver) new ResizeObserver(syncHeaderHeight).observe($('.hdr'));
 
-
-/*  THEME · โหมดสว่างและโหมดมืด  */
-// ถ้าผู้ใช้ยังไม่เคยกดเลือกเอง จะไม่มีแอตทริบิวต์ data-theme และหน้าเว็บจะตามการตั้งค่าของเครื่อง
 const KEY_THEME = 'mc.theme';
 const prefersDark = matchMedia('(prefers-color-scheme: dark)');
 
+// โหมดสีที่ใช้อยู่
 function currentTheme() {
     const set = document.documentElement.dataset.theme;
     if (set === 'dark' || set === 'light') return set;
     return prefersDark.matches ? 'dark' : 'light';
 }
 
-// ปุ่มต้องบอกว่า "กดแล้วจะได้อะไร" ไม่ใช่บอกว่าตอนนี้เป็นโหมดอะไร
+// ปรับปุ่มสลับโหมดสี
 function syncThemeBtn() {
     const btn = $('#themeBtn');
     if (!btn) return;
@@ -223,6 +232,7 @@ function syncThemeBtn() {
     btn.setAttribute('aria-label', dark ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด');
 }
 
+// ตั้งโหมดสี
 function setTheme(mode) {
     document.documentElement.dataset.theme = mode;
     lsSet(KEY_THEME, mode);
@@ -233,27 +243,25 @@ $('#themeBtn').addEventListener('click', () => {
     setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
 });
 
-// ผู้ใช้สลับโหมดที่เครื่องระหว่างเปิดเว็บอยู่ · ตามให้เฉพาะคนที่ยังไม่เคยเลือกเอง
 prefersDark.addEventListener('change', () => {
     if (!document.documentElement.dataset.theme) syncThemeBtn();
 });
 
-
-/*  FONT SIZE · ขนาดตัวอักษร 3 ระดับ  */
-// ระดับ 1 คือขนาดปกติ จึงไม่ต้องมีแอตทริบิวต์ ส่วน 2 กับ 3 ขยายขนาดพื้นฐานของเอกสาร
-// ทุกอย่างในเว็บใช้หน่วยสัมพัทธ์ จึงขยายตามพร้อมกันทั้งหน้าโดยแก้ที่เดียว
 const KEY_FS = 'mc.fs';
 
+// ระดับขนาดตัวอักษรที่ใช้อยู่
 function currentFs() {
     return document.documentElement.dataset.fs || '1';
 }
 
+// ปรับปุ่มขนาดตัวอักษร
 function syncFsBtn() {
     const now = currentFs();
     $$('.fs-ctl [data-fs]').forEach(b =>
         b.setAttribute('aria-pressed', String(b.dataset.fs === now)));
 }
 
+// ตั้งขนาดตัวอักษร
 function setFs(level) {
     const v = String(level);
     if (v === '1') delete document.documentElement.dataset.fs;
@@ -261,21 +269,22 @@ function setFs(level) {
 
     lsSet(KEY_FS, v);
     syncFsBtn();
-    syncHeaderHeight();     // ตัวอักษรโตขึ้น แถบบนสูงขึ้นตาม ต้องวัดใหม่
-    syncDrawerForWidth();   // ขนาดใหญ่สุดจะเปลี่ยนไปใช้เมนูแบบลิ้นชักแทนเมนูแถวบน
+    syncHeaderHeight();
+    syncDrawerForWidth();
 }
 
 $$('.fs-ctl [data-fs]').forEach(b =>
     b.addEventListener('click', () => setFs(b.dataset.fs)));
 
-// ตั้งปุ่มให้ตรงกับค่าที่สคริปต์ในส่วนหัวใส่ไว้ตั้งแต่ก่อนวาดหน้าจอ
 syncThemeBtn();
 syncFsBtn();
 
-// drawer
 let drawerPrev = null;
+
+// ลิ้นชักเมนูเปิดอยู่หรือไม่
 function drawerOpen() { return $('#drawer').classList.contains('open'); }
 
+// เปิดลิ้นชักเมนู
 function openDrawer() {
     if (drawerOpen()) return;
     drawerPrev = document.activeElement;
@@ -290,6 +299,7 @@ function openDrawer() {
     }, REDUCED() ? 0 : 120);
 }
 
+// ปิดลิ้นชักเมนู
 function closeDrawer() {
     if (!$('#drawer') || !drawerOpen()) return;
     $('#drawer').classList.remove('open');
@@ -301,6 +311,7 @@ function closeDrawer() {
     drawerPrev = null;
 }
 
+// สลับรูปแบบเมนูตามความกว้างจอ
 function syncDrawerForWidth() {
     const btn = $('#menuBtn');
     if (btn && getComputedStyle(btn).display === 'none') closeDrawer();
@@ -326,20 +337,19 @@ document.addEventListener('keydown', e => {
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus();}
 });
 
-/** สีประจำกลุ่มอาการ ช่วยให้จำและกวาดตาหาได้เร็วขึ้น */
 const CAT_TONE = {
   'cat-gastro': 1, 'cat-laxative': 2, 'cat-analgesic': 3,
   'cat-antihistamine': 4, 'cat-cough': 5, 'cat-oral': 6,
 };
 
+// ตัวแปรสีประจำกลุ่มอาการ
 function toneVars(cid) {
   const n = CAT_TONE[cid] ||
     (Math.abs(String(cid).split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0)) % 6) + 1;
   return '--cc:var(--c' + n + ');--cbg:var(--c' + n + '-bg)';
 }
 
-// home 
-// ตัวเลขในฮีโร่ — นับจากไฟล์ข้อมูล
+// ตัวเลขสรุปบนหน้าแรก
 function homeStats() {
   return [
     [DB.categories.length,   'กลุ่มอาการ'],
@@ -348,6 +358,7 @@ function homeStats() {
   ];
 }
 
+// การ์ดกลุ่มอาการ
 function catCard(c) {
   return '<a class="catcard reveal" href="#/category/' + encodeURIComponent(c.id) + '" style="' + toneVars(c.id) + '">' +
       '<span class="catcard-ico" data-ico="' + esc(c.icon || 'pill') + '"></span>' +
@@ -358,6 +369,8 @@ function catCard(c) {
 }
 
 let homeDone = false;
+
+// วาดหน้าแรก
 function renderHome() {
     if (homeDone) return;
 
@@ -370,38 +383,35 @@ function renderHome() {
     );
 
     $('#homeCats').innerHTML = DB.categories.slice()
-    .sort((a, b) => a.order - b.order)   
+    .sort((a, b) => a.order - b.order)
     .map(catCard).join('');
     paintIcons($('#homeCats'));
 
-
     initSteps();
     initHeroTilt();
-    homeDone = true;  
+    homeDone = true;
 }
 
-/* SHARED */
-// แถวผลลัพธ์ 1 แถว ใช้ทั้งหน้าค้นหา และ "ดูล่าสุด" ในวันถัดไป
+// แถวรายการยาหนึ่งรายการ
 function rowItem(b) {
   const c = content(b), ct = cat(b.categoryId);
   return '<li><a class="row" href="#/drug/' + encodeURIComponent(b.id) + '" style="' + toneVars(b.categoryId) + '">' +
       '<span class="row-ico" data-ico="' + (b.packaging === 'blister' ? 'blister' : 'bottle') + '"></span>' +
-      '<span class="row-b"><b>' + esc(b.productName) + '</b>' +
-        '<span class="gen">' + esc(c.genericEn || c.genericTh) + '</span>' +
+      '<span class="row-b"><b>' + esc(thName(b.productName)) + '</b>' +
+        '<span class="gen">' + esc(c.genericTh || c.genericEn) + '</span>' +
         '<span class="tags">' +
           '<span class="pill pill-red">' + esc(ct ? ct.short : '') + '</span>' +
-          '<span class="pill pill-grey">Reg. No. ' + esc(b.regNo) + '</span>' +
+          '<span class="pill pill-grey">เลขทะเบียน ' + esc(b.regNo) + '</span>' +
           (b.status === 'active' ? '' : '<span class="pill pill-bad">ยกเลิกทะเบียน</span>') +
         '</span></span>' +
       '<span class="row-go" data-ico="caret"></span>' +
     '</a></li>';
 }
 
-/* SEARCH */
-let sState = { q: '', cat: '' };   // คำค้น และกลุ่มที่เลือก ('' = ทั้งหมด)
+let sState = { q: '', cat: '' };
 let sBound = false;
 
-// ข้อความก้อนเดียวที่รวมทุกอย่างที่ค้นได้ของยี่ห้อนี้
+// ข้อความที่ใช้ค้นหาของยาหนึ่งตัว
 function sIndex(b) {
   const c = content(b), ct = cat(b.categoryId);
   const words = [
@@ -413,6 +423,7 @@ function sIndex(b) {
   return norm(words.join(' ')) + '||' + regKey(b.regNo);
 }
 
+// ค้นหาแล้ววาดผลลัพธ์
 function runSearch() {
   const q  = sState.q.trim();
   const nq = norm(q);
@@ -425,7 +436,6 @@ function runSearch() {
     return idx.includes(nq) || (rq.length >= 3 && idx.includes(rq));
   });
 
-  // ทะเบียนคงอยู่ขึ้นก่อน แล้วเรียงชื่อตามพจนานุกรมไทย
   list.sort((a, b) =>
     (a.status === b.status ? 0 : a.status === 'active' ? -1 : 1) ||
     a.productName.localeCompare(b.productName, 'th')
@@ -458,15 +468,17 @@ function runSearch() {
   $('#qClear').hidden = !q;
 }
 
+// ปรับชิปกลุ่มอาการ
 function syncChips() {
   $$('#chipbar [data-cat]').forEach(b =>
     b.setAttribute('aria-pressed', String(b.dataset.cat === sState.cat))
   );
 }
 
+// วาดหน้าค้นหา
 function renderSearch(pre) {
   if (!sBound) {
-    // ชิป: "ทั้งหมด" + 6 กลุ่มจากข้อมูล
+
     $('#chipbar').innerHTML =
       '<button class="chip" type="button" data-cat="" aria-pressed="true">' +
         '<span class="c-ico">' + svg('list') + '</span>ทั้งหมด<span class="n">' + DB.brands.length + '</span></button>' +
@@ -476,7 +488,6 @@ function renderSearch(pre) {
           '<span class="n">' + brandsInCat(c.id).length + '</span></button>'
       ).join('');
 
-    // คลิกชิปใดก็ได้: ฟังที่กล่องแม่ตัวเดียว
     $('#chipbar').addEventListener('click', e => {
       const b = e.target.closest('[data-cat]');
       if (!b) return;
@@ -485,7 +496,6 @@ function renderSearch(pre) {
       runSearch();
     });
 
-    // พิมพ์: รอหยุดพิมพ์ 180ms ค่อยค้น
     const onType = debounce(() => {
       sState.q = $('#q').value;
       runSearch();
@@ -529,13 +539,14 @@ function renderSearch(pre) {
     sBound = true;
   }
 
-  if (pre) sState.cat = pre;   // มาจาก #/category/…
+  if (pre) sState.cat = cat(pre) ? pre : '';
   $('#q').value = sState.q;
   hideSuggest();
   syncChips();
   runSearch();
 }
 
+// กล่องยาเอียงตามเมาส์
 function initHeroTilt() {
     const box =$('.box3d');
     const fine = matchMedia('(hover:hover) and (pointer:fine)').matches;
@@ -576,30 +587,31 @@ function initHeroTilt() {
     });
 }
 
-// การ์ด 3 ขั้นตอน
 let stepsBound = false;
+
+// เปิดปิดการ์ดขั้นตอน
 function openStep(card, on) {
     if (!card) return;
     card.classList.toggle('is-open', on);
     card.setAttribute('aria-expanded', String(on));
 }
 
+// เริ่มการ์ดขั้นตอนบนหน้าแรก
 function initSteps() {
     const list = $('#stepList');
     if (!list || stepsBound) return;
- 
+
 const cards = $$('.step', list);
 const hoverable = matchMedia('(hover:hover) and (pointer:fine)').matches;
 
 cards.forEach( c => {
     if (hoverable) {
         c.addEventListener('mouseenter', () => openStep(c, true));
-        c.addEventListener('mouseleave', () => openStep(c, false));    
+        c.addEventListener('mouseleave', () => openStep(c, false));
     }
     c.addEventListener('focus', () => openStep(c, true));
     c.addEventListener('blur', () => openStep(c, false));
 
-    /* แตะหรือคลิก: เปิดใบที่กด แล้วปิดใบอื่น */
     c.addEventListener('click', () => {
         const on = !c.classList.contains('is-open');
         cards.forEach(o => openStep(o, false));
@@ -611,7 +623,7 @@ stepsBound = true;
 
 }
 
-// intro
+// หน้าจอเปิดตัว
 function runIntro() {
   const el = $('#intro');
   const root = document.documentElement;
@@ -640,11 +652,10 @@ function runIntro() {
   document.addEventListener('keydown', finish, { once: true });
 }
 
+let sugItems = [];
+let sugIdx = -1;
 
-/* คำแนะนำขณะพิมพ์  */
-let sugItems = [];   // ยาที่แสดงอยู่ในรายการตอนนี้
-let sugIdx = -1;     // ตัวที่เลือกด้วยลูกศร (-1 = ยังไม่เลือก)
-
+// ซ่อนรายการคำแนะนำ
 function hideSuggest() {
   const list = $('#qList');
   if (!list) return;
@@ -656,6 +667,7 @@ function hideSuggest() {
   $('#q').removeAttribute('aria-activedescendant');
 }
 
+// วาดคำแนะนำขณะพิมพ์
 function renderSuggest() {
   const q = $('#q').value.trim();
   const list = $('#qList');
@@ -673,8 +685,8 @@ function renderSuggest() {
         const c = content(b), ct = cat(b.categoryId);
         return '<li role="option" id="sug-' + i + '" aria-selected="false" data-sug="' + i + '" style="' + toneVars(b.categoryId) + '">' +
             '<span class="s-ico">' + svg(b.packaging === 'blister' ? 'blister' : 'bottle') + '</span>' +
-            '<span class="s-b"><b>' + esc(b.productName) + '</b>' +
-              '<span>' + esc(c.genericEn || c.genericTh) + ' · ' + esc(ct ? ct.short : '') + '</span></span>' +
+            '<span class="s-b"><b>' + esc(thName(b.productName)) + '</b>' +
+              '<span>' + esc(c.genericTh || c.genericEn) + ' · ' + esc(ct ? ct.short : '') + '</span></span>' +
             '<span class="s-go">' + svg('arrow') + '</span>' +
           '</li>';
       }).join('')
@@ -685,10 +697,11 @@ function renderSuggest() {
   sugIdx = -1;
 }
 
+// เลื่อนคำแนะนำด้วยปุ่มลูกศร
 function moveSuggest(step) {
   const n = sugItems.length;
   if (!n) return;
-  // ยังไม่ได้เลือก แล้วกดขึ้น → ไปตัวสุดท้าย · นอกนั้นวนรอบ
+
   sugIdx = (sugIdx < 0 && step < 0) ? n - 1 : (sugIdx + step + n) % n;
 
   $$('#qList [data-sug]').forEach((el, i) => {
@@ -702,6 +715,7 @@ function moveSuggest(step) {
   });
 }
 
+// เปิดยาที่เลือกจากคำแนะนำ
 function gotoSuggest(i) {
   const b = sugItems[i];
   if (!b) return;
@@ -710,21 +724,21 @@ function gotoSuggest(i) {
   location.hash = '#/drug/' + encodeURIComponent(b.id);
 }
 
-/*  พูดเพื่อค้นหา */
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recog = null;
 
-// ข้อความสถานะใต้ช่องค้นหา
+// ข้อความสถานะของไมโครโฟน
 function sayMsg(text) {
   const m = $('#qMsg');
   m.textContent = text;
   m.hidden = !text;
 }
 
+// เริ่มการค้นหาด้วยเสียง
 function initMic() {
   const btn = $('#qMic');
   const box = $('.searchwrap .searchbox');
-  if (!SpeechRec) {                 // เบราว์เซอร์ไม่รองรับ เช่น Firefox
+  if (!SpeechRec) {
     btn.hidden = true;
     box.classList.add('no-mic');
     return;
@@ -732,7 +746,7 @@ function initMic() {
 
   btn.hidden = false;
   btn.addEventListener('click', () => {
-    if (recog) { recog.stop(); return; }   // กำลังฟังอยู่ กดอีกครั้ง = หยุด
+    if (recog) { recog.stop(); return; }
 
     recog = new SpeechRec();
     recog.lang = 'th-TH';
@@ -772,16 +786,13 @@ function initMic() {
   });
 }
 
-// อ่านออกเสียง 
 const TTS_OK = 'speechSynthesis' in window;
-let ttsBtn = null;     // ปุ่มที่กำลังอ่านอยู่
-let ttsUtter = null;   // ประโยคที่กำลังอ่านอยู่
+let ttsBtn = null;
+let ttsUtter = null;
 
-// ลำดับเสียงที่อยากได้ · ใส่แค่บางส่วนของชื่อก็พอ
 const VOICE_PREF = ['Premwadee', 'Niwat', 'Natural', 'Online', 'Google', 'Kanya', 'Pattara'];
 
-// เลือกเสียงไทยที่ดีที่สุดที่เครื่องนี้มี
-// localOnly = true → ใช้เฉพาะเสียงในเครื่อง · ไม่มีเน็ตก็ข้ามเสียงออนไลน์เหมือนกัน
+// เลือกเสียงภาษาไทย
 function pickThaiVoice(localOnly) {
   const th = speechSynthesis.getVoices().filter(v =>
     /^th/i.test(v.lang) && (v.localService || (!localOnly && navigator.onLine))
@@ -793,7 +804,7 @@ function pickThaiVoice(localOnly) {
   return th[0] || null;
 }
 
-
+// รอรายชื่อเสียงให้พร้อม
 function whenVoicesReady() {
   if (speechSynthesis.getVoices().length) return Promise.resolve();
   return new Promise(done => {
@@ -802,39 +813,38 @@ function whenVoicesReady() {
   });
 }
 
-// อ่านเฉพาะส่วนภาษาไทย
+// อ่านชื่อยาออกเสียง
 function speakName(name) {
   const s = String(name || '');
-  if (!/[฀-๿]/.test(s)) return s;               
-  return s.replace(/[A-Za-z][A-Za-z.&'-]*(\s+\d+)?/g, '')  
-          .replace(/\(\s*\)/g, '')                          
-          .replace(/\s+-(\s+|$)/g, ' ')                      
+  if (!/[฀-๿]/.test(s)) return s;
+  return s.replace(/[A-Za-z][A-Za-z.&'-]*(\s+\d+)?/g, '')
+          .replace(/\(\s*\)/g, '')
+          .replace(/\s+-(\s+|$)/g, ' ')
           .replace(/\s+/g, ' ')
           .trim();
 }
-
 
 const SAY_AS = [
   ['พาราเซตามอล', 'พารา เซ ตา มอล'],
 ];
 
-// แปลงข้อความให้เสียงอ่านถูก
+// แปลงข้อความให้อ่านออกเสียงได้ถูก
 function forSpeech(t) {
   let s = String(t);
-  SAY_AS.forEach(([from, to]) => { s = s.split(from).join(to); });   // แทนทุกจุดที่เจอ
+  SAY_AS.forEach(([from, to]) => { s = s.split(from).join(to); });
   return s
-    .replace(/(\d)\s*-\s*(\d)/g, '$1 ถึง $2')        
-    .replace(/(\d+)\s*\/\s*(\d+)/g, '$1 ทับ $2')     
-    .replace(/(\d)([A-Z])/g, '$1 $2')                
-    .replace(/(\d)\s*mg\b/gi, '$1 มิลลิกรัม')       
-    .replace(/(\d)\s*ml\b/gi, '$1 มิลลิลิตร')       
+    .replace(/(\d)\s*-\s*(\d)/g, '$1 ถึง $2')
+    .replace(/(\d+)\s*\/\s*(\d+)/g, '$1 ทับ $2')
+    .replace(/(\d)([A-Z])/g, '$1 $2')
+    .replace(/(\d)\s*mg\b/gi, '$1 มิลลิกรัม')
+    .replace(/(\d)\s*ml\b/gi, '$1 มิลลิลิตร')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-// ให้เบราว์เซอร์เริ่มโหลดรายชื่อเสียงตั้งแต่เปิดเว็บ
 if (TTS_OK) speechSynthesis.getVoices();
 
+// คืนปุ่มอ่านออกเสียงสู่สถานะปกติ
 function ttsReset() {
   if (ttsBtn) {
     ttsBtn.setAttribute('aria-pressed', 'false');
@@ -844,28 +854,29 @@ function ttsReset() {
   ttsUtter = null;
 }
 
+// หยุดอ่านออกเสียง
 function stopSpeech() {
   if (TTS_OK) speechSynthesis.cancel();
   ttsReset();
 }
 
+// อ่านข้อความออกเสียง
 function speakText(text, btn, localOnly) {
   if (!TTS_OK) return;
   const same = ttsBtn === btn;
   stopSpeech();
-  if (same && !localOnly) return;                       // กดปุ่มเดิมระหว่างอ่าน = หยุด
+  if (same && !localOnly) return;
 
-  // เปลี่ยนปุ่มทันที ผู้ใช้รู้ว่ากดติดแล้ว
   ttsBtn = btn;
   btn.setAttribute('aria-pressed', 'true');
   btn.querySelector('span').textContent = 'หยุดอ่าน';
 
   whenVoicesReady().then(() => {
-    if (ttsBtn !== btn) return;                                    // กดหยุดระหว่างรอ
+    if (ttsBtn !== btn) return;
 
-    const voice = pickThaiVoice(localOnly);                        // เลือกตอนกดปุ่ม
+    const voice = pickThaiVoice(localOnly);
     console.log('เสียงที่ใช้อ่าน:', voice ? voice.name : 'ไม่พบเสียงไทย · เบราว์เซอร์เลือกเอง');
-    const parts = forSpeech(text).split(/\.\s+/).filter(Boolean);  // แยกอ่านทีละประโยค
+    const parts = forSpeech(text).split(/\.\s+/).filter(Boolean);
     if (!parts.length) { ttsReset(); return; }
 
     let last = null;
@@ -876,34 +887,36 @@ function speakText(text, btn, localOnly) {
       if (voice) u.voice = voice;
 
       u.onerror = e => {
-        if (ttsUtter !== last) return;                             // หยุดเอง หรือเริ่มรอบใหม่แล้ว
+        if (ttsUtter !== last) return;
         const online = voice && !voice.localService;
         if (online && !localOnly && e.error !== 'interrupted' && e.error !== 'canceled') {
           console.warn('เสียงออนไลน์ใช้ไม่ได้ (' + e.error + ') → เปลี่ยนเป็นเสียงในเครื่อง');
-          speakText(text, btn, true);                              // อ่านใหม่ด้วยเสียงในเครื่อง
+          speakText(text, btn, true);
           return;
         }
         ttsReset();
       };
 
-      speechSynthesis.speak(u);            // เบราว์เซอร์ต่อคิวให้เอง
+      speechSynthesis.speak(u);
       last = u;
     });
     last.onend = () => { if (ttsUtter === last) ttsReset(); };
-    ttsUtter = last;                       // จำประโยคสุดท้ายไว้ · จบตัวนี้ = อ่านจบทั้งหมด
+    ttsUtter = last;
   });
 }
 
-/* ดูล่าสุด */
 const KEY_RECENT = 'mc.recent';
 
+// บันทึกยาที่เพิ่งเปิดดู
 function pushRecent(id) {
   const list = lsGet(KEY_RECENT, []);
   lsSet(KEY_RECENT, [id].concat(list.filter(x => x !== id)).slice(0, 5));
 }
 
+// รายการยาที่ดูล่าสุด
 const getRecent = () => lsGet(KEY_RECENT, []).map(brand).filter(Boolean);
 
+// วาดรายการดูล่าสุด
 function renderRecent() {
   const rec = getRecent();
   $('#recentWrap').hidden = rec.length === 0;
@@ -911,21 +924,22 @@ function renderRecent() {
   paintIcons($('#recentRows'));
 }
 
-/* detail */
-// ตอนที่ 1 — ค่าคงที่และหัวการ์ด
 const TABS = [
   ['use',  'ข้อบ่งใช้',        'clipboard'],
   ['dose', 'วิธีใช้และขนาดยา', 'clock'],
   ['warn', 'คำเตือน',          'warning'],
 ];
 
+// ชื่อรูปแบบบรรจุ
 const packLabel = p => p === 'blister' ? 'ยาเม็ดบรรจุแผง' : 'ยาน้ำบรรจุขวด';
 
-let inkFn = null;   // ฟังก์ชันขยับเส้นใต้แท็บของหน้าที่เปิดอยู่
+let inkFn = null;
 window.addEventListener('resize', debounce(() => { if (inkFn) inkFn(); }, 150));
 
+// ส่วนหัวของหน้าข้อมูลยา
 function detailHead(b, c, ct, active) {
   const ok = b.status === 'active';
+  const nameEn = enName(b.productName);
   return '<div class="res-hero">' +
     '<div class="res-badges">' +
       (ok ? '<span class="pill pill-ok">' + svg('check-c') + 'ขึ้นทะเบียน อย. แล้ว</span>'
@@ -933,12 +947,14 @@ function detailHead(b, c, ct, active) {
       (TTS_OK ? '<button class="speak" type="button" id="readDrug" aria-pressed="false" style="margin-inline-start:auto">' +
                   svg('speaker') + '<span>ฟังข้อมูลยา</span></button>' : '') +
     '</div>' +
-    '<h1 class="res-title">' + esc(b.productName) + '</h1>' +
-    '<p class="res-generic">' + esc(c.genericEn || c.genericTh) + '</p>' +
+    '<h1 class="res-title">' + esc(thName(b.productName)) + '</h1>' +
+    '<p class="res-generic">' + esc(c.genericTh || c.genericEn) + '</p>' +
+    (nameEn ? '<p class="res-en">' + esc(nameEn) +
+              (c.genericEn ? ' · ' + esc(c.genericEn) : '') + '</p>' : '') +
     '<div class="res-tags">' +
       '<span class="pill pill-red">' + esc(ct ? ct.short : '') + '</span>' +
-      '<span class="pill pill-grey">Reg. No. ' + esc(b.regNo) + '</span>' +
-      '<span class="pill pill-grey" style="font-family:var(--f-body)">' + esc(packLabel(b.packaging)) + '</span>' +
+      '<span class="pill pill-grey">เลขทะเบียน ' + esc(b.regNo) + '</span>' +
+      '<span class="pill pill-grey">' + esc(packLabel(b.packaging)) + '</span>' +
     '</div>' +
     '<div class="tabs" role="tablist" aria-label="ข้อมูลยา">' +
       TABS.map(t =>
@@ -951,18 +967,20 @@ function detailHead(b, c, ct, active) {
   '</div>';
 }
 
+// กรอบแผงของแท็บ
 function tabPanel(name, active, inner) {
   return '<div class="tabpanel" id="panel-' + name + '" role="tabpanel" aria-labelledby="tab-' + name + '"' +
     (name === active ? '' : ' hidden') + '>' + inner + '</div>';
 }
 
+// แถวข้อมูลหนึ่งบรรทัด
 function infoRow(icon, label, value, pre) {
   return '<div class="inforow"><span class="ico">' + svg(icon) + '</span><div>' +
     '<b>' + label + '</b><span' + (pre ? ' class="pre"' : '') + '>' + esc(value || 'ไม่มีข้อมูล') + '</span>' +
   '</div></div>';
 }
 
-// ตอนที่ 2 — เนื้อหา 3 แท็บและส่วนท้าย
+// แผงข้อบ่งใช้
 function panelUse(b, c) {
   const acc = c.indications.length
     ? '<div class="acc">' + c.indications.map((t, i) =>
@@ -984,19 +1002,20 @@ function panelUse(b, c) {
 
   return '<div class="panel-head"><h3>' + svg('clipboard') + 'ข้อบ่งใช้และสรรพคุณ</h3></div>' +
     acc +
-    infoRow('pill', 'ตัวยาสำคัญและปริมาณ', c.ingredients.map(i => i.name + (i.strength ? ' ' + i.strength : '')).join(' + ')) +
+    infoRow('pill', 'ตัวยาสำคัญและปริมาณ', ingredientsTh(c).join(' + ')) +
     infoRow('factory', 'ผู้ผลิต / ผู้รับอนุญาต', b.licensee) +
-    infoRow('box', 'รูปแบบยา', b.dosageForm || c.dosageForm) +
+    infoRow('box', 'รูปแบบยา', thForm(b.dosageForm || c.dosageForm)) +
     firstWarn;
 }
 
+// แผงขนาดการใช้
 function panelDose(b, c) {
   const card = c.dosageAdult
     ? '<div class="dosecard">' +
         '<div class="dosecard-h"><b>สำหรับผู้ใหญ่</b><span class="pill">' + esc(packLabel(b.packaging)) + '</span></div>' +
         '<dl class="dosecard-g">' +
           '<div><dt>ขนาดรับประทาน</dt><dd>' + esc(c.dosageAdult) + '</dd></div>' +
-          '<div><dt>รูปแบบยา</dt><dd style="font-size:1rem">' + esc(b.dosageForm || c.dosageForm || '—') + '</dd></div>' +
+          '<div><dt>รูปแบบยา</dt><dd style="font-size:1rem">' + esc(thForm(b.dosageForm || c.dosageForm) || '—') + '</dd></div>' +
         '</dl>' +
         '<p class="dosecard-f">ระบบครอบคลุมเฉพาะสูตรตำรับสำหรับผู้ใหญ่ กรณีใช้ในเด็กโปรดปรึกษาแพทย์หรือเภสัชกร</p>' +
       '</div>'
@@ -1009,6 +1028,7 @@ function panelDose(b, c) {
       '<p>เก็บที่อุณหภูมิห้อง ไม่เกิน 30°C ให้พ้นแสงแดดและความชื้น เก็บให้พ้นมือเด็ก</p></div></div>';
 }
 
+// แผงคำเตือน
 function panelWarn(c) {
   const list = c.warnings.length
     ? '<div class="warnbox"><h4>' + svg('warning') + 'อ่านก่อนใช้ยาทุกครั้ง</h4><ul>' +
@@ -1025,6 +1045,7 @@ function panelWarn(c) {
       'หรืออาการไม่ดีขึ้นตามระยะเวลาที่ระบุ ให้หยุดใช้ยาและพบแพทย์หรือเภสัชกรทันที</p></div></div>';
 }
 
+// ส่วนท้ายของหน้าข้อมูลยา
 function detailFoot() {
   return '<div class="res-foot">' +
     '<div class="res-actions">' +
@@ -1038,7 +1059,14 @@ function detailFoot() {
   '</div>';
 }
 
-// ตอนที่ 3 — ประกอบหน้า
+// ปลายทางของปุ่มย้อนกลับ แยกตามหน้าที่ผู้ใช้มา
+const BACK_TO = {
+  scan:   ['scan',   'กลับไปหน้าถ่ายรูปฉลากยา'],
+  home:   ['',       'กลับหน้าหลัก'],
+  search: ['search', 'กลับไปหน้าค้นหา'],
+};
+
+// วาดหน้าข้อมูลยา
 function renderDetail(id, tab) {
   const host = $('#detailBody');
   const b = brand(id);
@@ -1055,9 +1083,11 @@ function renderDetail(id, tab) {
   const c = content(b), ct = cat(b.categoryId);
   const active = TABS.some(t => t[0] === tab) ? tab : 'use';
   const others = brandsOf(b.formulationId).filter(x => x.id !== b.id);
+  const backTo = BACK_TO[detailFrom] || BACK_TO.search;
 
   host.innerHTML =
-    '<div class="page-head"><a class="backlink" href="#/search" aria-label="กลับไปหน้าค้นหา">' + svg('back') + '</a></div>' +
+    '<div class="page-head"><a class="backlink" href="#/' + backTo[0] + '" aria-label="' + backTo[1] + '">' +
+      svg('back') + '</a></div>' +
     '<div class="rescard">' +
       detailHead(b, c, ct, active) +
       tabPanel('use',  active, panelUse(b, c)) +
@@ -1077,14 +1107,17 @@ function renderDetail(id, tab) {
   bindDetail(host, b, c, ct);
 }
 
+// เรียกเซิร์ฟเวอร์จริงหรือใช้ตัวจำลอง
+const LIVE_API   = !USE_MOCK && !!API_BASE;
+const SCAN_API   = LIVE_API ? API_BASE + '/scan' : '';
 
-/*  SCAN · หน้าถ่ายรูปฉลากยา  */
-const SCAN_API = '';       // ที่อยู่เส้นทาง /scan ฝั่งเซิร์ฟเวอร์ · เว้นว่าง = ใช้ตัวจำลองคำตอบ
+// ที่อยู่เส้นทางตรวจทะเบียน
+const verifyUrl  = id => API_BASE + '/verify/' + encodeURIComponent(id);
 
-let camStream   = null;    // กระแสภาพจากกล้อง เก็บไว้เพื่อสั่งปิดทีหลัง
-let camUrl      = null;    // ที่อยู่ชั่วคราวของภาพที่ถ่ายได้
-let camFileLast = null;    // ไฟล์ภาพล่าสุด ใช้ตอนกดลองใหม่
-let camFromCam  = false;   // ภาพล่าสุดมาจากกล้อง หรือจากการเลือกไฟล์
+let camStream   = null;
+let camUrl      = null;
+let camFileLast = null;
+let camFromCam  = false;
 
 // ข้อความสถานะใต้กรอบภาพ
 function camSay(text) {
@@ -1094,13 +1127,11 @@ function camSay(text) {
   m.hidden = !text;
 }
 
-// idle = ยังไม่เปิดกล้อง · live = กล้องทำงาน · shot = ได้ภาพแล้ว
-// sending = กำลังส่งไปอ่าน · result = ได้ผลลัพธ์แล้ว
+// ตั้งสถานะของหน้าถ่ายรูป
 function camState(state) {
   const stage = $('#camStage');
   if (!stage) return;
 
-  // สองสถานะหลังยังคงให้เห็นภาพที่ถ่ายไว้
   stage.dataset.state = (state === 'sending' || state === 'result') ? 'shot' : state;
   stage.classList.toggle('is-sending', state === 'sending');
 
@@ -1110,12 +1141,12 @@ function camState(state) {
   $('#camCtl').hidden    = state === 'result';
   $('#camResult').hidden = state !== 'result';
 
-  // ระหว่างส่ง ปิดปุ่มไว้ก่อน แต่ยังให้เห็นว่ามีปุ่มอะไรบ้าง
   const busy = state === 'sending';
   $$('#camCtl button').forEach(b => b.disabled = busy);
   $('#camCtl').classList.toggle('is-busy', busy);
 }
 
+// เปิดกล้อง
 async function camOpen() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     camSay('เบราว์เซอร์นี้ใช้กล้องไม่ได้ กรุณาเลือกภาพจากเครื่องแทน');
@@ -1127,7 +1158,7 @@ async function camOpen() {
   try {
     camStream = await navigator.mediaDevices.getUserMedia({
       audio: false,
-      video: { facingMode: { ideal: 'environment' },   // กล้องหลัง ถ้ามี
+      video: { facingMode: { ideal: 'environment' },
                width:  { ideal: 1920 },
                height: { ideal: 1080 } }
     });
@@ -1144,6 +1175,7 @@ async function camOpen() {
   camSay('');
 }
 
+// แจ้งเมื่อเปิดกล้องไม่ได้
 function camFail(err) {
   console.error(err);
   camStream = null;
@@ -1160,11 +1192,11 @@ function camFail(err) {
   }
 }
 
-// คัดลอกภาพขณะนั้นลงพื้นที่วาดภาพ แล้วแปลงเป็นไฟล์
+// ถ่ายภาพจากกล้อง
 function camShoot() {
   const v = $('#camView');
   const c = $('#camWork');
-  const w = v.videoWidth, h = v.videoHeight;   // ขนาดจริง ไม่ใช่ขนาดที่แสดง
+  const w = v.videoWidth, h = v.videoHeight;
 
   if (!w || !h) { camSay('ภาพจากกล้องยังไม่พร้อม รอสักครู่แล้วลองใหม่'); return; }
 
@@ -1179,17 +1211,19 @@ function camShoot() {
     readLabel(blob);
   }, 'image/jpeg', 0.92);
 
-  camClose();          // ได้ภาพแล้วปิดกล้องทันที ไม่เปิดค้างไว้
+  camClose();
   camState('shot');
 }
 
+// แสดงภาพที่ได้
 function camShow(file) {
-  if (camUrl) URL.revokeObjectURL(camUrl);    // คืนหน่วยความจำของภาพเดิม
+  if (camUrl) URL.revokeObjectURL(camUrl);
   camUrl = URL.createObjectURL(file);
   $('#camShot').src = camUrl;
   camState('shot');
 }
 
+// ปิดกล้อง
 function camClose() {
   if (!camStream) return;
   camStream.getTracks().forEach(t => t.stop());
@@ -1198,7 +1232,7 @@ function camClose() {
   if (v) v.srcObject = null;
 }
 
-// ล้างทุกอย่างกลับสู่สถานะเริ่มต้น · reopen = เปิดกล้องต่อให้เลย
+// เริ่มหน้าถ่ายรูปใหม่
 function camReset(reopen) {
   camClose();
   if (camUrl) { URL.revokeObjectURL(camUrl); camUrl = null; }
@@ -1210,53 +1244,126 @@ function camReset(reopen) {
   if (reopen) camOpen();
 }
 
+// ข้อความผิดพลาดที่เซิร์ฟเวอร์ส่งมา
+async function errText(res) {
+  let detail = null;
+  try { detail = (await res.json()).detail; } catch (e) {}
 
-/*  SCAN · ส่งภาพไปอ่านข้อความ  */
+  if (typeof detail === 'string' && detail) return detail;
+  if (res.status === 422) return 'ส่งภาพไม่ถูกรูปแบบ กรุณาถ่ายใหม่อีกครั้ง';
+  return 'อ่านฉลากไม่สำเร็จ (รหัส ' + res.status + ')';
+}
 
-// ส่งภาพจริงไปยังเส้นทางฝั่งเซิร์ฟเวอร์
+// ด้านยาวสุดของภาพที่ส่งขึ้นเซิร์ฟเวอร์ และเวลารอสูงสุด
+const MAX_EDGE = 1600;
+const SCAN_TIMEOUT = 60000;
+
+// ย่อภาพก่อนส่ง ภาพจากกล้องมือถือใหญ่หลายเมกะไบต์ ทำให้อัปโหลดช้าโดยไม่จำเป็น
+function shrink(file) {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const long  = Math.max(img.width, img.height);
+      const scale = Math.min(1, MAX_EDGE / long);
+      if (scale === 1 && file.size <= 900 * 1024) { resolve(file); return; }
+
+      const c = document.createElement('canvas');
+      c.width  = Math.round(img.width  * scale);
+      c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => resolve(b || file), 'image/jpeg', 0.85);
+    };
+
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+// ส่งภาพฉลากไปให้เซิร์ฟเวอร์อ่าน
 async function sendLabel(file) {
-  if (!SCAN_API) return fakeScan();          // ยังไม่มีเส้นทางจริง จึงใช้ตัวจำลองไปก่อน
+  if (!SCAN_API) return fakeScan();
 
   const fd = new FormData();
-  fd.append('image', file, 'label.jpg');
+  fd.append('file', await shrink(file), 'label.jpg');
 
-  const res = await fetch(SCAN_API, { method: 'POST', body: fd });
-  if (!res.ok) throw new Error('อ่านฉลากไม่สำเร็จ (รหัส ' + res.status + ')');
+  // ตัดการรอเองเมื่อครบเวลา ไม่งั้นถ้าเซิร์ฟเวอร์เงียบ หน้าเว็บจะหมุนค้างไปเรื่อย ๆ
+  const ctrl  = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), SCAN_TIMEOUT);
+
+  let res;
+  try {
+    res = await fetch(SCAN_API, { method: 'POST', body: fd, signal: ctrl.signal });
+  } catch (e) {
+    throw new Error(e.name === 'AbortError'
+      ? 'เซิร์ฟเวอร์ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง'
+      : 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง');
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (!res.ok) throw new Error(await errText(res));
   return res.json();
 }
 
-// ตัวจำลองคำตอบระหว่างรอฝั่งเซิร์ฟเวอร์ · สุ่มให้ครบทุกกรณีที่ matcher.py คืนค่าได้
+// ดึงเลขทะเบียนจากคำตอบของเซิร์ฟเวอร์
+function regNosOf(res) {
+  if (res.brand && res.brand.reg_no) return [res.brand.reg_no];
+  if (Array.isArray(res.candidates))  return res.candidates.map(c => c.reg_no).filter(Boolean);
+  return [];
+}
+
+// ตัวจำลองคำตอบของเซิร์ฟเวอร์
 function fakeScan() {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       const r = Math.random();
 
-      if (r < 0.15) { reject(new Error('เชื่อมต่อส่วนอ่านฉลากไม่ได้ กรุณาลองใหม่อีกครั้ง')); return; }
-      if (r < 0.30) { resolve({ found: false, matchType: 'not_found', regNos: [] }); return; }
+      if (r < 0.12) { reject(new Error('เชื่อมต่อส่วนอ่านฉลากไม่ได้ กรุณาลองใหม่อีกครั้ง')); return; }
 
-      // จับคู่จากตัวยาสำคัญ ได้หลายยี่ห้อที่ใช้สูตรตำรับเดียวกัน
-      if (r < 0.55) {
+      if (r < 0.24) {
+        resolve({ match_type: 'not_found', ocr_text: '', ocr_reg_no: null,
+                  brand: null, medicine: null, candidates: [] });
+        return;
+      }
+
+      if (r < 0.36) {
+        resolve({ match_type: 'out_of_scope', ocr_text: '', ocr_reg_no: '5C 12/61',
+                  brand: null, medicine: null, candidates: [] });
+        return;
+      }
+
+      if (r < 0.60) {
         const groups = DB.formulations.map(f => brandsOf(f.id)).filter(g => g.length > 1);
         const group  = groups.length ? groups[Math.floor(Math.random() * groups.length)] : [DB.brands[0]];
-        resolve({ found: true, matchType: 'active_ingredient', regNos: group.map(b => b.regNo) });
+        resolve({ match_type: 'active_ingredient', ocr_text: '', ocr_reg_no: null,
+                  brand: null, medicine: null,
+                  candidates: group.map(b => ({ reg_no: b.regNo, brand_name: b.productName })) });
         return;
       }
 
       const b = DB.brands[Math.floor(Math.random() * DB.brands.length)];
       resolve({
-        found: true,
-        matchType: r < 0.80 ? 'reg_no' : 'brand_name',
-        regNos: [b.regNo],
+        match_type: r < 0.82 ? 'reg_no' : 'brand_name',
+        ocr_text: '',
+        ocr_reg_no: r < 0.82 ? b.regNo : null,
+        brand: { reg_no: b.regNo, brand_name: b.productName },
+        medicine: null,
+        candidates: [],
       });
     }, 1200);
   });
 }
 
-// ขั้นตอนทั้งหมดตั้งแต่ได้ภาพจนแสดงผล
+// ขั้นตอนตั้งแต่ได้ภาพจนแสดงผล
 async function readLabel(file) {
   camFileLast = file;
   camState('sending');
   camSay('กำลังอ่านข้อความบนฉลาก กรุณารอสักครู่');
+
+  const slow = setTimeout(() => camSay('เซิร์ฟเวอร์กำลังเริ่มทำงาน อาจใช้เวลานานกว่าปกติเล็กน้อย'), 7000);
 
   let res;
   try {
@@ -1266,12 +1373,13 @@ async function readLabel(file) {
     res = { error: err.message || 'เชื่อมต่อไม่สำเร็จ' };
   }
 
+  clearTimeout(slow);
   camSay('');
   showResult(res);
   camState('result');
 }
 
-// ข้อความของการ์ดผลลัพธ์ แยกตามวิธีที่ระบบจับคู่ยาได้
+// ข้อความของการ์ดผลลัพธ์แต่ละแบบ
 const MATCH_INFO = {
   reg_no: {
     tone: 'is-ok', icon: 'check-c',
@@ -1291,15 +1399,15 @@ const MATCH_INFO = {
   },
 };
 
-// การ์ดผลลัพธ์ ใช้คลาส state ชุดเดียวกับหน้าอื่น
+// วาดการ์ดผลการอ่านฉลาก
 function showResult(res) {
   const host = $('#camResult');
 
-  // เซิร์ฟเวอร์ส่งเลขทะเบียนกลับมา จึงต้องแปลงเป็นรายการยาที่มีในระบบก่อน
-  const list = (res.regNos || []).map(brandByReg).filter(Boolean);
+  const regNos = regNosOf(res);
+  const list   = regNos.map(brandByReg).filter(Boolean);
 
-  if (res.found && !list.length) {
-    console.warn('เซิร์ฟเวอร์แจ้งว่าพบยา แต่ไม่มีเลขทะเบียนนี้ในไฟล์ข้อมูล', res.regNos);
+  if (regNos.length && !list.length) {
+    console.warn('เซิร์ฟเวอร์จับคู่ยาได้ แต่ไม่มีเลขทะเบียนนี้ในไฟล์ข้อมูล', regNos);
   }
 
   if (res.error) {
@@ -1315,7 +1423,7 @@ function showResult(res) {
       '</div>';
 
   } else if (list.length) {
-    const info = MATCH_INFO[res.matchType] || MATCH_INFO.reg_no;
+    const info = MATCH_INFO[res.match_type] || MATCH_INFO.reg_no;
     const many = list.length > 1;
 
     host.innerHTML =
@@ -1331,6 +1439,23 @@ function showResult(res) {
             svg('arrow') + 'ดูข้อมูลยา</a>') +
         '<button class="btn ' + (many ? 'btn-soft' : 'btn-outline') + '" type="button" id="camNew">' +
           'ถ่ายใหม่</button>' +
+      '</div>';
+
+  } else if (res.match_type === 'out_of_scope') {
+
+    host.innerHTML =
+      '<div class="state">' +
+        '<div class="state-ico is-warn">' + svg('info') + '</div>' +
+        '<h2>ยานี้อยู่นอกขอบเขตของระบบ</h2>' +
+        '<p>ระบบอ่านเลขทะเบียนบนฉลากได้' +
+          (res.ocr_reg_no ? 'เป็น ' + esc(res.ocr_reg_no) : '') +
+          ' แต่ยาตัวนี้ไม่ได้อยู่ในกลุ่มยาสามัญประจำบ้านที่ระบบรวบรวมไว้ ' +
+          'จึงไม่มีข้อมูลข้อบ่งใช้และคำเตือนให้แสดง กรุณาอ่านฉลากจากผลิตภัณฑ์จริง ' +
+          'หรือปรึกษาเภสัชกร</p>' +
+        '<div class="state-actions">' +
+          '<button class="btn btn-primary" type="button" id="camNew">ถ่ายใหม่</button>' +
+          '<a class="btn btn-outline" href="#/about">' + svg('info') + 'ดูขอบเขตของระบบ</a>' +
+        '</div>' +
       '</div>';
 
   } else {
@@ -1349,11 +1474,73 @@ function showResult(res) {
 
   paintIcons(host);
 
+  if (LIVE_API && list.length === 1 && res.brand && res.brand.id) verifyBrand(res.brand.id, host);
+
   const again = $('#camAgain', host);
   if (again) again.addEventListener('click', () => { if (camFileLast) readLabel(camFileLast); });
 
   const fresh = $('#camNew', host);
   if (fresh) fresh.addEventListener('click', () => camReset(camFromCam));
+}
+
+// เรียกตรวจทะเบียนกับ อย.
+function verifyBrand(brandId, host) {
+  const box = document.createElement('div');
+  box.className = 'notice vfy';
+  box.setAttribute('aria-live', 'polite');
+  box.innerHTML =
+    '<span class="vfy-spin" aria-hidden="true"></span>' +
+    '<div><h4>กำลังตรวจสอบทะเบียนกับ อย.</h4>' +
+    '<p>ขั้นตอนนี้อาจใช้เวลาถึงครึ่งนาที ระหว่างนี้ดูข้อมูลยาด้านบนได้ตามปกติ</p></div>';
+  host.appendChild(box);
+
+  fetch(verifyUrl(brandId))
+    .then(res => (res.ok ? res.json() : Promise.reject(new Error('รหัส ' + res.status))))
+    .then(v => showVerify(box, v, brandId, host))
+    .catch(err => { console.error(err); showVerify(box, { ok: false }, brandId, host); });
+}
+
+// วาดกล่องผลตรวจทะเบียน
+function showVerify(box, v, brandId, host) {
+  let tone, icon, head, body, extra = '';
+
+  if (!v || !v.ok) {
+    tone = 'is-warn'; icon = 'alert';
+    head = 'ตรวจสอบกับ อย. ไม่ได้ในขณะนี้';
+    body = 'ระบบของ อย. ไม่ตอบกลับ ข้อมูลยาด้านบนยังใช้ได้ตามปกติ';
+    extra = '<button class="btn btn-soft btn-sm" type="button" id="vfyRetry">' +
+            svg('refresh') + 'ลองตรวจอีกครั้ง</button>';
+
+  } else if (!v.found) {
+    tone = 'is-warn'; icon = 'search';
+    head = 'ไม่พบทะเบียนนี้ในระบบ อย.';
+    body = 'โปรดตรวจเลขทะเบียนบนฉลากอีกครั้ง ถ้าไม่ตรงกับที่ระบบอ่านได้ ควรปรึกษาเภสัชกรก่อนใช้ยา';
+
+  } else if (!v.is_active) {
+    tone = 'is-danger'; icon = 'warning';
+    head = 'ทะเบียนนี้ไม่คงอยู่แล้ว';
+    body = 'สถานะล่าสุดที่ อย. คือ ' + esc(v.status || 'ไม่ระบุ') +
+           ' ไม่ควรใช้ยานี้ ควรปรึกษาเภสัชกรก่อน';
+
+  } else {
+    tone = 'is-ok'; icon = 'shield';
+    head = 'ทะเบียนถูกต้อง ตรวจสอบกับ อย. แล้ว';
+    body = 'เลขทะเบียน ' + esc(v.reg_no || '') + ' สถานะ ' + esc(v.status || 'คงอยู่') +
+           (v.licensee ? ' ผู้รับอนุญาตคือ' + esc(String(v.licensee).trim()) : '');
+  }
+
+  if (v && v.detail_url) {
+    extra += '<a class="btn btn-soft btn-sm" href="' + esc(v.detail_url) + '" ' +
+             'target="_blank" rel="noopener noreferrer">' + svg('arrow') + 'ดูข้อมูลที่เว็บ อย.</a>';
+  }
+
+  box.className = 'notice vfy ' + tone;
+  box.innerHTML = svg(icon) +
+    '<div><h4>' + head + '</h4><p>' + body + '</p>' +
+    (extra ? '<div class="vfy-act">' + extra + '</div>' : '') + '</div>';
+
+  const retry = $('#vfyRetry', box);
+  if (retry) retry.addEventListener('click', () => { box.remove(); verifyBrand(brandId, host); });
 }
 
 $('#camStart').addEventListener('click', camOpen);
@@ -1367,11 +1554,10 @@ $('#camFile').addEventListener('change', e => {
   camFromCam = false;
   camShow(file);
   readLabel(file);
-  e.target.value = '';          // เลือกไฟล์เดิมซ้ำได้
+  e.target.value = '';
 });
 
-
-// boot
+// เริ่มทำงานทั้งหมด
 async function start() {
   paintIcons();
   syncHeaderHeight();
@@ -1390,6 +1576,7 @@ async function start() {
   console.log('MedCheck พร้อมทำงาน · ยา ' + DB.brands.length + ' ยี่ห้อ');
 }
 
+// แจ้งเมื่อโหลดข้อมูลยาไม่สำเร็จ
 function showLoadError(err) {
   console.error(err);
   $('#main').innerHTML =
@@ -1402,9 +1589,9 @@ function showLoadError(err) {
 
 start();
 
-// ตอนที่ 4 — ผูกการทำงาน
+// ผูกเหตุการณ์ในหน้าข้อมูลยา
 function bindDetail(host, b, c, ct) {
-  /* แท็บ */
+
   const tabs = $$('[data-tab]', host);
 
   function moveInk() {
@@ -1422,7 +1609,7 @@ function bindDetail(host, b, c, ct) {
       t.tabIndex = on ? 0 : -1;
     });
     TABS.forEach(t => { $('#panel-' + t[0], host).hidden = t[0] !== name; });
-    // ไม่หยุดเสียงตอนสลับแท็บ:: ปุ่มฟังข้อมูลยาอ่านข้อมูลทั้งหน้าอยู่แล้ว สลับแท็บแล้วอ่านต่อได้
+
     moveInk();
     history.replaceState(null, '', '#/drug/' + encodeURIComponent(b.id) + '/' + name);
   }
@@ -1447,20 +1634,18 @@ function bindDetail(host, b, c, ct) {
 
   inkFn = moveInk;
   requestAnimationFrame(moveInk);
-  setTimeout(moveInk, 340);   // วัดซ้ำหลังฟอนต์โหลดและแอนิเมชันเปลี่ยนหน้าจบ
+  setTimeout(moveInk, 340);
 
-  /*  หัวข้อพับ-กาง */
   $$('.acc-btn', host).forEach(btn => btn.addEventListener('click', () => {
     const open = btn.getAttribute('aria-expanded') === 'true';
     btn.setAttribute('aria-expanded', String(!open));
     $('#' + btn.getAttribute('aria-controls'), host).classList.toggle('open', !open);
   }));
 
-  /*  ฟังข้อมูลยา */
   const read = $('#readDrug', host);
   if (read) read.addEventListener('click', () => {
     speakText([
-      speakName(b.productName), c.genericTh,
+      speakName(thName(b.productName)), c.genericTh,
       'กลุ่ม ' + (ct ? ct.short : ''),
       'เลขทะเบียน ' + b.regNo,
       c.indications.length ? 'ข้อบ่งใช้ ' + c.indications.join(' ') : '',
@@ -1470,7 +1655,7 @@ function bindDetail(host, b, c, ct) {
   });
 }
 
-/*  ABOUT  */
+// วาดหน้าเกี่ยวกับระบบ
 function renderAbout() {
   const m = DB.meta || {};
   $('#aboutBody').innerHTML =
