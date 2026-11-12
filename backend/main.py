@@ -12,6 +12,7 @@ from matcher import identify_medicine
 from fda_api import verify_with_fda
 from fastapi.security import OAuth2PasswordRequestForm
 from auth import verify_password, create_access_token, get_current_admin
+from admin_routes import router as admin_router
 
 load_dotenv()
 
@@ -30,6 +31,8 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+app.include_router(admin_router)
 
 def serialize_brand(b: Brand) -> dict:
     return {
