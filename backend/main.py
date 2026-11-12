@@ -10,6 +10,8 @@ from database import get_db
 from models import Category, Medicine, Brand, ActiveIngredient, Warning, MedicineIngredient, AdminUser
 from matcher import identify_medicine
 from fda_api import verify_with_fda
+from fastapi.security import OAuth2PasswordRequestForm
+from auth import verify_password, create_access_token, get_current_admin
 
 load_dotenv()
 
@@ -187,5 +189,18 @@ def verify_brand(brand_id: int, db: Session = Depends(get_db)):
     if brand is None:
         raise HTTPException(status_code=404, detail="ไม่พบยี่ห้อนี้ในระบบ")
     return verify_with_fda(brand.reg_no)
+
+
+@app.post("/admin/login")
+def admin_login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    admin = db.query(AdminUser).filter(AdminUser.username == form.username).first()
+    if admin is None or not verify_password(form.password, admin.password_hash):
+        raise HTTPException(status_code=401, detail="ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
+    return {"access_token": create_access_token(admin), "token_type": "bearer"}
+
+
+@app.get("/admin/me")
+def admin_me(admin: AdminUser = Depends(get_current_admin)):
+    return {"id": admin.id, "username": admin.username}
 
 

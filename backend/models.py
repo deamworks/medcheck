@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -53,6 +53,8 @@ class ActiveIngredient(Base):
     name_en = Column(String(150), nullable=False)
     name_th = Column(String(150), nullable=False)
 
+    aliases = relationship("IngredientAlias", cascade="all, delete-orphan")
+
 
 class Warning(Base):
     __tablename__ = "warning"
@@ -62,10 +64,18 @@ class Warning(Base):
     warning_text = Column(Text, nullable=False)
 
 
+class IngredientAlias(Base):
+    __tablename__ = "ingredient_alias"
+
+    id = Column(Integer, primary_key=True)
+    ingredient_id = Column(Integer, ForeignKey("active_ingredient.id"), nullable=False)
+    alias_name = Column(String(150), nullable=False)
+
+
 class AdminUser(Base):
     __tablename__ = "admin_user"
 
     id = Column(Integer, primary_key=True)
-    email = Column(String(150), nullable=False)
+    username = Column(String(50), nullable=False, unique=True)
     password_hash = Column(String(255), nullable=False)
-    created_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
