@@ -22,8 +22,8 @@ class Medicine(Base):
 
     category = relationship("Category")
     brands = relationship("Brand")
-    warnings = relationship("Warning")
-    medicine_ingredients = relationship("MedicineIngredient")
+    warnings = relationship("Warning", cascade="all, delete-orphan", order_by="Warning.id")
+    medicine_ingredients = relationship("MedicineIngredient", cascade="all, delete-orphan")
 
 
 class Brand(Base):
