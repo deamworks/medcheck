@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ระบบจัดการข้อมูลยา · MedCheck</title>
+  <meta name="description" content="ส่วนจัดการข้อมูลยาสำหรับผู้ดูแลระบบ MedCheck">
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+
+  <script>
+    try {
+      var fs = JSON.parse(localStorage.getItem('mc.fs') || 'null');
+      if (fs === '2' || fs === '3') document.documentElement.dataset.fs = fs;
+      var th = JSON.parse(localStorage.getItem('mc.theme') || 'null');
+      if (th === 'dark' || th === 'light') document.documentElement.dataset.theme = th;
+    } catch (e) {}
+  </script>
+</head>
+<body>
+
+  <a class="skip" href="#adminMain">ข้ามไปเนื้อหาหลัก</a>
+
+  <!-- เข้าสู่ระบบ -->
+  <section class="loginwrap" id="viewLogin">
+    <form class="logincard" id="loginForm" novalidate>
+      <div class="loginhead">
+        <span class="loginmark" data-ico="lock" aria-hidden="true"></span>
+        <h1>ระบบจัดการข้อมูลยา</h1>
+        <p>สำหรับผู้ดูแลระบบ MedCheck เท่านั้น</p>
+      </div>
+
+      <div class="field">
+        <label for="adUser">ชื่อผู้ใช้</label>
+        <input id="adUser" name="username" type="text" autocomplete="username" aria-describedby="adUserErr">
+        <p class="field-err" id="adUserErr" hidden></p>
+      </div>
+
+      <div class="field">
+        <label for="adPass">รหัสผ่าน</label>
+        <div class="pwwrap">
+          <input id="adPass" name="password" type="password" autocomplete="current-password" aria-describedby="adPassErr">
+          <button class="pwtoggle" id="adPassShow" type="button" aria-pressed="false"
+                  aria-label="แสดงรหัสผ่าน"><span data-ico="eye" aria-hidden="true"></span></button>
+        </div>
+        <p class="field-err" id="adPassErr" hidden></p>
+      </div>
+
+      <p class="formmsg" id="loginMsg" role="alert" hidden></p>
+
+      <button class="btn btn-primary btn-block btn-lg" id="loginBtn" type="submit">เข้าสู่ระบบ</button>
+
+      <p class="loginfoot"><a href="/">กลับไปหน้าเว็บหลัก</a></p>
+    </form>
+  </section>
+
+  <!-- ส่วนจัดการข้อมูล -->
+  <div id="viewApp" hidden>
+    <header class="hdr adhdr">
+      <div class="wrap hdr-in">
+        <a class="logo" href="/" aria-label="MedCheck หน้าเว็บหลัก">
+          <span class="logo-mark" data-ico="scan" aria-hidden="true"></span>
+          <span class="logo-tx"><b><i>Med</i>Check</b>
+            <span>ระบบจัดการข้อมูลยา</span></span>
+        </a>
+
+        <div class="hdr-act">
+          <span class="whoami" id="whoami"></span>
+          <button class="btn btn-soft btn-sm" id="logoutBtn" type="button">
+            <span data-ico="logout" aria-hidden="true"></span>ออกจากระบบ</button>
+          <button class="iconbtn" id="themeBtn" type="button" aria-label="เปลี่ยนเป็นโหมดมืด"></button>
+        </div>
+      </div>
+    </header>
+
+    <main id="adminMain">
+      <div class="wrap sec-sm">
+        <h1 class="sr-only">ระบบจัดการข้อมูลยา MedCheck</h1>
+
+        <div id="panel"></div>
+      </div>
+    </main>
+
+    <footer class="ftr">
+      <div class="wrap ftr-in">
+        <p>ข้อมูลยาตรวจสอบกับทะเบียนตำรับยาของ อย. · แก้ไขแล้วต้องตรวจซ้ำก่อนเผยแพร่</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ยืนยันก่อนลบ -->
+  <dialog class="confirm" id="confirmBox">
+    <div class="confirm-ico" data-ico="warning" aria-hidden="true"></div>
+    <h2 id="confirmTitle">ยืนยันการลบ</h2>
+    <p id="confirmText"></p>
+    <div class="confirm-act">
+      <button class="btn btn-soft" type="button" id="confirmNo">ยกเลิก</button>
+      <button class="btn btn-danger" type="button" id="confirmOk">ลบรายการนี้</button>
+    </div>
+  </dialog>
+
+  <p class="toast" id="toast" role="status" hidden></p>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

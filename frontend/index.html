@@ -12,11 +12,11 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 
 
-  <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/shell.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/pages.css">
 
   <!-- ตั้งโหมดสีและขนาดตัวอักษรก่อนวาดหน้าจอ -->
   <script>
@@ -41,17 +41,17 @@
   <a class="skip" href="#main">ข้ามไปเนื้อหาหลัก</a>
   <header class="hdr">
     <div class="wrap hdr-in">
-      <a href="#/" class="logo">
+      <a href="/" class="logo">
         <span class="logo-mark" data-ico="scan" aria-hidden="true"></span>
         <span class="logo-tx"><b><i>Med</i>Check</b>
         <span>ระบบสแกนฉลากยาสามัญประจำบ้าน</span></span>
       </a>
 
       <nav class="mainnav" aria-label="เมนูหลัก">
-        <a href="#/" data-nav="home"><span data-ico="home" aria-hidden="true"></span>หน้าหลัก</a>
-        <a href="#/scan" data-nav="scan"><span data-ico="camera" aria-hidden="true"></span>ถ่ายรูป</a>
-        <a href="#/search" data-nav="search"><span data-ico="search" aria-hidden="true"></span>ค้นหา</a>
-        <a href="#/about" data-nav="about"><span data-ico="info" aria-hidden="true"></span>เกี่ยวกับ</a>
+        <a href="/" data-nav="home"><span data-ico="home" aria-hidden="true"></span>หน้าหลัก</a>
+        <a href="/scan" data-nav="scan"><span data-ico="camera" aria-hidden="true"></span>ถ่ายรูป</a>
+        <a href="/search" data-nav="search"><span data-ico="search" aria-hidden="true"></span>ค้นหา</a>
+        <a href="/about" data-nav="about"><span data-ico="info" aria-hidden="true"></span>เกี่ยวกับ</a>
       </nav>
 
       <div class="hdr-act">
@@ -89,9 +89,9 @@
             </p>
 
             <div class="hero-cta">
-              <a href="#/scan" class="btn btn-primary btn-lg">
+              <a href="/scan" class="btn btn-primary btn-lg">
                 <span data-ico="camera" aria-hidden="true"></span>สแกนฉลากยา</a>
-              <a href="#/search" class="btn btn-outline btn-lg">
+              <a href="/search" class="btn btn-outline btn-lg">
                 <span data-ico="search" aria-hidden="true"></span>ค้นหาด้วยชื่อยา</a>
             </div>
             
@@ -242,12 +242,12 @@
         </div>
 
         <div class="shortcuts">
-          <a class="shortcut is-primary" href="#/scan">
+          <a class="shortcut is-primary" href="/scan">
             <span class="shortcut-ico" data-ico="camera" aria-hidden="true"></span>
             <span class="shortcut-b"><b>ถ่ายรูปฉลากยา</b><span>เพื่ออ่านและตรวจสอบข้อมูล</span></span>
             <span class="shortcut-go" data-ico="arrow" aria-hidden="true"></span>
           </a>
-          <a class="shortcut" href="#/search">
+          <a class="shortcut" href="/search">
             <span class="shortcut-ico" data-ico="keyboard" aria-hidden="true"></span>
             <span class="shortcut-b"><b>ค้นหาด้วยชื่อยา</b><span>ถ้าฉลากเลือนรางหรืออ่านไม่ออก</span></span>
             <span class="shortcut-go" data-ico="arrow" aria-hidden="true"></span>
@@ -277,7 +277,7 @@
       <div class="wrap sec">
        <div class="camcol">
         <div class="page-head">
-          <a class="backlink" href="#/" aria-label="กลับหน้าหลัก"><span data-ico="back" aria-hidden="true"></span></a>
+          <a class="backlink" href="/" aria-label="กลับหน้าหลัก"><span data-ico="back" aria-hidden="true"></span></a>
           <div style="flex:1 1 16rem">
             <h1>ถ่ายรูปฉลากยา</h1>
             <p>ถ่ายให้เห็นชื่อยาและเลขทะเบียน อย. ชัดเจน ในที่ที่มีแสงเพียงพอ</p>
@@ -307,7 +307,7 @@
             <span data-ico="refresh" aria-hidden="true"></span>ถ่ายใหม่</button>
           <label class="btn btn-outline" for="camFile">
             <span data-ico="upload" aria-hidden="true"></span>เลือกภาพจากเครื่อง</label>
-          <input class="sr-only" id="camFile" type="file" accept="image/*" capture="environment">
+          <input class="sr-only" id="camFile" type="file" accept="image/*">
         </div>
 
         <canvas id="camWork" class="sr-only" aria-hidden="true"></canvas>
@@ -324,7 +324,7 @@
     <section class="view" id="view-search" hidden>
       <div class="wrap sec">
         <div class="page-head">
-          <a class="backlink" href="#/" aria-label="กลับหน้าหลัก"><span data-ico="back" aria-hidden="true"></span></a>
+          <a class="backlink" href="/" aria-label="กลับหน้าหลัก"><span data-ico="back" aria-hidden="true"></span></a>
           <div style="flex:1 1 16rem">
             <h1>ค้นหาข้อมูลยาสามัญประจำบ้าน</h1>
             <p>ค้นหาด้วยชื่อการค้า ชื่อสามัญทางยา หรือเลขทะเบียน อย.</p>
@@ -369,16 +369,16 @@
     <div class="wrap ftr-in">
       <span>ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำทางการแพทย์ · ปรึกษาแพทย์หรือเภสัชกรก่อนใช้ยา</span>
       <nav aria-label="เมนูส่วนท้าย">
-        <a href="#/about">เกี่ยวกับระบบ</a>
+        <a href="/about">เกี่ยวกับระบบ</a>
       </nav>
     </div>
   </footer>
 
   <nav class="botnav" aria-label="เมนูหลัก (อุปกรณ์พกพา)">
-    <a href="#/"       data-nav="home"><span data-ico="home"   aria-hidden="true"></span>หน้าหลัก</a>
-    <a href="#/scan"   data-nav="scan"><span data-ico="camera" aria-hidden="true"></span>ถ่ายรูป</a>
-    <a href="#/search" data-nav="search"><span data-ico="search" aria-hidden="true"></span>ค้นหา</a>
-    <a href="#/about"  data-nav="about"><span data-ico="info"   aria-hidden="true"></span>เกี่ยวกับ</a>
+    <a href="/"       data-nav="home"><span data-ico="home"   aria-hidden="true"></span>หน้าหลัก</a>
+    <a href="/scan"   data-nav="scan"><span data-ico="camera" aria-hidden="true"></span>ถ่ายรูป</a>
+    <a href="/search" data-nav="search"><span data-ico="search" aria-hidden="true"></span>ค้นหา</a>
+    <a href="/about"  data-nav="about"><span data-ico="info"   aria-hidden="true"></span>เกี่ยวกับ</a>
   </nav>
 
   <div class="drawer-back" id="drawerBack"></div>
@@ -393,16 +393,16 @@
       </button>
     </div>
     <nav class="drawer-nav" aria-label="เมนูหลัก">
-      <a href="#/" data-nav="home" style="--dd:60ms"><span data-ico="home" aria-hidden="true"></span>หน้าหลัก</a>
-      <a href="#/scan" data-nav="scan" style="--dd:110ms"><span data-ico="camera" aria-hidden="true"></span>ถ่ายรูป</a>
-      <a href="#/search" data-nav="search" style="--dd:160ms"><span data-ico="search" aria-hidden="true"></span>ค้นหา</a>
-      <a href="#/about" data-nav="about" style="--dd:210ms"><span data-ico="info" aria-hidden="true"></span>เกี่ยวกับ</a>
+      <a href="/" data-nav="home" style="--dd:60ms"><span data-ico="home" aria-hidden="true"></span>หน้าหลัก</a>
+      <a href="/scan" data-nav="scan" style="--dd:110ms"><span data-ico="camera" aria-hidden="true"></span>ถ่ายรูป</a>
+      <a href="/search" data-nav="search" style="--dd:160ms"><span data-ico="search" aria-hidden="true"></span>ค้นหา</a>
+      <a href="/about" data-nav="about" style="--dd:210ms"><span data-ico="info" aria-hidden="true"></span>เกี่ยวกับ</a>
     </nav>
   </aside>
 
-  <script src="js/config.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/data.js"></script>
+  <script src="/js/app.js"></script>
 
 </body>
 </html>
