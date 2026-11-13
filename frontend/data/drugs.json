@@ -72,7 +72,7 @@
   {
    "id": "f-01",
    "categoryId": "cat-gastro",
-   "name": "อะลูมิเนียมไฮดรอกไซด์ + แมกนีเซียมไฮดรอกไซด์ (ชนิดน้ำ)",
+   "name": "อะลูมิเนียมไฮดรอกไซด์ + แมกนีเซียมไฮดรอกไซด์",
    "genericTh": "อะลูมิเนียมไฮดรอกไซด์ + แมกนีเซียมไฮดรอกไซด์",
    "genericEn": "Aluminium Hydroxide + Magnesium Hydroxide",
    "ingredients": [
@@ -107,7 +107,7 @@
   {
    "id": "f-02",
    "categoryId": "cat-gastro",
-   "name": "โซเดียมอัลจิเนต + โซเดียมไบคาร์บอเนต + แคลเซียมคาร์บอเนต (ชนิดน้ำ)",
+   "name": "โซเดียมอัลจิเนต + โซเดียมไบคาร์บอเนต + แคลเซียมคาร์บอเนต",
    "genericTh": "โซเดียมอัลจิเนต + โซเดียมไบคาร์บอเนต + แคลเซียมคาร์บอเนต",
    "genericEn": "Sodium Alginate + Sodium Bicarbonate + Calcium Carbonate",
    "ingredients": [
@@ -150,7 +150,7 @@
   {
    "id": "f-03",
    "categoryId": "cat-gastro",
-   "name": "ไซเมทิโคน (ชนิดเม็ด)",
+   "name": "ไซเมทิโคน",
    "genericTh": "ไซเมทิโคน",
    "genericEn": "Simethicone",
    "ingredients": [
@@ -181,7 +181,7 @@
   {
    "id": "f-04",
    "categoryId": "cat-gastro",
-   "name": "โซเดียมอัลจิเนต + โซเดียมไบคาร์บอเนต + แคลเซียมคาร์บอเนต (ชนิดเม็ด)",
+   "name": "โซเดียมอัลจิเนต + โซเดียมไบคาร์บอเนต + แคลเซียมคาร์บอเนต",
    "genericTh": "โซเดียมอัลจิเนต + โซเดียมไบคาร์บอเนต + แคลเซียมคาร์บอเนต",
    "genericEn": "Sodium Alginate + Sodium Bicarbonate + Calcium Carbonate",
    "ingredients": [
@@ -211,7 +211,7 @@
   {
    "id": "f-05",
    "categoryId": "cat-laxative",
-   "name": "แมกนีเซียมไฮดรอกไซด์ (ชนิดน้ำ)",
+   "name": "แมกนีเซียมไฮดรอกไซด์",
    "genericTh": "แมกนีเซียมไฮดรอกไซด์",
    "genericEn": "Magnesium Hydroxide",
    "ingredients": [
@@ -242,7 +242,7 @@
   {
    "id": "f-06",
    "categoryId": "cat-analgesic",
-   "name": "พาราเซตามอล (ชนิดเม็ด)",
+   "name": "พาราเซตามอล",
    "genericTh": "พาราเซตามอล",
    "genericEn": "Paracetamol",
    "ingredients": [
@@ -281,7 +281,7 @@
   {
    "id": "f-07",
    "categoryId": "cat-antihistamine",
-   "name": "คลอร์เฟนิรามีน มาลีเอต (ชนิดเม็ด)",
+   "name": "คลอร์เฟนิรามีน มาลีเอต",
    "genericTh": "คลอร์เฟนิรามีน มาลีเอต",
    "genericEn": "Chlorpheniramine Maleate",
    "ingredients": [
@@ -312,7 +312,7 @@
   {
    "id": "f-08",
    "categoryId": "cat-cough",
-   "name": "สารสกัดชะเอมเทศ + แอนติโมนีโพแทสเซียมทาร์เทรต + ทิงเจอร์ฝิ่นการบูร (ชนิดน้ำ)",
+   "name": "สารสกัดชะเอมเทศ + แอนติโมนีโพแทสเซียมทาร์เทรต + ทิงเจอร์ฝิ่นการบูร",
    "genericTh": "สารสกัดชะเอมเทศ + แอนติโมนีโพแทสเซียมทาร์เทรต + ทิงเจอร์ฝิ่นการบูร",
    "genericEn": "Glycyrrhiza Fluid Extract + Antimony Potassium Tartrate + Camphorated Opium Tincture",
    "ingredients": [
@@ -351,7 +351,7 @@
   {
    "id": "f-09",
    "categoryId": "cat-oral",
-   "name": "เยนเชี่ยนไวโอเลต (ชนิดน้ำ)",
+   "name": "เยนเชี่ยนไวโอเลต",
    "genericTh": "เยนเชี่ยนไวโอเลต",
    "genericEn": "Gentian Violet",
    "ingredients": [

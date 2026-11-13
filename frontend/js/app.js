@@ -137,9 +137,9 @@ let currentRoute = {name:'home', param:''};
 // หน้าที่ผู้ใช้มาก่อนเข้าหน้าข้อมูลยา ใช้ตั้งปลายทางของปุ่มย้อนกลับ
 let detailFrom = 'search';
 
-// อ่านเส้นทางจาก hash
+// อ่านเส้นทางจากที่อยู่ของหน้า
 function parseHash() {
-    const raw = location.hash.replace(/^#\/?/, '');
+    const raw = location.pathname.replace(/^\/+|\/+$/g, '');
     const parts = raw.split('/');
     let name = parts[0] || 'home';
     if (name === 'drug') name = 'detail';
@@ -147,6 +147,27 @@ function parseHash() {
     if (!VIEWS.includes(name)) name = 'home';
     return { name, param: parts[1] || '', sub: parts[2] || '' };
 }
+
+// เปลี่ยนไปหน้าอื่นโดยไม่โหลดเว็บใหม่
+function go(path) {
+    if (path === location.pathname) return;
+    history.pushState(null, '', path);
+    route();
+}
+
+// ดักคลิกลิงก์ภายในเว็บทั้งหมดไว้ที่เดียว ลิงก์ที่สร้างทีหลังจึงทำงานด้วย
+document.addEventListener('click', e => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+    const a = e.target.closest('a');
+    if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+
+    const href = a.getAttribute('href');
+    if (!href || !href.startsWith('/')) return;      // ลิงก์ออกนอกเว็บและลิงก์ #main ปล่อยผ่าน
+
+    e.preventDefault();
+    go(href);
+});
 
 // สลับหน้าตามเส้นทาง
 function route() {
@@ -360,7 +381,7 @@ function homeStats() {
 
 // การ์ดกลุ่มอาการ
 function catCard(c) {
-  return '<a class="catcard reveal" href="#/category/' + encodeURIComponent(c.id) + '" style="' + toneVars(c.id) + '">' +
+  return '<a class="catcard reveal" href="/category/' + encodeURIComponent(c.id) + '" style="' + toneVars(c.id) + '">' +
       '<span class="catcard-ico" data-ico="' + esc(c.icon || 'pill') + '"></span>' +
       '<span class="catcard-b"><b>' + esc(c.short) + '</b>' +
         '<span>' + formsOf(c.id).length + ' สูตรตำรับ · ' + brandsInCat(c.id).length + ' ยี่ห้อ</span></span>' +
@@ -395,7 +416,7 @@ function renderHome() {
 // แถวรายการยาหนึ่งรายการ
 function rowItem(b) {
   const c = content(b), ct = cat(b.categoryId);
-  return '<li><a class="row" href="#/drug/' + encodeURIComponent(b.id) + '" style="' + toneVars(b.categoryId) + '">' +
+  return '<li><a class="row" href="/drug/' + encodeURIComponent(b.id) + '" style="' + toneVars(b.categoryId) + '">' +
       '<span class="row-ico" data-ico="' + (b.packaging === 'blister' ? 'blister' : 'bottle') + '"></span>' +
       '<span class="row-b"><b>' + esc(thName(b.productName)) + '</b>' +
         '<span class="gen">' + esc(c.genericTh || c.genericEn) + '</span>' +
@@ -451,7 +472,7 @@ function runSearch() {
         'และตรวจสอบว่ายาที่ค้นหาอยู่ในขอบเขต 6 กลุ่มอาการของระบบ</p>' +
       '<div class="state-actions">' +
         '<button class="btn btn-primary" type="button" id="clrAll">ล้างตัวกรองทั้งหมด</button>' +
-        '<a class="btn btn-outline" href="#/about">ดูขอบเขตของระบบ</a>' +
+        '<a class="btn btn-outline" href="/about">ดูขอบเขตของระบบ</a>' +
       '</div>' +
     '</div>';
 
@@ -721,7 +742,7 @@ function gotoSuggest(i) {
   if (!b) return;
   hideSuggest();
   $('#q').blur();
-  location.hash = '#/drug/' + encodeURIComponent(b.id);
+  go('/drug/' + encodeURIComponent(b.id));
 }
 
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -789,6 +810,11 @@ function initMic() {
 const TTS_OK = 'speechSynthesis' in window;
 let ttsBtn = null;
 let ttsUtter = null;
+let ttsGap = null;
+
+// ช่วงเว้นระหว่างประโยค และความเร็วในการอ่าน
+const SPEAK_GAP  = 650;
+const SPEAK_RATE = 0.86;
 
 const VOICE_PREF = ['Premwadee', 'Niwat', 'Natural', 'Online', 'Google', 'Kanya', 'Pattara'];
 
@@ -856,6 +882,7 @@ function ttsReset() {
 
 // หยุดอ่านออกเสียง
 function stopSpeech() {
+  clearTimeout(ttsGap);
   if (TTS_OK) speechSynthesis.cancel();
   ttsReset();
 }
@@ -879,15 +906,24 @@ function speakText(text, btn, localOnly) {
     const parts = forSpeech(text).split(/\.\s+/).filter(Boolean);
     if (!parts.length) { ttsReset(); return; }
 
-    let last = null;
-    parts.forEach(p => {
-      const u = new SpeechSynthesisUtterance(p);
+    // ต่อคิวทีละประโยคแทนการโยนเข้าคิวทีเดียว จะได้เว้นช่วงระหว่างประโยคได้เอง
+    let at = 0;
+    const next = () => {
+      if (ttsBtn !== btn) return;
+      if (at >= parts.length) { ttsReset(); return; }
+
+      const u = new SpeechSynthesisUtterance(parts[at++]);
       u.lang = 'th-TH';
-      u.rate = 0.9;
+      u.rate = SPEAK_RATE;
       if (voice) u.voice = voice;
 
+      u.onend = () => {
+        if (ttsUtter !== u) return;
+        ttsGap = setTimeout(next, SPEAK_GAP);
+      };
+
       u.onerror = e => {
-        if (ttsUtter !== last) return;
+        if (ttsUtter !== u) return;
         const online = voice && !voice.localService;
         if (online && !localOnly && e.error !== 'interrupted' && e.error !== 'canceled') {
           console.warn('เสียงออนไลน์ใช้ไม่ได้ (' + e.error + ') → เปลี่ยนเป็นเสียงในเครื่อง');
@@ -897,11 +933,11 @@ function speakText(text, btn, localOnly) {
         ttsReset();
       };
 
+      ttsUtter = u;
       speechSynthesis.speak(u);
-      last = u;
-    });
-    last.onend = () => { if (ttsUtter === last) ttsReset(); };
-    ttsUtter = last;
+    };
+
+    next();
   });
 }
 
@@ -1049,8 +1085,8 @@ function panelWarn(c) {
 function detailFoot() {
   return '<div class="res-foot">' +
     '<div class="res-actions">' +
-      '<a class="btn btn-primary" href="#/scan">' + svg('camera') + 'ถ่ายภาพฉลากใหม่</a>' +
-      '<a class="btn btn-outline" href="#/search">' + svg('search') + 'ค้นหายาชนิดอื่น</a>' +
+      '<a class="btn btn-primary" href="/scan">' + svg('camera') + 'ถ่ายภาพฉลากใหม่</a>' +
+      '<a class="btn btn-outline" href="/search">' + svg('search') + 'ค้นหายาชนิดอื่น</a>' +
     '</div>' +
     '<p class="disclaimer">' + svg('info') + '<span>ข้อมูลนี้เป็นข้อมูลอ้างอิงเพื่อการศึกษา ' +
       'ชื่อผลิตภัณฑ์ เลขทะเบียน ผู้รับอนุญาต และสถานะทะเบียน อ้างอิงจากข้อมูลทะเบียนยาของ อย. ' +
@@ -1074,7 +1110,7 @@ function renderDetail(id, tab) {
   if (!b) {
     host.innerHTML = '<div class="state"><div class="state-ico is-warn">' + svg('search') + '</div>' +
       '<h2>ไม่พบข้อมูลยาที่ต้องการ</h2><p>รายการนี้อาจถูกลบออกจากฐานข้อมูลแล้ว</p>' +
-      '<div class="state-actions"><a class="btn btn-primary" href="#/search">กลับไปหน้าค้นหา</a></div></div>';
+      '<div class="state-actions"><a class="btn btn-primary" href="/search">กลับไปหน้าค้นหา</a></div></div>';
     inkFn = null;
     return;
   }
@@ -1086,7 +1122,7 @@ function renderDetail(id, tab) {
   const backTo = BACK_TO[detailFrom] || BACK_TO.search;
 
   host.innerHTML =
-    '<div class="page-head"><a class="backlink" href="#/' + backTo[0] + '" aria-label="' + backTo[1] + '">' +
+    '<div class="page-head"><a class="backlink" href="/' + backTo[0] + '" aria-label="' + backTo[1] + '">' +
       svg('back') + '</a></div>' +
     '<div class="rescard">' +
       detailHead(b, c, ct, active) +
@@ -1435,7 +1471,7 @@ function showResult(res) {
       '<ul class="rows mt-4">' + list.map(rowItem).join('') + '</ul>' +
       '<div class="state-actions">' +
         (many ? '' :
-          '<a class="btn btn-primary" href="#/drug/' + encodeURIComponent(list[0].id) + '">' +
+          '<a class="btn btn-primary" href="/drug/' + encodeURIComponent(list[0].id) + '">' +
             svg('arrow') + 'ดูข้อมูลยา</a>') +
         '<button class="btn ' + (many ? 'btn-soft' : 'btn-outline') + '" type="button" id="camNew">' +
           'ถ่ายใหม่</button>' +
@@ -1454,7 +1490,7 @@ function showResult(res) {
           'หรือปรึกษาเภสัชกร</p>' +
         '<div class="state-actions">' +
           '<button class="btn btn-primary" type="button" id="camNew">ถ่ายใหม่</button>' +
-          '<a class="btn btn-outline" href="#/about">' + svg('info') + 'ดูขอบเขตของระบบ</a>' +
+          '<a class="btn btn-outline" href="/about">' + svg('info') + 'ดูขอบเขตของระบบ</a>' +
         '</div>' +
       '</div>';
 
@@ -1467,7 +1503,7 @@ function showResult(res) {
           'ลองถ่ายใหม่ให้เห็นชื่อยาและเลขทะเบียนชัดเจน หรือค้นหาด้วยชื่อยาแทน</p>' +
         '<div class="state-actions">' +
           '<button class="btn btn-primary" type="button" id="camNew">ถ่ายใหม่</button>' +
-          '<a class="btn btn-outline" href="#/search">' + svg('search') + 'ค้นหาด้วยชื่อยา</a>' +
+          '<a class="btn btn-outline" href="/search">' + svg('search') + 'ค้นหาด้วยชื่อยา</a>' +
         '</div>' +
       '</div>';
   }
@@ -1564,6 +1600,8 @@ async function start() {
   syncHeaderState();
   runIntro();
 
+  showLoading();
+
   try {
     await loadDB();
   } catch (err) {
@@ -1571,20 +1609,76 @@ async function start() {
     return;
   }
 
-  window.addEventListener('hashchange', route);
+  hideDataPane();
+  window.addEventListener('popstate', route);
   route();
-  console.log('MedCheck พร้อมทำงาน · ยา ' + DB.brands.length + ' ยี่ห้อ');
+  console.log('MedCheck พร้อมทำงาน · ยา ' + DB.brands.length + ' ยี่ห้อ'
+    + (dataSource === 'api' ? ' · อ่านจากฐานข้อมูล' : ' · อ่านจากไฟล์สำรอง'));
+}
+
+// แผ่นทับระหว่างรอข้อมูลยา · ไม่ลบส่วนหน้าจอเดิม เพราะตัวจัดเส้นทางยังต้องใช้
+function dataPane(html) {
+  const main = $('#main');
+  let el = $('#dataPane');
+  if (!el) {
+    main.insertAdjacentHTML('afterbegin', '<div class="wrap sec" id="dataPane"></div>');
+    el = $('#dataPane');
+  }
+  main.classList.add('is-loading');
+  el.innerHTML = html;
+  return el;
+}
+
+// เอาแผ่นทับออกเมื่อได้ข้อมูลแล้ว
+function hideDataPane() {
+  const el = $('#dataPane');
+  if (el) el.remove();
+  $('#main').classList.remove('is-loading');
+}
+
+// แจ้งระหว่างรอข้อมูลยา · ครั้งแรกเซิร์ฟเวอร์อาจต้องตื่นจากการพักเครื่องก่อน
+function showLoading() {
+  dataPane(
+    '<div class="state">' +
+      '<div class="dataspin" aria-hidden="true"></div>' +
+      '<h2>กำลังโหลดข้อมูลยา</h2>' +
+      '<p>เปิดครั้งแรกอาจใช้เวลาสักครู่ เพราะเซิร์ฟเวอร์กำลังตื่นจากการพักเครื่อง</p>' +
+    '</div>');
 }
 
 // แจ้งเมื่อโหลดข้อมูลยาไม่สำเร็จ
 function showLoadError(err) {
   console.error(err);
-  $('#main').innerHTML =
-    '<div class="wrap sec"><div class="state">' +
+  dataPane(
+    '<div class="state">' +
       '<div class="state-ico is-warn">' + svg('info') + '</div>' +
       '<h2>เปิดข้อมูลยาไม่ได้</h2>' +
-      '<p>' + esc(err.message) + ' — ถ้าเปิดไฟล์ด้วยการดับเบิลคลิก ให้เปิดผ่าน Live Server แทน</p>' +
-    '</div></div>';
+      '<p>' + esc(err.message) + ' — เซิร์ฟเวอร์ข้อมูลยาอาจกำลังตื่นจากการพักเครื่อง ' +
+        'รออีกสักครู่แล้วลองใหม่อีกครั้ง</p>' +
+      '<div class="state-actions">' +
+        '<button class="btn btn-primary" type="button" id="reloadData">ลองใหม่อีกครั้ง</button>' +
+      '</div>' +
+    '</div>');
+  paintIcons($('#dataPane'));
+  $('#reloadData').addEventListener('click', retryLoad);
+}
+
+// ลองโหลดข้อมูลยาอีกครั้งโดยไม่ต้องรีเฟรชทั้งหน้า
+async function retryLoad() {
+  const btn = $('#reloadData');
+  btn.disabled = true;
+  btn.textContent = 'กำลังโหลด...';
+  showLoading();
+  try {
+    await loadDB();
+  } catch (err) {
+    showLoadError(err);
+    return;
+  }
+  hideDataPane();
+  // ใส่ตัวฟังซ้ำได้ เพราะเป็นฟังก์ชันตัวเดิม เบราว์เซอร์จะไม่เพิ่มซ้อน
+  window.addEventListener('popstate', route);
+  route();
 }
 
 start();
@@ -1611,7 +1705,7 @@ function bindDetail(host, b, c, ct) {
     TABS.forEach(t => { $('#panel-' + t[0], host).hidden = t[0] !== name; });
 
     moveInk();
-    history.replaceState(null, '', '#/drug/' + encodeURIComponent(b.id) + '/' + name);
+    history.replaceState(null, '', '/drug/' + encodeURIComponent(b.id) + '/' + name);
   }
 
   $('.tabs', host).addEventListener('click', e => {
@@ -1648,9 +1742,9 @@ function bindDetail(host, b, c, ct) {
       speakName(thName(b.productName)), c.genericTh,
       'กลุ่ม ' + (ct ? ct.short : ''),
       'เลขทะเบียน ' + b.regNo,
-      c.indications.length ? 'ข้อบ่งใช้ ' + c.indications.join(' ') : '',
+      c.indications.length ? 'ข้อบ่งใช้ ' + c.indications.join('. ') : '',
       c.dosageAdult ? 'ขนาดยา ' + c.dosageAdult : '',
-      c.warnings.length ? 'คำเตือน ' + c.warnings.map(w => w.text).join(' ') : '',
+      c.warnings.length ? 'คำเตือน ' + c.warnings.map(w => w.text).join('. ') : '',
     ].filter(Boolean).join('. '), read);
   });
 }
@@ -1659,7 +1753,7 @@ function bindDetail(host, b, c, ct) {
 function renderAbout() {
   const m = DB.meta || {};
   $('#aboutBody').innerHTML =
-    '<div class="page-head"><a class="backlink" href="#/" aria-label="กลับหน้าหลัก">' + svg('back') + '</a>' +
+    '<div class="page-head"><a class="backlink" href="/" aria-label="กลับหน้าหลัก">' + svg('back') + '</a>' +
       '<div style="flex:1 1 16rem"><h1>เกี่ยวกับระบบ MedCheck</h1>' +
       '<p>เครื่องมือต้นแบบที่ช่วยให้ผู้บริโภคตรวจสอบข้อมูลยาสามัญประจำบ้านได้ด้วยตนเอง ' +
       'โดยเชื่อมโยงการอ่านฉลากด้วย OCR เข้ากับข้อมูลทะเบียนยาของหน่วยงานภาครัฐ</p></div>' +

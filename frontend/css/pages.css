@@ -1473,3 +1473,12 @@ html.entered .hdr{animation:hdrDrop 640ms var(--ez-out) both}
 @media (prefers-reduced-motion:no-preference){
   .vfy-spin{animation:camSpin 760ms linear infinite} }
 .vfy-act{display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.85rem}
+
+/* ระหว่างรอข้อมูลยา ซ่อนหน้าจอส่วนอื่นไว้ก่อน แต่ไม่ลบทิ้ง */
+#main.is-loading > *:not(#dataPane){display:none}
+
+/* วงกลมหมุนระหว่างรอข้อมูลยาจากเซิร์ฟเวอร์ */
+.dataspin{width:2.6rem; height:2.6rem; margin:0 auto 1.2rem; border-radius:50%;
+  border:3px solid var(--line); border-top-color:var(--primary)}
+@media (prefers-reduced-motion:no-preference){
+  .dataspin{animation:camSpin 760ms linear infinite} }
