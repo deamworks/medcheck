@@ -5,7 +5,6 @@ from sqlalchemy import text, or_
 from google.cloud import vision
 import os
 from fastapi.middleware.cors import CORSMiddleware
-
 from database import get_db
 from models import Category, Medicine, Brand, ActiveIngredient, Warning, MedicineIngredient, AdminUser
 from matcher import identify_medicine
@@ -13,6 +12,13 @@ from fda_api import verify_with_fda
 from fastapi.security import OAuth2PasswordRequestForm
 from auth import verify_password, create_access_token, get_current_admin
 from admin_routes import router as admin_router
+import logging
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+
+logger = logging.getLogger("medcheck")
+
 
 load_dotenv()
 
@@ -31,6 +37,22 @@ app.add_middleware(
         allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
+@app.exception_handler(IntegrityError)
+async def handle_integrity_error(request: Request, exc: IntegrityError):
+    logger.error("IntegrityError on %s %s", request.method, request.url.path, exc_info=exc)
+    return JSONResponse(
+        status_code=409,
+        content={"detail": "บันทึกไม่ได้ ข้อมูลซ้ำหรืออ้างถึงข้อมูลที่ไม่มีในระบบ"},
+    )
+
+
+@app.exception_handler(SQLAlchemyError)
+async def handle_db_error(request: Request, exc: SQLAlchemyError):
+    logger.error("Database error on %s %s", request.method, request.url.path, exc_info=exc)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "ฐานข้อมูลขัดข้อง กรุณาลองใหม่อีกครั้ง"},
+    )
 
 app.include_router(admin_router)
 
