@@ -44,34 +44,44 @@
     white-space:nowrap;
 }
 
+/* ไอคอนเว็บในหัวเว็บ · กล่องแดงไล่สี ใช้ทั้งหน้าผู้ใช้และแอดมิน */
 .logo-mark {
+    position:relative;
+    overflow:hidden;
     width:2.6rem;
     height:2.6rem;
     flex:0 0 auto;
-    border-radius:.85rem;
     display:grid;
     place-items:center;
-    background:linear-gradient(145deg,var(--red-500),var(--red-700)); 
+    border-radius:.85rem;
+    background:linear-gradient(145deg,var(--cta),var(--cta-2));
     color:#fff;
-    box-shadow:var(--glow); 
-    position:relative; 
-    overflow:hidden;
+    box-shadow:var(--glow);
 }
 
-/* แสงกวาดผ่านโลโก้เป็นระยะ */
-.logo-mark::after{
-    content:""; 
-    position:absolute; 
-    inset:0;
-    background:linear-gradient(120deg,transparent 40%,rgba(255,255,255,.45) 50%,transparent 60%);
-    transform:translateX(-120%); 
-}
-@keyframes sheen{0%,72%{transform:translateX(-120%)} 88%,100%{transform:translateX(120%)}}
-
+/* ขนาดไอคอนในกล่องแดง */
 .logo-mark svg{
-    width:1.4rem;
-    height:1.4rem;
+    width:1.85rem;
+    height:1.85rem;
+    display:block;
 }
+
+/* แสงกวาดผ่านกล่องโลโก้ · มีเฉพาะหัวเว็บ */
+.logo-mark::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(120deg,transparent 42%,rgba(255,255,255,.5) 50%,transparent 58%);
+    transform:translateX(-130%);
+    animation:sheen 5.5s var(--ez) 1.6s infinite;
+}
+@keyframes sheen{0%,82%{transform:translateX(-130%)} 94%,100%{transform:translateX(130%)}}
+
+/* ปิดแสงกวาด เมื่อผู้ใช้ไม่อยากเห็นภาพเคลื่อนไหว */
+@media (prefers-reduced-motion:reduce){
+    .logo-mark::after{display:none}
+}
+
 .logo-tx{display:flex; flex-direction:column; line-height:1.18}
 .logo-tx b{font-family:var(--f-head); font-size:1.28rem; font-weight:700;
   letter-spacing:-.02em; color:var(--ink)}

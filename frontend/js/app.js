@@ -51,19 +51,42 @@ const P = {
   play:'<path d="M8.2 5.5 18.6 12 8.2 18.5V5.5Z"/>',
   box:'<path d="M20.4 7.6 12 3.4 3.6 7.6v8.8L12 20.6l8.4-4.2V7.6Z"/><path d="M3.6 7.6 12 11.8l8.4-4.2M12 11.8v8.8"/>',
 
-  stomach:'<path d="M12 3.4s6 6.2 6 10.2a6 6 0 1 1-12 0c0-4 6-10.2 6-10.2Z"/><path d="M8.8 14.6a3.2 3.2 0 0 0 3.2 3.2"/>',
-  laxative:'<path d="M12 3.6v11.2M7.6 10.6 12 15l4.4-4.4M5.4 20.4h13.2"/>',
-  fever:'<path d="M14.2 14.8V5.6a2.2 2.2 0 1 0-4.4 0v9.2a4.2 4.2 0 1 0 4.4 0Z"/><path d="M12 8.6v7.6"/>',
-  allergy:'<path d="M3.6 8.6h9.2a3 3 0 1 0-3-3"/><path d="M3.6 15.4h11.8a3 3 0 1 1-3 3"/><path d="M3.6 12h6.6"/>',
-  cough:'<path d="M4.4 12h3l4.2-4.2v8.4L7.4 12"/><path d="M14.6 9.4a3.4 3.4 0 0 1 0 5.2M17.4 6.8a7 7 0 0 1 0 10"/>',
-  mouth:'<path d="M4.4 10.4c2.1-1 4.7-1.5 7.6-1.5s5.5.5 7.6 1.5c-.7 3.7-3.8 6.5-7.6 6.5s-6.9-2.8-7.6-6.5Z"/><path d="M4.6 10.6h14.8"/>',
+  stomach:'<path d="M9.4 3.2V6.3C7.9 7.6 5.1 9 5.1 13.2c0 3.7 2.8 6.6 6.3 6.6s5.9-2.6 5.9-5.9c0-4-2.3-6.3-4.3-7.3V3.2Z"/><circle cx="9.5" cy="12.6" r="1.05"/><circle cx="12.9" cy="15" r="1.05"/>',
+  laxative:'<path d="M16.6 5.2H9.8a2.6 2.6 0 0 0 0 5.2h4.6a2.6 2.6 0 0 1 0 5.2H7.4"/>',
+  fever:'<path d="M12.4 14V5.4a2.2 2.2 0 1 0-4.4 0V14a4.2 4.2 0 1 0 4.4 0Z"/><path d="M10.2 9.6v6.2"/><path d="M16.4 11.2c1.1-1.1 1.1-2.3 0-3.4s-1.1-2.3 0-3.4"/><path d="M19.6 11.2c1.1-1.1 1.1-2.3 0-3.4s-1.1-2.3 0-3.4"/>',
+  allergy:'<path d="M9 3.2v5.6c0 1.3-.8 2.2-1.8 3.3-1.1 1.2-1.8 2.5-1.8 3.9 0 2.5 2 4.4 4.5 4.4h4.2c2.5 0 4.5-1.9 4.5-4.4 0-1.4-.7-2.7-1.8-3.9-1-1.1-1.8-2-1.8-3.3V3.2"/><path d="M8.4 16a2.6 2.6 0 0 0 2.6 2.6M15.6 16a2.6 2.6 0 0 1-2.6 2.6"/><path d="M21.4 8.2c0 1-.8 1.8-1.8 1.8s-1.8-.8-1.8-1.8c0-1 1.8-3.2 1.8-3.2s1.8 2.2 1.8 3.2Z"/>',
+  cough:'<path d="M12 4v7.4"/><path d="M12 8.8H9.9c-1 0-1.9.6-2.3 1.6l-2 5.2c-.7 1.8.6 3.8 2.6 3.8h1.6a2.2 2.2 0 0 0 2.2-2.2V8.8Z"/><path d="M12 8.8h2.1c1 0 1.9.6 2.3 1.6l2 5.2c.7 1.8-.6 3.8-2.6 3.8h-1.6a2.2 2.2 0 0 1-2.2-2.2V8.8Z"/><path d="M12 11.4 9.5 13.8M12 11.4l2.5 2.4"/>',
+  mouth:'<path d="M15.6 20.6v-2.2a3.4 3.4 0 0 1 1.4-2.8 7.6 7.6 0 1 0-11.8-8"/><path d="M5.2 7.6 3.4 12.4c-.2.6.2 1.2.9 1.2h1.6v1.8a2 2 0 0 0 2 2h1.4"/><circle cx="13.6" cy="17.4" r="1.4"/>',
 };
+
+// ไอคอนหกกลุ่มอาการ · ชื่อต้องตรงกับ id ใน assets/cat-icons.svg
+const CAT_ICONS = ['stomach', 'laxative', 'fever', 'allergy', 'cough', 'mouth'];
+let catSpriteOn = false;
 
 // สร้างแท็ก svg ของไอคอน
 function svg(n, cls) {
+  const body = (catSpriteOn && CAT_ICONS.indexOf(n) >= 0)
+    ? '<use href="#cat-' + n + '"/>'
+    : (P[n] || P.info);
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
        + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"'
-       + (cls ? ' class="' + cls + '"' : '') + '>' + (P[n] || P.info) + '</svg>';
+       + (cls ? ' class="' + cls + '"' : '') + '>' + body + '</svg>';
+}
+
+// โหลดไอคอนกลุ่มอาการมาซ่อนไว้ต้นหน้า ให้ <use> เรียกซ้ำ
+async function loadCatSprite() {
+  try {
+    const res = await fetch('/assets/cat-icons.svg');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const txt = await res.text();
+    if (txt.indexOf('<symbol') < 0) throw new Error('ไม่พบ symbol ในไฟล์');
+    const box = document.createElement('div');
+    box.innerHTML = txt;
+    document.body.insertBefore(box, document.body.firstChild);
+    catSpriteOn = true;
+  } catch (err) {
+    console.warn('โหลดไอคอนกลุ่มอาการไม่ได้ ใช้รูปเส้นสำรองแทน', err);
+  }
 }
 
 // ใส่ไอคอนให้อิลิเมนต์ที่มี data-ico
@@ -120,14 +143,20 @@ function initReveal(scope) {
     io = new IntersectionObserver(entries => {
       entries.forEach((en, i) => {
         if (!en.isIntersecting) return;
-        en.target.style.setProperty('--rd', Math.min(i, 7) * 70 + 'ms');
+        // หน่วงเฉพาะตัวที่เพิ่งโผล่จากขอบล่าง
+        const fromEdge = en.boundingClientRect.top > innerHeight * 0.6;
+        en.target.style.setProperty('--rd', fromEdge ? Math.min(i, 5) * 60 + 'ms' : '0ms');
         en.target.classList.add('in');
         io.unobserve(en.target);
       });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
   }
 
-  $$('.reveal:not(.in),.pop:not(.in)', scope).forEach(el => io.observe(el));
+  // สิ่งที่อยู่ในจอตั้งแต่แรก แสดงทันที
+  $$('.reveal:not(.in),.pop:not(.in)', scope).forEach(el => {
+    if (el.getBoundingClientRect().top < innerHeight) el.classList.add('in');
+    else io.observe(el);
+  });
 }
 
 const VIEWS = ['home', 'scan', 'search', 'detail', 'about',];
@@ -358,17 +387,6 @@ document.addEventListener('keydown', e => {
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus();}
 });
 
-const CAT_TONE = {
-  'cat-gastro': 1, 'cat-laxative': 2, 'cat-analgesic': 3,
-  'cat-antihistamine': 4, 'cat-cough': 5, 'cat-oral': 6,
-};
-
-// ตัวแปรสีประจำกลุ่มอาการ
-function toneVars(cid) {
-  const n = CAT_TONE[cid] ||
-    (Math.abs(String(cid).split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0)) % 6) + 1;
-  return '--cc:var(--c' + n + ');--cbg:var(--c' + n + '-bg)';
-}
 
 // ตัวเลขสรุปบนหน้าแรก
 function homeStats() {
@@ -381,7 +399,7 @@ function homeStats() {
 
 // การ์ดกลุ่มอาการ
 function catCard(c) {
-  return '<a class="catcard reveal" href="/category/' + encodeURIComponent(c.id) + '" style="' + toneVars(c.id) + '">' +
+  return '<a class="catcard reveal" href="/category/' + encodeURIComponent(c.id) + '">' +
       '<span class="catcard-ico" data-ico="' + esc(c.icon || 'pill') + '"></span>' +
       '<span class="catcard-b"><b>' + esc(c.short) + '</b>' +
         '<span>' + formsOf(c.id).length + ' สูตรตำรับ · ' + brandsInCat(c.id).length + ' ยี่ห้อ</span></span>' +
@@ -415,11 +433,10 @@ function renderHome() {
 
 // แถวรายการยาหนึ่งรายการ
 function rowItem(b) {
-  const c = content(b), ct = cat(b.categoryId);
-  return '<li><a class="row" href="/drug/' + encodeURIComponent(b.id) + '" style="' + toneVars(b.categoryId) + '">' +
-      '<span class="row-ico" data-ico="' + (b.packaging === 'blister' ? 'blister' : 'bottle') + '"></span>' +
+  const ct = cat(b.categoryId);
+  return '<li><a class="row" href="/drug/' + encodeURIComponent(b.id) + '">' +
       '<span class="row-b"><b>' + esc(thName(b.productName)) + '</b>' +
-        '<span class="gen">' + esc(c.genericTh || c.genericEn) + '</span>' +
+        (b.licensee ? '<span class="row-sub">' + esc(b.licensee) + '</span>' : '') +
         '<span class="tags">' +
           '<span class="pill pill-red">' + esc(ct ? ct.short : '') + '</span>' +
           '<span class="pill pill-grey">เลขทะเบียน ' + esc(b.regNo) + '</span>' +
@@ -468,7 +485,7 @@ function runSearch() {
     '<div class="state mt-5">' +
       '<div class="state-ico is-warn">' + svg('search') + '</div>' +
       '<h2>ไม่พบยาที่ตรงกับคำค้นหา</h2>' +
-      '<p>ลองพิมพ์เพียงบางส่วนของชื่อยา เช่น “พารา” หรือพิมพ์ตัวยาสำคัญ เช่น “paracetamol” ' +
+      '<p>โปรดลองพิมพ์เพียงบางส่วนของชื่อยา เช่น “พารา” หรือพิมพ์ตัวยาสำคัญ เช่น “paracetamol” ' +
         'และตรวจสอบว่ายาที่ค้นหาอยู่ในขอบเขต 6 กลุ่มอาการของระบบ</p>' +
       '<div class="state-actions">' +
         '<button class="btn btn-primary" type="button" id="clrAll">ล้างตัวกรองทั้งหมด</button>' +
@@ -489,11 +506,10 @@ function runSearch() {
   $('#qClear').hidden = !q;
 }
 
-// ปรับชิปกลุ่มอาการ
+// ปรับปุ่มกรองกลุ่มอาการ
 function syncChips() {
   $$('#chipbar [data-cat]').forEach(b =>
-    b.setAttribute('aria-pressed', String(b.dataset.cat === sState.cat))
-  );
+    b.setAttribute('aria-pressed', String(b.dataset.cat === sState.cat)));
 }
 
 // วาดหน้าค้นหา
@@ -504,8 +520,11 @@ function renderSearch(pre) {
       '<button class="chip" type="button" data-cat="" aria-pressed="true">' +
         '<span class="c-ico">' + svg('list') + '</span>ทั้งหมด<span class="n">' + DB.brands.length + '</span></button>' +
       DB.categories.slice().sort((a, b) => a.order - b.order).map(c =>
-        '<button class="chip" type="button" data-cat="' + esc(c.id) + '" aria-pressed="false" style="' + toneVars(c.id) + '">' +
-          '<span class="c-ico">' + svg(c.icon || 'pill') + '</span>' + esc(c.short) +
+        // ชื่อเต็มกับชื่อย่ออยู่ในปุ่มเดียวกัน สลับด้วย CSS
+        '<button class="chip" type="button" data-cat="' + esc(c.id) + '" aria-pressed="false">' +
+          '<span class="c-ico">' + svg(c.icon || 'pill') + '</span>' +
+          '<span class="t-full">' + esc(c.short) + '</span>' +
+          '<span class="t-mini">' + esc(c.mini || c.short) + '</span>' +
           '<span class="n">' + brandsInCat(c.id).length + '</span></button>'
       ).join('');
 
@@ -704,14 +723,14 @@ function renderSuggest() {
     ? '<li class="s-head" role="presentation">ยาที่ตรงกับ “' + esc(q) + '”</li>' +
       sugItems.map((b, i) => {
         const c = content(b), ct = cat(b.categoryId);
-        return '<li role="option" id="sug-' + i + '" aria-selected="false" data-sug="' + i + '" style="' + toneVars(b.categoryId) + '">' +
+        return '<li role="option" id="sug-' + i + '" aria-selected="false" data-sug="' + i + '">' +
             '<span class="s-ico">' + svg(b.packaging === 'blister' ? 'blister' : 'bottle') + '</span>' +
             '<span class="s-b"><b>' + esc(thName(b.productName)) + '</b>' +
               '<span>' + esc(c.genericTh || c.genericEn) + ' · ' + esc(ct ? ct.short : '') + '</span></span>' +
             '<span class="s-go">' + svg('arrow') + '</span>' +
           '</li>';
       }).join('')
-    : '<li class="s-empty" role="presentation">ไม่พบยาที่ตรงกับ “' + esc(q) + '” ลองพิมพ์สั้นลง เช่น “พารา”</li>';
+    : '<li class="s-empty" role="presentation">ไม่พบยาที่ตรงกับ “' + esc(q) + '” โปรดลองพิมพ์ให้สั้นลง เช่น “พารา”</li>';
 
   list.hidden = false;
   $('#q').setAttribute('aria-expanded', 'true');
@@ -785,9 +804,9 @@ function initMic() {
     };
 
     recog.onerror = e => {
-      sayMsg(e.error === 'not-allowed' ? 'กรุณาอนุญาตให้เว็บไซต์ใช้ไมโครโฟน'
-           : e.error === 'no-speech'   ? 'ไม่ได้ยินเสียงพูด ลองใหม่อีกครั้ง'
-           : 'ฟังเสียงไม่สำเร็จ ลองใหม่อีกครั้ง');
+      sayMsg(e.error === 'not-allowed' ? 'โปรดอนุญาตให้เว็บไซต์ใช้ไมโครโฟน'
+           : e.error === 'no-speech'   ? 'ไม่ได้ยินเสียงพูด โปรดลองใหม่อีกครั้ง'
+           : 'ฟังเสียงไม่สำเร็จ โปรดลองใหม่อีกครั้ง');
     };
 
     recog.onend = () => {
@@ -960,10 +979,10 @@ function renderRecent() {
   paintIcons($('#recentRows'));
 }
 
+// เส้นทางเก่า /drug/:id/warn ไม่พัง เพราะ active ถอยไปใช้ use เมื่อไม่พบชื่อแท็บในตารางนี้
 const TABS = [
   ['use',  'ข้อบ่งใช้',        'clipboard'],
   ['dose', 'วิธีใช้และขนาดยา', 'clock'],
-  ['warn', 'คำเตือน',          'warning'],
 ];
 
 // ชื่อรูปแบบบรรจุ
@@ -975,7 +994,6 @@ window.addEventListener('resize', debounce(() => { if (inkFn) inkFn(); }, 150));
 // ส่วนหัวของหน้าข้อมูลยา
 function detailHead(b, c, ct, active) {
   const ok = b.status === 'active';
-  const nameEn = enName(b.productName);
   return '<div class="res-hero">' +
     '<div class="res-badges">' +
       (ok ? '<span class="pill pill-ok">' + svg('check-c') + 'ขึ้นทะเบียน อย. แล้ว</span>'
@@ -984,9 +1002,7 @@ function detailHead(b, c, ct, active) {
                   svg('speaker') + '<span>ฟังข้อมูลยา</span></button>' : '') +
     '</div>' +
     '<h1 class="res-title">' + esc(thName(b.productName)) + '</h1>' +
-    '<p class="res-generic">' + esc(c.genericTh || c.genericEn) + '</p>' +
-    (nameEn ? '<p class="res-en">' + esc(nameEn) +
-              (c.genericEn ? ' · ' + esc(c.genericEn) : '') + '</p>' : '') +
+    // ไม่แสดงชื่อสามัญตรงนี้ · ซ้ำกับ ตัวยาสำคัญและปริมาณ
     '<div class="res-tags">' +
       '<span class="pill pill-red">' + esc(ct ? ct.short : '') + '</span>' +
       '<span class="pill pill-grey">เลขทะเบียน ' + esc(b.regNo) + '</span>' +
@@ -1009,10 +1025,20 @@ function tabPanel(name, active, inner) {
     (name === active ? '' : ' hidden') + '>' + inner + '</div>';
 }
 
-// แถวข้อมูลหนึ่งบรรทัด
+// แถวข้อมูลหนึ่งบรรทัด · value เป็นข้อความ หรือรายการคู่ [ซ้าย, ขวา]
 function infoRow(icon, label, value, pre) {
+  const many = Array.isArray(value) && value.length;
+  const body = many
+    ? '<span class="pairs">' + value.map(v => {
+        const p = Array.isArray(v) ? v : [v, ''];
+        return '<span class="nm">' + esc(p[0]) + '</span>' +
+               '<i>' + esc(p[1] || '') + '</i>';
+      }).join('') + '</span>'
+    : '<span' + (pre ? ' class="pre"' : '') + '>' +
+        esc((Array.isArray(value) ? '' : value) || 'ไม่มีข้อมูล') + '</span>';
+
   return '<div class="inforow"><span class="ico">' + svg(icon) + '</span><div>' +
-    '<b>' + label + '</b><span' + (pre ? ' class="pre"' : '') + '>' + esc(value || 'ไม่มีข้อมูล') + '</span>' +
+    '<b>' + label + '</b>' + body +
   '</div></div>';
 }
 
@@ -1029,31 +1055,37 @@ function panelUse(b, c) {
         '</div>').join('') + '</div>'
     : '<p class="muted">ไม่มีข้อมูลข้อบ่งใช้ในระบบ</p>';
 
-  const firstWarn = c.warnings.length
-    ? '<div class="warnbox"><h4>' + svg('warning') + 'ข้อควรระวังสำคัญ</h4>' +
-        '<ul><li>' + svg('alert') + '<span>' + esc(c.warnings[0].text) + '</span></li></ul>' +
-        '<p class="text-xs mt-3" style="color:var(--ink-3)">ดูคำเตือนทั้งหมด ' + c.warnings.length + ' ข้อในแท็บ “คำเตือน”</p>' +
-      '</div>'
-    : '';
-
   return '<div class="panel-head"><h3>' + svg('clipboard') + 'ข้อบ่งใช้และสรรพคุณ</h3></div>' +
     acc +
-    infoRow('pill', 'ตัวยาสำคัญและปริมาณ', ingredientsTh(c).join(' + ')) +
-    infoRow('factory', 'ผู้ผลิต / ผู้รับอนุญาต', b.licensee) +
-    infoRow('box', 'รูปแบบยา', thForm(b.dosageForm || c.dosageForm)) +
-    firstWarn;
+    '<div class="infogrid">' +
+      // บรรทัดละตัวยา ปริมาณอยู่คอลัมน์ขวา
+      infoRow('pill', 'ตัวยาสำคัญและปริมาณ', ingredientsTh(c)) +
+      infoRow('factory', 'ผู้ผลิต / ผู้รับอนุญาต', b.licensee) +
+      infoRow('box', 'รูปแบบยา', thForm(b.dosageForm || c.dosageForm)) +
+    '</div>' +
+    warnSection(c);
 }
 
 // แผงขนาดการใช้
 function panelDose(b, c) {
+  // หัวการ์ดเปลี่ยนตามว่าข้อความพูดถึงเด็กด้วยหรือไม่
+  const withKid = /เด็ก|ทารก/.test(c.dosageAdult || '');
+
+  // ไม่มีป้ายบรรจุภัณฑ์ในหัวการ์ดแล้ว
   const card = c.dosageAdult
     ? '<div class="dosecard">' +
-        '<div class="dosecard-h"><b>สำหรับผู้ใหญ่</b><span class="pill">' + esc(packLabel(b.packaging)) + '</span></div>' +
+        '<div class="dosecard-h"><b>' +
+          (withKid ? 'สำหรับผู้ใหญ่และเด็กตามอายุที่ฉลากระบุ' : 'สำหรับผู้ใหญ่') +
+        '</b></div>' +
+        // ไม่มีช่อง รูปแบบยา ในการ์ดนี้แล้ว
         '<dl class="dosecard-g">' +
           '<div><dt>ขนาดรับประทาน</dt><dd>' + esc(c.dosageAdult) + '</dd></div>' +
-          '<div><dt>รูปแบบยา</dt><dd style="font-size:1rem">' + esc(thForm(b.dosageForm || c.dosageForm) || '—') + '</dd></div>' +
         '</dl>' +
-        '<p class="dosecard-f">ระบบครอบคลุมเฉพาะสูตรตำรับสำหรับผู้ใหญ่ กรณีใช้ในเด็กโปรดปรึกษาแพทย์หรือเภสัชกร</p>' +
+        '<p class="dosecard-f">' +
+          (withKid
+            ? 'ขนาดนี้เป็นไปตามที่ฉลากยาระบุ เด็กที่อายุน้อยกว่านั้น โปรดปรึกษาแพทย์หรือเภสัชกร'
+            : 'ระบบครอบคลุมเฉพาะสูตรตำรับสำหรับผู้ใหญ่ กรณีใช้ในเด็กโปรดปรึกษาแพทย์หรือเภสัชกร') +
+        '</p>' +
       '</div>'
     : '';
 
@@ -1064,10 +1096,10 @@ function panelDose(b, c) {
       '<p>เก็บที่อุณหภูมิห้อง ไม่เกิน 30°C ให้พ้นแสงแดดและความชื้น เก็บให้พ้นมือเด็ก</p></div></div>';
 }
 
-// แผงคำเตือน
-function panelWarn(c) {
+// ส่วนคำเตือน · ต่อท้ายแผงข้อบ่งใช้
+function warnSection(c) {
   const list = c.warnings.length
-    ? '<div class="warnbox"><h4>' + svg('warning') + 'อ่านก่อนใช้ยาทุกครั้ง</h4><ul>' +
+    ? '<div class="warnbox"><ul>' +
         c.warnings.map(w =>
           '<li>' + svg(w.level === 'danger' ? 'ban' : 'alert') + '<span>' + esc(w.text) + '</span></li>'
         ).join('') +
@@ -1075,7 +1107,7 @@ function panelWarn(c) {
     : '<div class="notice is-warn">' + svg('warning') + '<div><p>ยังไม่มีข้อมูลคำเตือนของสูตรตำรับนี้ในฐานข้อมูล ' +
         'โปรดอ่านคำเตือนจากฉลากและเอกสารกำกับยาของผลิตภัณฑ์จริง</p></div></div>';
 
-  return '<div class="panel-head"><h3>' + svg('warning') + 'ข้อควรระวังและคำเตือน</h3></div>' +
+  return '<div class="panel-head mt-5"><h3>' + svg('warning') + 'ข้อควรระวังและคำเตือน</h3></div>' +
     list +
     '<div class="notice is-danger mt-4">' + svg('alert') + '<div><p>หากมีอาการแพ้ยา เช่น ผื่นขึ้น หน้าบวม หายใจลำบาก ' +
       'หรืออาการไม่ดีขึ้นตามระยะเวลาที่ระบุ ให้หยุดใช้ยาและพบแพทย์หรือเภสัชกรทันที</p></div></div>';
@@ -1091,7 +1123,7 @@ function detailFoot() {
     '<p class="disclaimer">' + svg('info') + '<span>ข้อมูลนี้เป็นข้อมูลอ้างอิงเพื่อการศึกษา ' +
       'ชื่อผลิตภัณฑ์ เลขทะเบียน ผู้รับอนุญาต และสถานะทะเบียน อ้างอิงจากข้อมูลทะเบียนยาของ อย. ' +
       'ส่วนข้อบ่งใช้ ขนาดการใช้ และคำเตือน จัดทำโดยคณะผู้จัดทำตามสูตรตำรับ ' +
-      'กรุณาอ่านฉลากจากผลิตภัณฑ์จริงและปรึกษาแพทย์หรือเภสัชกรก่อนใช้ยา</span></p>' +
+      'โปรดอ่านฉลากจากผลิตภัณฑ์จริงและปรึกษาแพทย์หรือเภสัชกรก่อนใช้ยา</span></p>' +
   '</div>';
 }
 
@@ -1128,11 +1160,10 @@ function renderDetail(id, tab) {
       detailHead(b, c, ct, active) +
       tabPanel('use',  active, panelUse(b, c)) +
       tabPanel('dose', active, panelDose(b, c)) +
-      tabPanel('warn', active, panelWarn(c)) +
       detailFoot() +
     '</div>' +
     (others.length
-      ? '<div class="sec-sm" style="max-width:46rem; margin-inline:auto">' +
+      ? '<div class="sec-sm res-wide">' +
           '<h2 style="font-size:1.35rem">ยี่ห้ออื่นที่ใช้สูตรตำรับเดียวกัน</h2>' +
           '<p class="text-sm muted mt-2">ตัวยาสำคัญเหมือนกัน แต่คนละยี่ห้อและคนละเลขทะเบียนตำรับยา</p>' +
           '<ul class="rows">' + others.map(rowItem).join('') + '</ul>' +
@@ -1185,7 +1216,7 @@ function camState(state) {
 // เปิดกล้อง
 async function camOpen() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    camSay('เบราว์เซอร์นี้ใช้กล้องไม่ได้ กรุณาเลือกภาพจากเครื่องแทน');
+    camSay('เบราว์เซอร์นี้ไม่รองรับการใช้กล้อง โปรดเลือกภาพจากเครื่องแทน');
     return;
   }
 
@@ -1218,13 +1249,13 @@ function camFail(err) {
   camState('idle');
 
   if (err.name === 'NotAllowedError') {
-    camSay('ไม่ได้รับอนุญาตให้ใช้กล้อง กรุณาอนุญาตในการตั้งค่าของเบราว์เซอร์ หรือเลือกภาพจากเครื่องแทน');
+    camSay('ไม่ได้รับอนุญาตให้ใช้กล้อง โปรดอนุญาตในการตั้งค่าของเบราว์เซอร์ หรือเลือกภาพจากเครื่องแทน');
   } else if (err.name === 'NotFoundError') {
-    camSay('ไม่พบกล้องในอุปกรณ์นี้ กรุณาเลือกภาพจากเครื่องแทน');
+    camSay('ไม่พบกล้องในอุปกรณ์นี้ โปรดเลือกภาพจากเครื่องแทน');
   } else if (err.name === 'NotReadableError') {
-    camSay('กล้องกำลังถูกใช้งานโดยแอปอื่น กรุณาปิดแอปนั้นแล้วลองใหม่');
+    camSay('กล้องกำลังถูกใช้งานโดยแอปพลิเคชันอื่น โปรดปิดแอปพลิเคชันนั้นแล้วลองใหม่อีกครั้ง');
   } else {
-    camSay('เปิดกล้องไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+    camSay('เปิดกล้องไม่สำเร็จ โปรดลองใหม่อีกครั้ง');
   }
 }
 
@@ -1234,14 +1265,14 @@ function camShoot() {
   const c = $('#camWork');
   const w = v.videoWidth, h = v.videoHeight;
 
-  if (!w || !h) { camSay('ภาพจากกล้องยังไม่พร้อม รอสักครู่แล้วลองใหม่'); return; }
+  if (!w || !h) { camSay('ภาพจากกล้องยังไม่พร้อม โปรดรอสักครู่แล้วลองใหม่อีกครั้ง'); return; }
 
   c.width = w;
   c.height = h;
   c.getContext('2d').drawImage(v, 0, 0, w, h);
 
   c.toBlob(blob => {
-    if (!blob) { camSay('บันทึกภาพไม่สำเร็จ กรุณาถ่ายใหม่'); return; }
+    if (!blob) { camSay('บันทึกภาพไม่สำเร็จ โปรดถ่ายใหม่อีกครั้ง'); return; }
     camFromCam = true;
     camShow(blob);
     readLabel(blob);
@@ -1286,7 +1317,7 @@ async function errText(res) {
   try { detail = (await res.json()).detail; } catch (e) {}
 
   if (typeof detail === 'string' && detail) return detail;
-  if (res.status === 422) return 'ส่งภาพไม่ถูกรูปแบบ กรุณาถ่ายใหม่อีกครั้ง';
+  if (res.status === 422) return 'ส่งภาพไม่ถูกรูปแบบ โปรดถ่ายใหม่อีกครั้ง';
   return 'อ่านฉลากไม่สำเร็จ (รหัส ' + res.status + ')';
 }
 
@@ -1334,8 +1365,8 @@ async function sendLabel(file) {
     res = await fetch(SCAN_API, { method: 'POST', body: fd, signal: ctrl.signal });
   } catch (e) {
     throw new Error(e.name === 'AbortError'
-      ? 'เซิร์ฟเวอร์ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง'
-      : 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง');
+      ? 'เซิร์ฟเวอร์ใช้เวลานานเกินไป โปรดลองใหม่อีกครั้ง'
+      : 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ โปรดตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง');
   } finally {
     clearTimeout(timer);
   }
@@ -1357,7 +1388,7 @@ function fakeScan() {
     setTimeout(() => {
       const r = Math.random();
 
-      if (r < 0.12) { reject(new Error('เชื่อมต่อส่วนอ่านฉลากไม่ได้ กรุณาลองใหม่อีกครั้ง')); return; }
+      if (r < 0.12) { reject(new Error('เชื่อมต่อส่วนอ่านฉลากไม่ได้ โปรดลองใหม่อีกครั้ง')); return; }
 
       if (r < 0.24) {
         resolve({ match_type: 'not_found', ocr_text: '', ocr_reg_no: null,
@@ -1397,7 +1428,7 @@ function fakeScan() {
 async function readLabel(file) {
   camFileLast = file;
   camState('sending');
-  camSay('กำลังอ่านข้อความบนฉลาก กรุณารอสักครู่');
+  camSay('กำลังอ่านข้อความบนฉลาก โปรดรอสักครู่');
 
   const slow = setTimeout(() => camSay('เซิร์ฟเวอร์กำลังเริ่มทำงาน อาจใช้เวลานานกว่าปกติเล็กน้อย'), 7000);
 
@@ -1486,7 +1517,7 @@ function showResult(res) {
         '<p>ระบบอ่านเลขทะเบียนบนฉลากได้' +
           (res.ocr_reg_no ? 'เป็น ' + esc(res.ocr_reg_no) : '') +
           ' แต่ยาตัวนี้ไม่ได้อยู่ในกลุ่มยาสามัญประจำบ้านที่ระบบรวบรวมไว้ ' +
-          'จึงไม่มีข้อมูลข้อบ่งใช้และคำเตือนให้แสดง กรุณาอ่านฉลากจากผลิตภัณฑ์จริง ' +
+          'จึงไม่มีข้อมูลข้อบ่งใช้และคำเตือนให้แสดง โปรดอ่านฉลากจากผลิตภัณฑ์จริง ' +
           'หรือปรึกษาเภสัชกร</p>' +
         '<div class="state-actions">' +
           '<button class="btn btn-primary" type="button" id="camNew">ถ่ายใหม่</button>' +
@@ -1499,8 +1530,8 @@ function showResult(res) {
       '<div class="state">' +
         '<div class="state-ico is-warn">' + svg('search') + '</div>' +
         '<h2>ไม่พบยาที่ตรงกับฉลากนี้</h2>' +
-        '<p>อาจเป็นเพราะภาพไม่ชัด มีแสงสะท้อนบนฉลาก หรือยานี้ยังไม่อยู่ในขอบเขตของระบบ ' +
-          'ลองถ่ายใหม่ให้เห็นชื่อยาและเลขทะเบียนชัดเจน หรือค้นหาด้วยชื่อยาแทน</p>' +
+        '<p>สาเหตุอาจเกิดจากภาพไม่ชัด มีแสงสะท้อนบนฉลาก หรือยานี้ยังไม่อยู่ในขอบเขตของระบบ ' +
+          'โปรดถ่ายใหม่ให้เห็นชื่อยาและเลขทะเบียนชัดเจน หรือค้นหาด้วยชื่อยาแทน</p>' +
         '<div class="state-actions">' +
           '<button class="btn btn-primary" type="button" id="camNew">ถ่ายใหม่</button>' +
           '<a class="btn btn-outline" href="/search">' + svg('search') + 'ค้นหาด้วยชื่อยา</a>' +
@@ -1527,7 +1558,7 @@ function verifyBrand(brandId, host) {
   box.innerHTML =
     '<span class="vfy-spin" aria-hidden="true"></span>' +
     '<div><h4>กำลังตรวจสอบทะเบียนกับ อย.</h4>' +
-    '<p>ขั้นตอนนี้อาจใช้เวลาถึงครึ่งนาที ระหว่างนี้ดูข้อมูลยาด้านบนได้ตามปกติ</p></div>';
+    '<p>ขั้นตอนนี้อาจใช้เวลาประมาณ 30 วินาที ระหว่างนี้สามารถดูข้อมูลยาด้านบนได้ตามปกติ</p></div>';
   host.appendChild(box);
 
   fetch(verifyUrl(brandId))
@@ -1545,18 +1576,18 @@ function showVerify(box, v, brandId, host) {
     head = 'ตรวจสอบกับ อย. ไม่ได้ในขณะนี้';
     body = 'ระบบของ อย. ไม่ตอบกลับ ข้อมูลยาด้านบนยังใช้ได้ตามปกติ';
     extra = '<button class="btn btn-soft btn-sm" type="button" id="vfyRetry">' +
-            svg('refresh') + 'ลองตรวจอีกครั้ง</button>';
+            svg('refresh') + 'ตรวจสอบอีกครั้ง</button>';
 
   } else if (!v.found) {
     tone = 'is-warn'; icon = 'search';
     head = 'ไม่พบทะเบียนนี้ในระบบ อย.';
-    body = 'โปรดตรวจเลขทะเบียนบนฉลากอีกครั้ง ถ้าไม่ตรงกับที่ระบบอ่านได้ ควรปรึกษาเภสัชกรก่อนใช้ยา';
+    body = 'โปรดตรวจสอบเลขทะเบียนบนฉลากอีกครั้ง หากไม่ตรงกับที่ระบบอ่านได้ ควรปรึกษาเภสัชกรก่อนใช้ยา';
 
   } else if (!v.is_active) {
     tone = 'is-danger'; icon = 'warning';
     head = 'ทะเบียนนี้ไม่คงอยู่แล้ว';
     body = 'สถานะล่าสุดที่ อย. คือ ' + esc(v.status || 'ไม่ระบุ') +
-           ' ไม่ควรใช้ยานี้ ควรปรึกษาเภสัชกรก่อน';
+           ' ไม่ควรใช้ยานี้ โปรดปรึกษาเภสัชกรก่อนใช้ยา';
 
   } else {
     tone = 'is-ok'; icon = 'shield';
@@ -1603,7 +1634,7 @@ async function start() {
   showLoading();
 
   try {
-    await loadDB();
+    await Promise.all([loadDB(), loadCatSprite()]);
   } catch (err) {
     showLoadError(err);
     return;
@@ -1636,13 +1667,13 @@ function hideDataPane() {
   $('#main').classList.remove('is-loading');
 }
 
-// แจ้งระหว่างรอข้อมูลยา · ครั้งแรกเซิร์ฟเวอร์อาจต้องตื่นจากการพักเครื่องก่อน
+// แจ้งระหว่างรอข้อมูลยา · ครั้งแรกเซิร์ฟเวอร์อาจต้องเริ่มทำงานจากสถานะพักก่อน
 function showLoading() {
   dataPane(
     '<div class="state">' +
       '<div class="dataspin" aria-hidden="true"></div>' +
       '<h2>กำลังโหลดข้อมูลยา</h2>' +
-      '<p>เปิดครั้งแรกอาจใช้เวลาสักครู่ เพราะเซิร์ฟเวอร์กำลังตื่นจากการพักเครื่อง</p>' +
+      '<p>การเปิดใช้งานครั้งแรกอาจใช้เวลาสักครู่ </p>' +
     '</div>');
 }
 
@@ -1653,8 +1684,8 @@ function showLoadError(err) {
     '<div class="state">' +
       '<div class="state-ico is-warn">' + svg('info') + '</div>' +
       '<h2>เปิดข้อมูลยาไม่ได้</h2>' +
-      '<p>' + esc(err.message) + ' — เซิร์ฟเวอร์ข้อมูลยาอาจกำลังตื่นจากการพักเครื่อง ' +
-        'รออีกสักครู่แล้วลองใหม่อีกครั้ง</p>' +
+      '<p>' + esc(err.message) + ' — เซิร์ฟเวอร์ข้อมูลยาอาจกำลังเริ่มทำงานจากสถานะพัก ' +
+        'โปรดรอสักครู่แล้วลองใหม่อีกครั้ง</p>' +
       '<div class="state-actions">' +
         '<button class="btn btn-primary" type="button" id="reloadData">ลองใหม่อีกครั้ง</button>' +
       '</div>' +
@@ -1667,7 +1698,7 @@ function showLoadError(err) {
 async function retryLoad() {
   const btn = $('#reloadData');
   btn.disabled = true;
-  btn.textContent = 'กำลังโหลด...';
+  btn.textContent = 'กำลังโหลด…';
   showLoading();
   try {
     await loadDB();
@@ -1760,22 +1791,22 @@ function renderAbout() {
     '</div>' +
 
     '<div style="display:grid; gap:1.1rem">' +
-      '<div class="notice is-ok reveal">' + svg('check-c') + '<div><h4>ระบบครอบคลุมอะไรบ้าง</h4><ul>' +
+      '<div class="notice is-ok reveal">' + svg('check-c') + '<div><h4>ขอบเขตของระบบ</h4><ul>' +
         '<li>ยาสามัญประจำบ้าน (OTC) ที่ซื้อได้เองโดยไม่ต้องมีใบสั่งแพทย์</li>' +
         '<li>' + DB.categories.length + ' กลุ่มอาการ ได้แก่ ' + DB.categories.map(x => esc(x.short)).join(', ') + '</li>' +
-        '<li>เฉพาะสูตรตำรับสำหรับผู้ใหญ่</li>' +
+        '<li>ขนาดยาสำหรับผู้ใหญ่ ไม่ได้แยกขนาดสำหรับเด็กไว้ต่างหาก</li>' +
         '<li>เฉพาะยาน้ำบรรจุขวด และยาเม็ดบรรจุแผง</li>' +
       '</ul></div></div>' +
 
-      '<div class="notice is-danger reveal">' + svg('ban') + '<div><h4>ระบบไม่ครอบคลุมอะไรบ้าง</h4><ul>' +
+      '<div class="notice is-danger reveal">' + svg('ban') + '<div><h4>สิ่งที่อยู่นอกขอบเขตของระบบ</h4><ul>' +
         '<li>ยาที่ต้องสั่งจ่ายโดยแพทย์</li>' +
         '<li>ยากลุ่มเฉพาะทางอื่น เช่น ยาสำหรับโรคตา ยารักษาแผลไฟไหม้ ยาสำหรับโรคผิวหนัง และยาบรรเทาปวดกล้ามเนื้อ</li>' +
         '<li>สูตรตำรับที่ระบุไว้เฉพาะสำหรับใช้ในเด็ก</li>' +
         '<li>บรรจุภัณฑ์รูปแบบอื่น เช่น ยาขี้ผึ้งบรรจุกระปุก ยาผงบรรจุซอง ยาเหน็บทวาร และยาสวนทวาร</li>' +
-        '<li>ฉลากที่ชำรุด เลือนราง หรือมีคุณภาพภาพไม่เพียงพอต่อการอ่านด้วย OCR</li>' +
+        '<li>ฉลากที่ชำรุด เลือนราง หรือมีคุณภาพไม่เพียงพอต่อการอ่านด้วย OCR</li>' +
       '</ul></div></div>' +
 
-      '<div class="notice is-warn reveal">' + svg('db') + '<div><h4>ข้อมูลแต่ละส่วนมาจากไหน</h4>' +
+      '<div class="notice is-warn reveal">' + svg('db') + '<div><h4>แหล่งที่มาของข้อมูล</h4>' +
         '<p><b>จากฐานข้อมูลทะเบียนยา อย.</b> — ชื่อผลิตภัณฑ์ เลขทะเบียนตำรับยา ชื่อผู้รับอนุญาต ประเภทยาตามกฎหมาย และสถานะทะเบียน</p>' +
         '<p class="mt-2"><b>จัดทำโดยคณะผู้จัดทำ</b> — ชื่อสามัญทางยา ตัวยาสำคัญ ขนาดการใช้ ข้อบ่งใช้ คำเตือน และการจัดหมวดหมู่ตามกลุ่มอาการ ' +
           'จัดเก็บตามสูตรตำรับ เนื่องจากข้อมูลส่วนนี้ไม่ได้แสดงไว้อย่างเป็นระบบในฐานข้อมูลของ อย.</p>' +
@@ -1785,9 +1816,9 @@ function renderAbout() {
       '</div></div>' +
 
       '<div class="notice reveal">' + svg('eye') + '<div><h4>ความเป็นส่วนตัว</h4><ul>' +
-        '<li>รายการ "ดูล่าสุด" เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่เกิน 5 รายการ</li>' +
+        '<li>รายการ “ยาที่ดูล่าสุด” จัดเก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่เกิน 5 รายการ</li>' +
         '<li>ปุ่มพูดเพื่อค้นหาใช้ระบบฟังเสียงของเบราว์เซอร์ ซึ่งบางเบราว์เซอร์ (เช่น Chrome) ส่งเสียงไปแปลงเป็นข้อความที่เซิร์ฟเวอร์ของผู้ให้บริการ</li>' +
-        '<li>ผู้ใช้เลือกพิมพ์ค้นหาแทนการพูดได้เสมอ</li>' +
+        '<li>ผู้ใช้สามารถเลือกพิมพ์ค้นหาแทนการพูดได้เสมอ</li>' +
       '</ul></div></div>' +
 
       '<div class="notice reveal">' + svg('link') + '<div><h4>แหล่งอ้างอิง</h4><ul>' +
