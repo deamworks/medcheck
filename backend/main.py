@@ -78,7 +78,11 @@ def serialize_medicine(medicine: Medicine) -> dict:
         "brands": [serialize_brand(b) for b in medicine.brands],
         "warnings": [w.warning_text for w in medicine.warnings],
         "active_ingredients": [
-            {"name_th": mi.ingredient.name_th, "name_en": mi.ingredient.name_en}
+            {
+                "name_th": mi.ingredient.name_th,
+                "name_en": mi.ingredient.name_en,
+                "strength": mi.strength,
+            }
             for mi in medicine.medicine_ingredients
         ],
     }

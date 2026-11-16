@@ -35,6 +35,14 @@ class BrandIn(BaseModel):
     legal_type: str = Field(min_length=1, max_length=50)
 
 
+# NEW: ตัวยาสำคัญพร้อมปริมาณ
+class IngredientAmountIn(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    ingredient_id: int
+    strength: Optional[str] = Field(default=None, max_length=50)
+
+
 class MedicineIn(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
@@ -45,6 +53,8 @@ class MedicineIn(BaseModel):
     dosage_instructions: str = Field(min_length=1)
     warnings: List[str] = Field(default_factory=list)
     ingredient_ids: List[int] = Field(default_factory=list)
+    # NEW: ถ้าส่ง ingredients มา จะใช้แทน ingredient_ids
+    ingredients: Optional[List[IngredientAmountIn]] = None
 
 
 class IngredientIn(BaseModel):
@@ -169,7 +179,12 @@ def _medicine_dict(m: Medicine) -> dict:
         "dosage_instructions": m.dosage_instructions,
         "warnings": [w.warning_text for w in m.warnings],
         "ingredients": [
-            {"id": mi.ingredient.id, "name_th": mi.ingredient.name_th, "name_en": mi.ingredient.name_en}
+            {
+                "id": mi.ingredient.id,
+                "name_th": mi.ingredient.name_th,
+                "name_en": mi.ingredient.name_en,
+                "strength": mi.strength,  # NEW
+            }
             for mi in m.medicine_ingredients
         ],
         "brand_count": len(m.brands),
@@ -187,8 +202,21 @@ def _apply_medicine(db: Session, m: Medicine, data: MedicineIn) -> None:
     if db.get(Category, data.category_id) is None:
         raise HTTPException(status_code=400, detail=f"ไม่พบหมวดหมู่รหัส {data.category_id}")
 
+    # NEW: ingredients (มี strength) ใช้ก่อน ถ้าไม่ส่งมาใช้ ingredient_ids แบบเดิม
+    if data.ingredients is not None:
+        pairs = [(x.ingredient_id, x.strength or None) for x in data.ingredients]
+        set_strength = True
+    else:
+        pairs = [(i, None) for i in data.ingredient_ids]
+        set_strength = False
+
     # ตัด id ซ้ำ โดยคงลำดับเดิม
-    ingredient_ids = list(dict.fromkeys(data.ingredient_ids))
+    strengths = {}
+    for iid, s in pairs:
+        if iid not in strengths:
+            strengths[iid] = s
+    ingredient_ids = list(strengths)
+
     if ingredient_ids:
         found = {
             row[0]
@@ -207,11 +235,16 @@ def _apply_medicine(db: Session, m: Medicine, data: MedicineIn) -> None:
     # แทนที่คำเตือนทั้งชุด (ข้ามบรรทัดว่าง)
     m.warnings = [Warning(warning_text=text) for text in data.warnings if text]
 
-    # แทนที่ตัวยาสำคัญทั้งชุด เก็บแถวเดิมที่ยังอยู่ไว้ ไม่ลบแล้วสร้างใหม่
+    # NEW: แทนที่ตัวยาสำคัญทั้งชุด เก็บแถวเดิมที่ยังอยู่ไว้
+    # ส่งแบบ ingredient_ids เดิม → strength ที่มีอยู่ไม่ถูกล้าง
     existing = {mi.ingredient_id: mi for mi in m.medicine_ingredients}
-    m.medicine_ingredients = [
-        existing.get(i) or MedicineIngredient(ingredient_id=i) for i in ingredient_ids
-    ]
+    new_list = []
+    for iid in ingredient_ids:
+        mi = existing.get(iid) or MedicineIngredient(ingredient_id=iid)
+        if set_strength:
+            mi.strength = strengths[iid]
+        new_list.append(mi)
+    m.medicine_ingredients = new_list
 
 
 @router.get("/medicines")

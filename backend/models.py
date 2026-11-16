@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
+
 class Category(Base):
     __tablename__ = "category"
 
@@ -42,7 +43,8 @@ class MedicineIngredient(Base):
 
     medicine_id = Column(Integer, ForeignKey("medicine.id"), primary_key=True)
     ingredient_id = Column(Integer, ForeignKey("active_ingredient.id"), primary_key=True)
-
+    strength = Column(String(50), nullable=True)
+    
     ingredient = relationship("ActiveIngredient")
 
 
