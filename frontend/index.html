@@ -7,9 +7,24 @@
   <meta name="description"
         content="อ่านฉลากยาด้วย OCR ตรวจสอบเลขทะเบียน อย. พร้อมข้อบ่งใช้ ขนาดยา และคำเตือน">
 
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/icon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/assets/icon-180.png">
+  <meta name="theme-color" content="#E01B24">
+
+  <!-- ภาพและข้อความตอนแชร์ลิงก์ -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MedCheck">
+  <meta property="og:title" content="MedCheck · ระบบสแกนฉลากยาสามัญประจำบ้าน">
+  <meta property="og:description" content="อ่านฉลากยาด้วย OCR ตรวจสอบเลขทะเบียน อย. พร้อมข้อบ่งใช้ ขนาดยา และคำเตือน">
+  <meta property="og:image" content="/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 
 
   <link rel="stylesheet" href="/css/tokens.css">
@@ -31,8 +46,29 @@
 </head>
 <body>
 
+  <!-- ไอคอนเว็บ · เส้นอยู่ใน defs ชุดเดียว ประกอบเป็น #brandmark กับ #brandmark-cut -->
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+    <defs>
+      <path id="bmInk" fill-rule="evenodd" d="M10.54 2.42L9.55 2.56L8.26 2.91L7.06 3.45L6.26 3.94L5.45 4.56L4.54 5.48L3.83 6.41L3.2 7.53L2.67 9L2.4 10.47L2.42 18.69L8.33 18.67L8.33 10.83L8.46 10.29L8.77 9.67L9.13 9.22L9.64 8.8L10.4 8.44L11.29 8.31L18.67 8.28L18.65 2.42ZM45.31 2.42L45.31 8.31L53.2 8.35L53.82 8.53L54.45 8.89L54.91 9.31L55.27 9.8L55.58 10.56L55.67 11.14L55.69 18.69L61.6 18.67L61.6 11.27L61.42 9.58L61.07 8.28L60.53 7.08L59.82 5.97L58.95 4.96L58.01 4.16L56.99 3.49L55.83 2.96L54.4 2.56L53.42 2.42ZM15.97 15.75L15.66 15.84L15.17 16.15L14.75 16.71L14.61 17.11L14.66 19.65L15.02 20.32L15.75 20.83L18.02 20.88L18.09 19.74L18.43 19.32L18.74 19.18L19.23 19.23L19.41 19.32L19.7 19.65L19.79 19.96L19.81 20.88L21.46 20.88L21.48 19.96L21.57 19.65L21.81 19.36L22.22 19.18L22.66 19.23L23.08 19.56L23.22 19.87L23.24 20.88L24.93 20.88L25 19.7L25.34 19.32L25.65 19.18L26.14 19.23L26.56 19.61L26.7 20.1L26.72 20.88L28.81 20.88L29.08 20.79L29.77 20.23L30.08 19.61L30.13 17.29L30.04 16.89L29.77 16.4L29.44 16.06L28.77 15.75ZM39.91 18.47L39.2 18.83L38.82 19.38L33.58 32.16L33.52 30.53L33.23 29.53L11.47 29.53L11.18 30.71L11.18 43.28L33.54 43.3L33.56 40.65L33.63 40.63L42.45 44.28L42.85 44.42L43.43 44.42L44.06 44.1L44.44 43.59L51.97 25.27L52.24 24.56L52.24 23.98L51.93 23.35L51.32 22.93L40.67 18.56ZM16.29 22.62L15.86 24.02L15.24 25.09L14.55 25.87L13.34 26.76L12.41 27.79L32.31 27.77L31.49 26.85L30.37 26.05L29.41 25L28.83 23.98L28.46 22.62ZM20.43 31.26L20.03 31.49L19.79 31.91L19.76 33.85L17.85 33.85L17.45 34.07L17.24 34.36L17.24 38.46L17.53 38.84L17.98 39.02L19.79 39.04L19.79 40.92L19.92 41.23L20.25 41.52L20.57 41.61L24.35 41.56L24.73 41.32L24.96 40.87L24.96 39.04L26.94 38.98L27.25 38.8L27.5 38.42L27.5 34.41L27.16 33.98L26.9 33.85L24.96 33.83L24.96 32L24.82 31.64L24.44 31.31ZM21.55 32.96L21.48 33.03L21.48 34.94L21.35 35.21L20.88 35.54L18.96 35.54L18.89 35.61L18.89 37.26L20.79 37.28L21.06 37.37L21.3 37.57L21.48 37.93L21.48 39.85L23.2 39.87L23.22 37.97L23.35 37.66L23.6 37.42L23.91 37.28L25.78 37.28L25.8 35.57L23.86 35.54L23.64 35.45L23.35 35.17L23.22 34.85L23.22 32.98ZM11.2 45.04L11.18 46.35L11.32 46.84L11.63 47.42L12.36 48.12L12.81 48.34L13.43 48.47L31.31 48.47L31.8 48.38L32.56 47.98L33.2 47.25L33.43 46.8L33.56 46.27L33.54 45.04ZM2.42 45.35L2.4 53.44L2.58 54.65L2.93 55.85L3.65 57.32L4.41 58.39L5.28 59.3L6.17 60.02L7.37 60.73L8.75 61.27L9.73 61.49L10.31 61.58L18.67 61.56L18.65 55.69L10.67 55.65L10.22 55.52L9.55 55.16L8.95 54.6L8.69 54.2L8.33 53.17L8.31 45.35ZM55.69 45.35L55.67 52.95L55.58 53.49L55.31 54.16L55.05 54.56L54.53 55.07L53.87 55.47L53.29 55.65L45.31 55.69L45.31 61.58L53.64 61.58L54.89 61.35L56.58 60.73L57.79 60.02L58.64 59.35L59.33 58.66L60.17 57.54L61.07 55.76L61.42 54.51L61.56 53.62L61.6 45.37Z"/>
+      <path id="bmPill" fill-rule="evenodd" d="M41.43 21.06L40.76 21.28L40.25 21.75L39.98 22.28L39.93 22.95L40.16 23.57L40.67 24.13L41.29 24.4L41.87 24.4L42.41 24.22L43.06 23.62L43.28 23.04L43.28 22.46L43.01 21.79L42.77 21.5L42.19 21.15ZM40.31 22.08L40.25 22.24L40.31 22.35L42.81 23.37L42.97 23.26L42.97 23.17L42.77 23.06ZM47.58 23.6L47 23.78L46.35 24.38L46.13 24.96L46.13 25.58L46.35 26.16L46.78 26.63L47.45 26.94L48.07 26.94L48.61 26.76L49.03 26.43L49.39 25.85L49.47 25.09L49.25 24.42L48.78 23.91L48.25 23.64ZM46.51 24.62L46.4 24.82L46.51 24.89L49.01 25.92L49.16 25.8L49.05 25.65ZM39.42 26L38.8 26.18L38.24 26.65L37.97 27.14L37.88 27.85L38.15 28.61L38.66 29.12L39.2 29.35L39.91 29.35L40.54 29.08L40.96 28.66L41.23 28.03L41.23 27.36L41.05 26.87L40.72 26.45L40.22 26.14ZM38.31 27.03L38.2 27.19L38.26 27.3L40.85 28.37L40.96 28.17ZM45.62 28.55L44.91 28.77L44.35 29.28L44.13 29.77L44.08 30.48L44.3 31.11L44.73 31.58L45.4 31.89L46.06 31.89L46.78 31.58L47.2 31.11L47.38 30.71L47.42 29.99L47.2 29.37L46.73 28.86L46.15 28.59ZM44.46 29.62L44.39 29.77L44.55 29.88L46.82 30.82L47.05 30.86L47.11 30.75L47.09 30.64ZM37.28 31L36.66 31.22L36.15 31.69L35.88 32.31L35.88 33.03L36.1 33.56L36.48 33.98L37.1 34.3L37.73 34.34L38.4 34.12L38.87 33.69L39.18 33.03L39.18 32.27L38.91 31.69L38.49 31.26L37.82 31ZM36.26 32.02L36.15 32.18L36.3 32.29L38.8 33.32L38.91 33.16L38.71 33ZM43.43 33.54L42.9 33.72L42.43 34.1L42.07 34.81L42.03 35.39L42.25 36.06L42.72 36.57L43.3 36.84L43.92 36.88L44.5 36.7L45.15 36.1L45.37 35.52L45.37 34.9L45.15 34.32L44.68 33.81L44.01 33.54ZM42.41 34.56L42.36 34.79L44.42 35.63L44.99 35.86L45.11 35.66ZM35.28 35.95L34.7 36.12L34.1 36.68L33.83 37.3L33.83 37.93L34.05 38.51L34.47 38.98L35.19 39.29L35.77 39.29L36.3 39.11L36.9 38.55L37.13 38.02L37.17 37.44L36.95 36.77L36.44 36.21L35.95 35.99ZM34.21 36.97L34.1 37.17L34.21 37.24L36.7 38.26L36.86 38.15L36.75 38ZM41.43 38.49L40.89 38.66L40.34 39.13L40.02 39.8L40.02 40.51L40.16 40.92L40.67 41.52L41.38 41.83L41.96 41.83L42.54 41.61L43.06 41.14L43.32 40.51L43.32 39.8L43.1 39.27L42.68 38.8L42.14 38.53ZM40.4 39.51L40.29 39.71L40.49 39.82L42.9 40.8L43.06 40.65L42.94 40.54Z"/>
+      <path id="bmLine" fill-rule="evenodd" d="M40.31 22.08L40.25 22.19L40.31 22.35L42.81 23.37L42.97 23.26L42.97 23.17L42.77 23.06ZM46.51 24.62L46.4 24.82L46.51 24.89L49.01 25.92L49.16 25.8L49.05 25.65ZM38.31 27.03L38.2 27.23L38.35 27.34L40.85 28.37L40.96 28.17ZM44.46 29.62L44.39 29.77L44.55 29.88L46.82 30.82L47.05 30.86L47.11 30.8L47.11 30.66L47 30.6ZM36.26 32.02L36.15 32.18L36.3 32.29L38.8 33.32L38.91 33.16L38.71 33ZM42.41 34.56L42.34 34.76L42.45 34.83L44.86 35.81L44.99 35.86L45.06 35.79L45.11 35.66L44.91 35.54ZM34.21 36.97L34.1 37.17L34.21 37.24L36.7 38.26L36.86 38.15L36.86 38.06L36.66 37.95ZM40.4 39.51L40.29 39.71L40.49 39.82L42.9 40.8L43.06 40.65L42.94 40.54Z"/>
+      <mask id="bmCut">
+        <use href="#bmInk" fill="#fff"/>
+        <use href="#bmPill" fill="#000"/>
+      </mask>
+    </defs>
+    <symbol id="brandmark" viewBox="0 0 64 64">
+      <use href="#bmInk" fill="currentColor"/>
+      <use href="#bmPill" fill="#fff"/>
+      <use href="#bmLine" fill="#A7A5A5"/>
+    </symbol>
+    <symbol id="brandmark-cut" viewBox="0 0 64 64">
+      <rect width="64" height="64" fill="currentColor" mask="url(#bmCut)"/>
+    </symbol>
+  </svg>
+
   <div id="intro" aria-hidden="true">
-    <span class="intro-mark" data-ico="scan"></span>
+    <span class="intro-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#brandmark-cut"/></svg></span>
     <div class="intro-name"><i>Med</i>Check</div>
     <div class="intro-sub">ระบบสแกนฉลากยาสามัญประจำบ้าน</div>
     <div class="intro-bar"><i></i></div>
@@ -42,7 +78,7 @@
   <header class="hdr">
     <div class="wrap hdr-in">
       <a href="/" class="logo">
-        <span class="logo-mark" data-ico="scan" aria-hidden="true"></span>
+        <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#brandmark-cut"/></svg></span>
         <span class="logo-tx"><b><i>Med</i>Check</b>
         <span>ระบบสแกนฉลากยาสามัญประจำบ้าน</span></span>
       </a>
@@ -80,12 +116,12 @@
         <div class="wrap hero-in">
           <div>
 
-            <h1>ตรวจสอบยาง่ายๆ<br>แค่<em>ถ่ายรูปฉลากยา</em></h1>
+            <h1>ตรวจสอบข้อมูลยา<br>เพียง<em>ถ่ายรูปฉลากยา</em></h1>
 
             <p class="hero-lead">
               อ่านข้อความบนฉลากยาสามัญประจำบ้านด้วยเทคโนโลยี OCR
-              ตรวจสอบเลขทะเบียนตำรับยา แล้วบอกให้ชัดว่า<b>กินอย่างไร</b> และ<b>ต้องระวังอะไร</b>
-              ตัวอักษรใหญ่ อ่านง่าย ฟังเสียงได้
+              ตรวจสอบเลขทะเบียนตำรับยา แล้วแสดง<b>วิธีรับประทาน</b> และ<b>ข้อควรระวัง</b>อย่างชัดเจน
+              ตัวอักษรขนาดใหญ่ อ่านง่าย และฟังเสียงได้
             </p>
 
             <div class="hero-cta">
@@ -99,7 +135,7 @@
             <p class="hero-note">
               <span data-ico="info" aria-hidden="true"></span>
               <span>เครื่องมือช่วยอ่านฉลากเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์
-              และไม่ใช้แทนคำวินิจฉัยของแพทย์หรือเภสัชกร</span>
+              และไม่สามารถใช้แทนคำวินิจฉัยของแพทย์หรือเภสัชกร</span>
             </p>
           </div>
         
@@ -150,7 +186,7 @@
         <div class="wrap sec">
           <div class="center" style="max-width: 46ch; margin-inline:auto; margin-bottom:1.8rem;">
             <h2>ใช้งานง่าย <span style="color: var(--primary)">3 ขั้นตอน</span></h2>
-            <p class="muted mt-2">ไม่ต้องพิมพ์ชื่อยาให้ถูกต้อง แค่เปิดกล้องแล้วเล็งไปที่ฉลาก</p>
+            <p class="muted mt-2">ไม่ต้องพิมพ์ชื่อยาให้ถูกต้อง เพียงเปิดกล้องแล้วเล็งไปที่ฉลาก</p>
         </div>
 
 
@@ -249,7 +285,7 @@
           </a>
           <a class="shortcut" href="/search">
             <span class="shortcut-ico" data-ico="keyboard" aria-hidden="true"></span>
-            <span class="shortcut-b"><b>ค้นหาด้วยชื่อยา</b><span>ถ้าฉลากเลือนรางหรืออ่านไม่ออก</span></span>
+            <span class="shortcut-b"><b>ค้นหาด้วยชื่อยา</b><span>หากฉลากเลือนรางหรืออ่านไม่ชัด</span></span>
             <span class="shortcut-go" data-ico="arrow" aria-hidden="true"></span>
           </a>
         </div>
@@ -258,7 +294,7 @@
         <div class="wrap sec-sm">
           <div class="sec-head">
             <div class="ttl">
-              <h2>เลือกดูตามอาการที่เป็น</h2>
+              <h2>เลือกดูตามกลุ่มอาการ</h2>
               <p>ครอบคลุมยาสามัญประจำบ้าน 6 กลุ่มอาการที่พบบ่อยที่สุด</p>
             </div>
           </div>
@@ -266,7 +302,7 @@
         </div>
 
         <div class="wrap sec-sm" id="recentWrap" hidden>
-          <h2 style="font-size:clamp(1.2rem,2.4vw,1.6rem)">ดูล่าสุด</h2> 
+          <h2 style="font-size:clamp(1.2rem,2.4vw,1.6rem)">ยาที่ดูล่าสุด</h2> 
           <ul class="rows" id="recentRows"></ul>       
         </div>
 
@@ -289,7 +325,7 @@
           <img id="camShot" alt="ภาพฉลากยาที่ถ่ายไว้">
           <div class="camhint">
             <span data-ico="camera" aria-hidden="true"></span>
-            <p>กดเปิดกล้องเพื่อถ่ายภาพฉลากยา<br>หรือเลือกภาพที่มีอยู่แล้วในเครื่อง</p>
+            <p>กดเปิดกล้องเพื่อถ่ายภาพฉลากยา<br>หรือเลือกภาพที่มีอยู่ในเครื่อง</p>
           </div>
           <div class="camframe" aria-hidden="true"></div>
         </div>
@@ -314,8 +350,8 @@
 
         <ul class="camtips">
           <li>วางฉลากให้อยู่ในกรอบ และถือกล้องให้นิ่ง</li>
-          <li>เลี่ยงแสงสะท้อนจากแผงยาและฟิล์มพลาสติก</li>
-          <li>ถ้าตัวอักษรเล็กมาก ให้ถ่ายใกล้ขึ้นทีละส่วน</li>
+          <li>หลีกเลี่ยงแสงสะท้อนจากแผงยาและฟิล์มพลาสติก</li>
+          <li>หากตัวอักษรมีขนาดเล็กมาก ให้ถ่ายใกล้ขึ้นทีละส่วน</li>
         </ul>
        </div>
       </div>
@@ -347,7 +383,9 @@
         </div>
         <p class="q-msg" id="qMsg" aria-live="polite" hidden></p>
 
-        <div class="chipbar" id="chipbar" role="group" aria-label="กรองตามกลุ่มอาการ"></div>
+        <div class="tabwrap">
+          <div class="chipbar" id="chipbar" role="group" aria-label="กรองตามกลุ่มอาการ"></div>
+        </div>
         <p class="text-sm muted mt-4" id="resCount" aria-live="polite"></p>
         <ul class="rows" id="resRows"></ul>
         <div id="resEmpty"></div>
@@ -385,7 +423,7 @@
   <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="เมนูหลัก">
     <div class="drawer-head">
       <span class="logo">
-        <span class="logo-mark" data-ico="scan" aria-hidden="true"></span>
+        <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#brandmark-cut"/></svg></span>
         <span class="logo-tx"><b><i>Med</i>Check</b></span>
       </span>
       <button class="iconbtn" id="drawerClose" type="button" aria-label="ปิดเมนู">

@@ -4,5 +4,6 @@
     ],
     "liveServer.settings.host": "localhost",
     "liveServer.settings.port": 5173,
-    "liveServer.settings.root": "/frontend"
+    "liveServer.settings.root": "/frontend",
+    "liveServer.settings.file": "index.html"
 }

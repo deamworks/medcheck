@@ -48,7 +48,7 @@
   cursor:pointer; transition:background var(--d1) var(--ez)}
 .suggest li:hover,.suggest li.hi{background:var(--tint)}
 .suggest li .s-ico{width:2.5rem; height:2.5rem; flex:0 0 auto; border-radius:.8rem; display:grid; place-items:center;
-  background:var(--cbg,var(--tint)); color:var(--cc,var(--primary))}
+  background:var(--tint); color:var(--primary)}
 .suggest li .s-ico svg{width:1.35rem; height:1.35rem}
 .suggest li .s-b{flex:1; min-width:0}
 .suggest li .s-b b{display:block; font-family:var(--f-head); font-size:1rem; font-weight:600; line-height:1.35}
@@ -60,58 +60,84 @@
 .suggest .s-empty{padding:1.1rem .9rem; font-size:.95rem; color:var(--ink-3); text-align:center}
 .suggest .s-head{padding:.5rem .85rem .3rem; font-size:.8rem; font-weight:600; color:var(--ink-3)}
 
-/* ชิปกรองตามกลุ่มอาการ */
-.chipbar{display:flex; gap:.55rem; flex-wrap:wrap; margin-top:1.1rem}
-.chip{min-height:3rem; padding:0 1.05rem 0 .55rem; border-radius:var(--r-full); cursor:pointer;
+/* ปุ่มกรองตามกลุ่มอาการ · ตกบรรทัดได้ ห้ามเลื่อนข้าง */
+.tabwrap{margin-top:1.1rem}
+.chipbar{display:flex; flex-wrap:wrap; gap:.5rem}
+
+.chip{display:inline-flex; align-items:center; gap:.4rem; cursor:pointer;
+  padding:.45rem .85rem .5rem; border-radius:var(--r-full);
   border:1.5px solid var(--line-2); background:var(--surface); color:var(--ink-2);
-  font-size:.95rem; font-weight:500; display:inline-flex; align-items:center; gap:.55rem;
-  transition:background var(--d1) var(--ez), color var(--d1) var(--ez), border-color var(--d1) var(--ez),
-             transform var(--d1) var(--ez), box-shadow var(--d2) var(--ez)}
-.chip .c-ico{width:2rem; height:2rem; flex:0 0 auto; border-radius:50%; display:grid; place-items:center;
-  background:var(--cbg,var(--surface-3)); color:var(--cc,var(--ink-3));
-  transition:background var(--d1) var(--ez), color var(--d1) var(--ez), transform var(--d2) var(--ez-back)}
-.chip .c-ico svg{width:1.15rem; height:1.15rem}
-.chip:hover{border-color:var(--cc,var(--tint-line)); transform:translateY(-2px)}
-.chip:hover .c-ico{transform:scale(1.12) rotate(-6deg)}
-.chip[aria-pressed="true"]{background:var(--cc,var(--primary)); border-color:var(--cc,var(--primary)); color:#fff; font-weight:600;
-  box-shadow:0 6px 18px color-mix(in srgb,var(--cc,var(--primary)) 38%,transparent)}
-.chip[aria-pressed="true"] .c-ico{background:rgba(255,255,255,.24); color:#fff}
-.chip .n{font-size:.82rem; opacity:.75; font-variant-numeric:tabular-nums}
+  font:inherit; font-family:var(--f-head); font-size:.9rem; font-weight:500;
+  transition:color var(--d1) var(--ez), border-color var(--d1) var(--ez),
+    background var(--d1) var(--ez)}
+.chip .c-ico{display:contents}
+.chip svg{width:1.6rem; height:1.6rem}
+/* ป้ายจำนวนยาในปุ่มกรอง */
+.chip .n{min-width:1.35rem; padding:0 .3rem; border-radius:var(--r-full);
+  background:var(--surface-3); color:var(--ink-2);
+  font-size:.72rem; font-weight:600; text-align:center; font-variant-numeric:tabular-nums}
+.chip:hover{border-color:var(--primary); color:var(--ink)}
+.chip:focus-visible{outline:3px solid var(--ring); outline-offset:2px}
+/* ปุ่มกรองที่เลือกอยู่ */
+.chip[aria-pressed="true"]{background:var(--cta); border-color:var(--cta); color:var(--on-primary)}
+.chip[aria-pressed="true"] .n{background:rgba(255,255,255,.22); color:var(--on-primary)}
+
+/* จอแคบใช้ชื่อกลุ่มแบบย่อ */
+.chip .t-mini{display:none}
+@media (max-width:30rem){
+  .chip .t-full{display:none}
+  .chip .t-mini{display:inline}
+}
 
 /*  แถวผลลัพธ์ */
 .rows{display:grid; gap:.75rem; margin-top:1rem}
 .rows>li{min-width:0}
-.row{display:flex; align-items:center; gap:1rem; padding:1.15rem 1.2rem; position:relative; overflow:hidden;
+.row{display:flex; align-items:center; gap:1rem; padding:1.2rem 1.6rem; position:relative; overflow:hidden;
   border-radius:var(--r); border:1.5px solid var(--line); background:var(--surface); box-shadow:var(--sh-1);
   text-decoration:none; color:inherit;
-  transition:transform var(--d2) var(--ez), box-shadow var(--d2) var(--ez), border-color var(--d2) var(--ez)}
-.row::before{content:""; position:absolute; inset-inline-start:0; top:0; bottom:0; width:4px;
-  background:var(--cc,var(--primary)); transform:scaleY(0); transition:transform var(--d2) var(--ez)}
-.row:hover{transform:translateY(-3px); box-shadow:var(--sh-2); border-color:var(--tint-line)}
-.row:hover::before{transform:scaleY(1)}
-.row-ico{width:3.2rem; height:3.2rem; flex:0 0 auto; border-radius:1rem; display:grid; place-items:center;
-  background:var(--cbg,var(--tint)); color:var(--cc,var(--primary)); transition:transform var(--d2) var(--ez-back)}
-.row:hover .row-ico{transform:scale(1.08) rotate(-5deg)}
-.row-ico svg{width:1.7rem; height:1.7rem}
+  transition:transform var(--d2) var(--ez), box-shadow var(--d2) var(--ez),
+    border-color var(--d2) var(--ez)}
+    
+/* แถบสีซ้าย ยืดขึ้นตอนเอาเมาส์ชี้ */
+.row::before{
+  content:"";
+  position:absolute;
+  inset-inline-start:0;
+  top:0;
+  bottom:0;
+  width:5px;
+  background:var(--primary);
+  transform:scaleY(0);
+  transform-origin:bottom;
+  transition:transform var(--d2) var(--ez);
+}
+/* กล่องผลการค้นหา ตอนเอาเมาส์ชี้หรือโฟกัสด้วยคีย์บอร์ด */
+.row:hover,.row:focus-visible{transform:translateY(-4px);
+  border-color:var(--primary);
+  box-shadow:var(--sh-2)}
+.row:hover::before,.row:focus-visible::before{transform:scaleY(1)}
 .row-b{flex:1; min-width:0}
+.row-sub{display:block; margin-top:.25rem; color:var(--ink-3); font-size:.92rem; line-height:1.5}
 .row-b b{display:block; font-family:var(--f-head); font-size:1.08rem; font-weight:600; line-height:1.35}
-.row-b .gen{font-size:.9rem; color:var(--ink-3); margin-top:.1rem}
 .row-b .tags{display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.55rem}
 .row-b .tags .pill{max-width:100%}
 .row-b .tags .pill-red{white-space:normal}
 .row-go{color:var(--ink-3); transition:transform var(--d2) var(--ez), color var(--d2) var(--ez)}
 .row-go svg{width:1.4rem; height:1.4rem}
-.row:hover .row-go{color:var(--primary); transform:translateX(4px)}
+.row:hover .row-go,.row:focus-visible .row-go{transform:translateX(4px); color:var(--primary)}
 
 /*  RESULT CARD · ป้าย  */
-.pill{display:inline-flex; align-items:center; gap:.35rem; padding:.4rem .8rem; border-radius:var(--r-full);
+/* ระยะขอบในป้าย · ขอบบนมากกว่าขอบล่าง โดยตั้งใจ */
+.pill{display:inline-flex; align-items:center; gap:.35rem; padding:.45rem .8rem .35rem;
+  border-radius:var(--r-full);
   font-family:var(--f-head); font-size:.85rem; font-weight:600; white-space:nowrap}
-.pill svg{width:1rem; height:1rem}
+/* ดึงไอคอนในป้ายขึ้นให้อยู่กลาง */
+.pill svg{width:1rem; height:1rem; position:relative; top:-.05rem}
 .pill-ok{background:var(--ok-bg); color:var(--ok); border:1.5px solid var(--ok-line)}
 .pill-bad{background:var(--danger-bg); color:var(--danger); border:1.5px solid var(--danger-line)}
 .pill-red{background:var(--tint-2); color:var(--brand-ink)}
 .pill-grey{background:var(--surface-3); color:var(--ink-2); border:1px solid var(--line);
-  font-family:var(--f-body); font-weight:500; font-size:.86rem; font-variant-numeric:tabular-nums}
+  font-variant-numeric:tabular-nums}
 
 /*  STATES · กล่องสถานะ  */
 .state{max-width:42rem; margin-inline:auto; text-align:center; padding:clamp(1.8rem,4vw,2.8rem) clamp(1.2rem,3vw,2rem);
@@ -126,14 +152,14 @@
 .state-actions{display:flex; gap:.75rem; flex-wrap:wrap; justify-content:center; margin-top:1.4rem}
 .state-actions .btn{flex:1 1 13rem}
 
-.rescard{max-width:46rem; margin-inline:auto; overflow:hidden;
+/* ความกว้างของหน้าข้อมูลยา */
+.rescard,.res-wide{max-width:52rem; margin-inline:auto}
+.rescard{overflow:hidden;
   background:var(--surface); border:1.5px solid var(--line); border-radius:var(--r-xl); box-shadow:var(--sh-2)}
 .res-hero{position:relative; padding:1.4rem clamp(1.1rem,3vw,1.7rem) 0;
   background:linear-gradient(180deg,var(--tint) 0%,transparent 100%)}
 .res-badges{display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; margin-bottom:1rem}
 .res-title{font-size:clamp(1.5rem,3.4vw,2.15rem); line-height:1.25}
-.res-generic{color:var(--ink-3); font-size:1.02rem; margin-top:.25rem}
-.res-en{color:var(--ink-3); font-size:.86rem; margin-top:.3rem; opacity:.75; font-family:var(--f-body)}
 .res-tags{display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.9rem}
 
 /* แท็บ */
@@ -191,11 +217,26 @@
 .inforow b{display:block; margin-bottom:.15rem; font-family:var(--f-head); font-size:.85rem; font-weight:600; color:var(--ink-3)}
 .inforow span{font-size:1rem; color:var(--ink); line-height:1.65}
 .inforow .pre{white-space:pre-line}
+/* ค่าที่มาเป็นรายการ เช่น ตัวยาสำคัญ */
+.inforow .pairs{display:grid; grid-template-columns:auto auto; justify-content:start;
+  column-gap:1.4rem; row-gap:.1rem}
+.inforow .pairs i{font-style:normal}
+
+/* จอแคบ ปริมาณลงบรรทัดใหม่ */
+@media (max-width:30rem){
+  .inforow .pairs{grid-template-columns:1fr; row-gap:0}
+  .inforow .pairs .nm{padding-left:1.05rem; text-indent:-1.05rem}
+  .inforow .pairs i{padding-left:1.05rem; padding-bottom:.3rem}
+}
+
+/* แถวข้อมูลหลายแถวรวมเป็นกล่องเดียว */
+.infogrid{margin-top:1rem; border:1px solid var(--line); border-radius:var(--r-sm);
+  background:var(--surface-2); overflow:hidden}
+.infogrid .inforow{margin-top:0; border:0; border-radius:0; background:transparent}
+.infogrid .inforow+.inforow{border-top:1px solid var(--line)}
 
 /* กล่องคำเตือน */
 .warnbox{margin-top:1rem; padding:1.15rem 1.2rem; border-radius:var(--r); border:2px solid var(--danger-line); background:var(--danger-bg)}
-.warnbox>h4{display:flex; align-items:center; gap:.55rem; margin-bottom:.85rem; color:var(--danger); font-size:1.05rem}
-.warnbox>h4 svg{width:1.3rem; height:1.3rem}
 .warnbox ul{display:grid; gap:.6rem; list-style:none; margin:0; padding:0}
 .warnbox li{display:flex; gap:.7rem; align-items:flex-start; padding:.85rem .95rem; font-size:1rem; line-height:1.65; color:var(--ink);
   background:var(--surface); border:1.5px solid var(--danger-line); border-radius:var(--r-xs); transition:transform var(--d2) var(--ez)}
@@ -207,9 +248,8 @@
 .dosecard-h{display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; padding:.9rem 1.1rem;
   background:linear-gradient(135deg,var(--danger-bg),transparent)}
 .dosecard-h b{font-family:var(--f-head); font-size:1.05rem; color:var(--ink)}
-.dosecard-h .pill{margin-inline-start:auto; background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#fff}
+/* การ์ดขนาดรับประทาน · ช่องเดียว ไม่แบ่งคอลัมน์ */
 .dosecard-g{display:grid; gap:1px; margin:0; background:var(--line)}
-@media (min-width:560px){ .dosecard-g{grid-template-columns:repeat(2,1fr)} }
 .dosecard-g div{padding:1rem 1.1rem; background:var(--surface)}
 .dosecard-g dt{margin-bottom:.2rem; font-size:.85rem; color:var(--ink-3)}
 .dosecard-g dd{margin:0; font-family:var(--f-head); font-size:1.1rem; font-weight:600; line-height:1.45}

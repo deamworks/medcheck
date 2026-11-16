@@ -21,27 +21,24 @@ let DB = null;
 
 /*  โหลดข้อมูลยา  */
 
-// ข้อมูลประกอบของกลุ่มอาการ · ไอคอน ชื่อย่อ คำอธิบาย และลำดับที่แสดง
-// ฐานข้อมูลเก็บแค่ชื่อเต็ม ส่วนนี้เป็นของหน้าเว็บ จับคู่ด้วยชื่อเต็มของกลุ่ม
-// ถ้ามีกลุ่มใหม่ในฐานข้อมูลที่ไม่มีในตารางนี้ จะใช้ชื่อเต็มกับไอคอนยาเป็นค่าสำรอง
+// ข้อมูลประกอบของกลุ่มอาการ · ไอคอน ชื่อย่อ คำอธิบาย ลำดับที่แสดง
 const CAT_META = {
   'ยาแก้ปวดท้อง ท้องอืด ท้องขึ้น ท้องเฟ้อ (รวมยาลดกรด)': { order: 1, icon: 'stomach',
-    short: 'ยาแก้ปวดท้อง ท้องอืด ท้องขึ้น ท้องเฟ้อ',
+    short: 'ยาแก้ปวดท้อง ท้องอืด ท้องขึ้น ท้องเฟ้อ', mini: 'ปวดท้อง ท้องอืด',
     desc: 'ยาลดกรดและยาขับลม สำหรับอาการปวดท้องจากกรดเกิน ท้องอืด ท้องขึ้น ท้องเฟ้อ จุกเสียดแน่นท้อง' },
-  'ยาระบาย': { order: 2, icon: 'laxative', short: 'ยาระบาย',
+  'ยาระบาย': { order: 2, icon: 'laxative', short: 'ยาระบาย', mini: 'ยาระบาย',
     desc: 'ยาช่วยการขับถ่าย สำหรับอาการท้องผูก ถ่ายไม่ออก' },
-  'ยาแก้ปวดลดไข้': { order: 3, icon: 'fever', short: 'ยาแก้ปวดลดไข้',
+  'ยาแก้ปวดลดไข้': { order: 3, icon: 'fever', short: 'ยาแก้ปวดลดไข้', mini: 'ปวดลดไข้',
     desc: 'ยาบรรเทาอาการปวดและลดไข้ สำหรับอาการปวดศีรษะ ปวดเมื่อย และมีไข้' },
-  'ยาแก้แพ้ลดน้ำมูก': { order: 4, icon: 'allergy', short: 'ยาแก้แพ้ลดน้ำมูก',
+  'ยาแก้แพ้ลดน้ำมูก': { order: 4, icon: 'allergy', short: 'ยาแก้แพ้ลดน้ำมูก', mini: 'แก้แพ้ ลดน้ำมูก',
     desc: 'ยาบรรเทาอาการแพ้ ลมพิษ คัดจมูก และน้ำมูกไหล' },
-  'ยาแก้ไอ ขับเสมหะ': { order: 5, icon: 'cough', short: 'ยาแก้ไอ ขับเสมหะ',
+  'ยาแก้ไอ ขับเสมหะ': { order: 5, icon: 'cough', short: 'ยาแก้ไอ ขับเสมหะ', mini: 'แก้ไอ ขับเสมหะ',
     desc: 'ยาบรรเทาอาการไอ และช่วยละลายหรือขับเสมหะ' },
-  'ยาสำหรับโรคปากและลำคอ': { order: 6, icon: 'mouth', short: 'ยาสำหรับโรคปากและลำคอ',
+  'ยาสำหรับโรคปากและลำคอ': { order: 6, icon: 'mouth', short: 'ยาสำหรับโรคปากและลำคอ', mini: 'ปากและลำคอ',
     desc: 'ยาสำหรับอาการในช่องปากและลำคอ เช่น แผลในปาก เชื้อราในช่องปาก' },
 };
 
-// ฐานข้อมูลเก็บรูปแบบยาเป็นภาษาอังกฤษ แปลงเป็นภาษาไทยให้ผู้ใช้อ่าน
-// ชื่อที่ไม่มีในตารางจะแสดงตามที่ฐานข้อมูลเก็บไว้
+// ชื่อรูปแบบยาภาษาไทย
 const FORM_TH = {
   'TABLET':'ยาเม็ด',
   'CHEWABLE TABLET':'ยาเม็ดเคี้ยว',
@@ -50,11 +47,12 @@ const FORM_TH = {
   'EFFERVESCENT TABLET':'ยาเม็ดฟู่',
   'CAPSULE':'ยาแคปซูล',
   'POWDER':'ยาผง',
+  'EFFERVESCENT POWDER':'ยาผงฟู่',
   'LOZENGE':'ยาอม',
   'SUSPENSION':'ยาน้ำแขวนตะกอน',
   'ORAL SUSPENSION':'ยาน้ำแขวนตะกอนสำหรับรับประทาน',
   'SOLUTION':'ยาน้ำใส',
-  'ORAL SOLUTION':'ยาน้ำสำหรับรับประทาน',
+  'ORAL SOLUTION':'ยาน้ำใสสำหรับรับประทาน',
   'SYRUP':'ยาน้ำเชื่อม',
   'EMULSION':'ยาน้ำนม',
   'GEL':'ยาเจล',
@@ -76,8 +74,7 @@ const formThai = v => String(v || '').split('/').map(s => s.trim()).filter(Boole
 // คำที่บอกว่าเป็นยาน้ำ ใช้แยกว่าบรรจุขวดหรือบรรจุแผง เพราะฐานข้อมูลไม่มีช่องนี้
 const RE_LIQUID = /SUSPENSION|SOLUTION|SYRUP|ELIXIR|EMULSION|DROP|LIQUID|TINCTURE|น้ำ|เชื่อม|แขวนตะกอน|หยด/i;
 
-// คำที่ทำให้ถือว่าเป็นคำเตือนระดับห้ามใช้ เพราะฐานข้อมูลไม่มีช่องระดับความรุนแรง
-// ใช้แค่เลือกไอคอนหน้าข้อความ ไม่ได้เปลี่ยนเนื้อคำเตือน
+// คำที่ทำให้ถือว่าเป็นคำเตือนระดับห้ามใช้ · ใช้เลือกไอคอนเท่านั้น
 const RE_DANGER = /ห้าม|อันตราย|เป็นพิษ/;
 
 // ที่มาของข้อมูล · ใช้ในหน้าเกี่ยวกับระบบ
@@ -99,6 +96,33 @@ let dataSource = '';
 // แยกข้อความหลายบรรทัดเป็นรายการ · ฐานข้อมูลเก็บข้อบ่งใช้เป็นข้อความก้อนเดียว
 const lines = t => String(t || '').split('\n').map(x => x.trim()).filter(Boolean);
 
+// ดึงเฉพาะขนาดของผู้ใหญ่ออกจากวิธีใช้ทั้งก้อน · ไม่เข้าเกณฑ์คืนค่าว่าง
+function adultDose(text) {
+  for (const line of lines(text)) {
+    const at = line.indexOf('ผู้ใหญ่');
+    if (at < 0) continue;
+
+    let part = line.slice(at);
+
+    // หาจุดตัด โดยข้ามคำว่า เด็ก ที่ต่อท้าย และ เพราะนั่นคือขนาดร่วมกัน
+    let cut = -1;
+    for (let from = 0; ; ) {
+      const kid = part.slice(from).search(/เด็ก|ทารก/);
+      if (kid < 0) break;
+      const at2 = from + kid;
+      if (part.slice(Math.max(0, at2 - 3), at2) === 'และ') { from = at2 + 3; continue; }
+      cut = at2;
+      break;
+    }
+    if (cut > 0) part = part.slice(0, cut);
+
+    part = part.replace(/[\s,;·]+$/, '').trim();
+    if (!part || part.length > 110 || !/\d/.test(part)) return '';
+    return part;
+  }
+  return '';
+}
+
 // เรียกข้อมูลจาก Backend
 async function getJSON(path) {
   let res;
@@ -111,8 +135,7 @@ async function getJSON(path) {
   return res.json();
 }
 
-// ประกอบข้อมูลทั้งหมดจากฐานข้อมูล ให้มีรูปร่างเดียวกับไฟล์ข้อมูลเดิม
-// ส่วนที่เหลือของหน้าเว็บจึงไม่ต้องรู้ว่าข้อมูลมาจากไหน
+// ประกอบข้อมูลจากฐานข้อมูล ให้มีรูปร่างเดียวกับไฟล์ข้อมูลเดิม
 async function loadFromApi() {
   const cats = await getJSON('/categories');
 
@@ -132,6 +155,8 @@ async function loadFromApi() {
       order: meta.order || 99,
       name:  c.name_th,
       short: meta.short || c.name_th,
+      // ชื่อย่อใช้เฉพาะปุ่มกรองบนจอแคบ ไม่มีก็ใช้ชื่อปกติแทน
+      mini:  meta.mini || meta.short || c.name_th,
       desc:  meta.desc || '',
       icon:  meta.icon || 'pill',
     };
@@ -153,13 +178,15 @@ async function loadFromApi() {
       name: m.name_th,
       genericTh: ing.map(x => x.name_th).filter(Boolean).join(' + '),
       genericEn: ing.map(x => x.name_en).filter(Boolean).join(' + '),
-      ingredients: ing.map(x => ({ name: x.name_en || x.name_th, strength: '' })),
+      ingredients: ing.map(x => ({
+        name: x.name_en || x.name_th, strength: x.strength || '' })),
       dosageForm: formTh,
       dosageFormEn: m.dosage_form || '',
       packaging: pack,
       indications: lines(m.indications),
       dosage: m.dosage_instructions || '',
-      dosageAdult: '',
+      // API ไม่มีช่องขนาดของผู้ใหญ่แยกไว้ จึงดึงออกจากวิธีใช้เอง ดึงไม่ได้ก็ปล่อยว่าง
+      dosageAdult: adultDose(m.dosage_instructions),
       warnings: (m.warnings || []).map(t =>
         ({ level: RE_DANGER.test(t) ? 'danger' : 'warn', text: t })),
     });
@@ -251,12 +278,11 @@ const enName = t => splitLang(t).en;
 const thForm = t => String(t || '').split('/').map(x => x.trim())
   .filter(x => x && RE_THAI.test(x))[0] || String(t || '');
 
-// ชื่อตัวยาสำคัญภาษาไทย จับคู่ตามลำดับที่เขียนไว้ใน genericTh
+// ชื่อตัวยาสำคัญภาษาไทย · คืนเป็นคู่ [ชื่อตัวยา, ปริมาณ]
 function ingredientsTh(c) {
   const th = String(c.genericTh || '').split('+').map(x => x.trim()).filter(Boolean);
   const use = th.length === c.ingredients.length;
-  return c.ingredients.map((ing, i) =>
-    (use ? th[i] : ing.name) + (ing.strength ? ' ' + ing.strength : ''));
+  return c.ingredients.map((ing, i) => [use ? th[i] : ing.name, ing.strength || '']);
 }
 
 const RE_REG_KEY = /\d[A-Z]\d{1,4}\/\d{2,4}/;
