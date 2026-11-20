@@ -32,24 +32,37 @@ BRAND_GENERIC_WORDS = {
 }
 
 
+THAI_CHAR = re.compile(r"[\u0E00-\u0E7F]")
+
+
 def match_brand_name(ocr_text: str, db: Session):
     all_brands = db.query(Brand).all()
     ocr_text_lower = ocr_text.lower()
 
+    best_brand = None
+    best_score = 0
+
     for brand in all_brands:
-        for word in brand.brand_name.split():
-            word_clean = word.strip("-()").lower()
+        words = [w.strip("-()").lower() for w in brand.brand_name.split()]
+        keys = [
+            w for w in words
+            if len(w) >= 5 and not w.isdigit() and w not in BRAND_GENERIC_WORDS
+        ]
 
-            if len(word_clean) < 5:
-                continue
-            if word_clean.isdigit():
-                continue
-            if word_clean in BRAND_GENERIC_WORDS:
-                continue
-            if word_clean in ocr_text_lower:
-                return brand
+        # แยกคำสำคัญเป็นภาษาไทย / อังกฤษ เพราะฉลากอาจพิมพ์ชื่อแค่ภาษาเดียว
+        thai_keys = [k for k in keys if THAI_CHAR.search(k)]
+        eng_keys = [k for k in keys if not THAI_CHAR.search(k)]
 
-    return None
+        # ต้องเจอทุกคำสำคัญของภาษาใดภาษาหนึ่ง ไม่ใช่แค่คำเดียว
+        # (กันกรณีชื่อบริษัท เช่น "ยันฮี" ไปตรงกับยาตัวอื่นของบริษัทเดียวกัน)
+        for group in (thai_keys, eng_keys):
+            if group and all(k in ocr_text_lower for k in group):
+                score = sum(len(k) for k in group)
+                if score > best_score:
+                    best_brand = brand
+                    best_score = score
+
+    return best_brand
 
 
 def match_active_ingredient(ocr_text: str, db: Session):
@@ -170,5 +183,14 @@ if __name__ == "__main__":
     r7 = identify_medicine("Acetaminophen 500 mg tablets", db)
     print(r7["match_type"], "| จำนวนยี่ห้อ:", len(r7["brands"]),
           "| คาดว่า: active_ingredient (ถ้าเพิ่ม alias Acetaminophen แล้ว)")
+
+    print("=== ทดสอบ 8: ฉลากมูกฟี่ (มีคำว่า ยันฮี ด้วย) ===")
+    r8 = identify_medicine("มูกฟี่ ยาเม็ดลดน้ำมูก แก้แพ้ ยันฮี YANHEE", db)
+    print(r8["match_type"], [b.brand_name for b in r8["brands"]],
+          "| คาดว่า: brand_name มูกฟี่ (ห้ามเป็นพาราเทมป์)")
+
+    print("=== ทดสอบ 9: มีแค่ชื่อบริษัท ไม่มีชื่อยา ===")
+    r9 = identify_medicine("ยันฮี YANHEE ยาแก้แพ้", db)
+    print(r9["match_type"], "| คาดว่า: ต้องไม่ใช่ brand_name")
 
     db.close()
