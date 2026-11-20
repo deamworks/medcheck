@@ -222,7 +222,7 @@ function route() {
     if (currentRoute.name === 'home')   { renderHome(); renderRecent(); }
     if (currentRoute.name === 'scan' && !(prev === 'detail' && detailFrom === 'scan')) camReset(false);
     if (currentRoute.name === 'search') renderSearch(currentRoute.param);
-    if (currentRoute.name === 'detail') renderDetail(currentRoute.param, currentRoute.sub);
+    if (currentRoute.name === 'detail') renderDetail(currentRoute.param);
     if (currentRoute.name === 'about')  renderAbout();
     if (currentRoute.name !== 'search') hideSuggest();
     initReveal($('#view-' + currentRoute.name));
@@ -518,11 +518,10 @@ function renderSearch(pre) {
 
     $('#chipbar').innerHTML =
       '<button class="chip" type="button" data-cat="" aria-pressed="true">' +
-        '<span class="c-ico">' + svg('list') + '</span>ทั้งหมด<span class="n">' + DB.brands.length + '</span></button>' +
+        'ทั้งหมด<span class="n">' + DB.brands.length + '</span></button>' +
       DB.categories.slice().sort((a, b) => a.order - b.order).map(c =>
         // ชื่อเต็มกับชื่อย่ออยู่ในปุ่มเดียวกัน สลับด้วย CSS
         '<button class="chip" type="button" data-cat="' + esc(c.id) + '" aria-pressed="false">' +
-          '<span class="c-ico">' + svg(c.icon || 'pill') + '</span>' +
           '<span class="t-full">' + esc(c.short) + '</span>' +
           '<span class="t-mini">' + esc(c.mini || c.short) + '</span>' +
           '<span class="n">' + brandsInCat(c.id).length + '</span></button>'
@@ -979,138 +978,82 @@ function renderRecent() {
   paintIcons($('#recentRows'));
 }
 
-// เส้นทางเก่า /drug/:id/warn ไม่พัง เพราะ active ถอยไปใช้ use เมื่อไม่พบชื่อแท็บในตารางนี้
-const TABS = [
-  ['use',  'ข้อบ่งใช้',        'clipboard'],
-  ['dose', 'วิธีใช้และขนาดยา', 'clock'],
-];
+/*  หน้าข้อมูลยา · เรียงหัวข้อตามลำดับที่พิมพ์อยู่บนกล่องยาจริง
+    ตัวยาสำคัญ · สรรพคุณ · ขนาดและวิธีใช้ · คำเตือน · ผลิตโดย
+    ห้ามสลับลำดับ ผู้ใช้ถือกล่องยาอยู่ในมือแล้วไล่สายตาเทียบทีละบรรทัด
+    เส้นทางเก่าอย่าง /drug/:id/dose ยังเปิดได้ แค่ไม่มีแท็บให้สลับแล้ว  */
 
-// ชื่อรูปแบบบรรจุ
-const packLabel = p => p === 'blister' ? 'ยาเม็ดบรรจุแผง' : 'ยาน้ำบรรจุขวด';
-
-let inkFn = null;
-window.addEventListener('resize', debounce(() => { if (inkFn) inkFn(); }, 150));
-
-// ส่วนหัวของหน้าข้อมูลยา
-function detailHead(b, c, ct, active) {
+// ส่วนหัว · สถานะ หมวดหมู่ และเลขทะเบียน อยู่แถวเดียวกันเหนือชื่อยา
+function detailHead(b, c, ct) {
   const ok = b.status === 'active';
   return '<div class="res-hero">' +
     '<div class="res-badges">' +
       (ok ? '<span class="pill pill-ok">' + svg('check-c') + 'ขึ้นทะเบียน อย. แล้ว</span>'
           : '<span class="pill pill-bad">' + svg('ban') + 'ยกเลิกทะเบียนแล้ว</span>') +
-      (TTS_OK ? '<button class="speak" type="button" id="readDrug" aria-pressed="false" style="margin-inline-start:auto">' +
-                  svg('speaker') + '<span>ฟังข้อมูลยา</span></button>' : '') +
+      (ct ? '<span class="pill pill-red">' + esc(ct.short) + '</span>' : '') +
+      '<span class="pill pill-grey">เลขทะเบียน <b>' + esc(b.regNo) + '</b></span>' +
+      (TTS_OK ? '<button class="speak" type="button" id="readDrug" aria-pressed="false" ' +
+                  'style="margin-inline-start:auto">' + svg('speaker') +
+                  '<span>ฟังข้อมูลยา</span></button>' : '') +
     '</div>' +
+    // ใต้ชื่อยาไม่มีบรรทัดอะไรแล้ว · ชื่อสามัญซ้ำกับหัวข้อตัวยาสำคัญที่อยู่ถัดลงไป
     '<h1 class="res-title">' + esc(thName(b.productName)) + '</h1>' +
-    // ไม่แสดงชื่อสามัญตรงนี้ · ซ้ำกับ ตัวยาสำคัญและปริมาณ
-    '<div class="res-tags">' +
-      '<span class="pill pill-red">' + esc(ct ? ct.short : '') + '</span>' +
-      '<span class="pill pill-grey">เลขทะเบียน ' + esc(b.regNo) + '</span>' +
-      '<span class="pill pill-grey">' + esc(packLabel(b.packaging)) + '</span>' +
-    '</div>' +
-    '<div class="tabs" role="tablist" aria-label="ข้อมูลยา">' +
-      TABS.map(t =>
-        '<button class="tab" type="button" role="tab" id="tab-' + t[0] + '" data-tab="' + t[0] + '"' +
-        ' aria-selected="' + (t[0] === active) + '" aria-controls="panel-' + t[0] + '"' +
-        ' tabindex="' + (t[0] === active ? '0' : '-1') + '">' + svg(t[2]) + esc(t[1]) + '</button>'
-      ).join('') +
-      '<span class="tab-ink" id="tabInk" aria-hidden="true"></span>' +
-    '</div>' +
   '</div>';
 }
 
-// กรอบแผงของแท็บ
-function tabPanel(name, active, inner) {
-  return '<div class="tabpanel" id="panel-' + name + '" role="tabpanel" aria-labelledby="tab-' + name + '"' +
-    (name === active ? '' : ' hidden') + '>' + inner + '</div>';
+// หนึ่งหัวข้อในเอกสาร · ป้ายอยู่ซ้าย เนื้อหาอยู่ขวา จอแคบป้ายขึ้นไปอยู่บน
+function insRow(label, body) {
+  return '<div class="ins-row">' +
+    '<p class="ins-lb">' + label + '</p>' +
+    '<div class="ins-vl">' + body + '</div>' +
+  '</div>';
 }
 
-// แถวข้อมูลหนึ่งบรรทัด · value เป็นข้อความ หรือรายการคู่ [ซ้าย, ขวา]
-function infoRow(icon, label, value, pre) {
-  const many = Array.isArray(value) && value.length;
-  const body = many
-    ? '<span class="pairs">' + value.map(v => {
-        const p = Array.isArray(v) ? v : [v, ''];
-        return '<span class="nm">' + esc(p[0]) + '</span>' +
-               '<i>' + esc(p[1] || '') + '</i>';
-      }).join('') + '</span>'
-    : '<span' + (pre ? ' class="pre"' : '') + '>' +
-        esc((Array.isArray(value) ? '' : value) || 'ไม่มีข้อมูล') + '</span>';
-
-  return '<div class="inforow"><span class="ico">' + svg(icon) + '</span><div>' +
-    '<b>' + label + '</b>' + body +
-  '</div></div>';
+// รายการข้อ · ใส่เลขข้อเมื่อฉลากจริงใส่เลขกำกับไว้ เช่น คำเตือน
+function insList(list, num) {
+  if (!list.length) return '<p class="nodata">ไม่มีข้อมูลในระบบ</p>';
+  const tag = num ? 'ol' : 'ul';
+  return '<' + tag + ' class="items' + (num ? ' num' : '') + '">' +
+    list.map(t => '<li>' + (num ? '' : '<span class="bul"></span>') +
+      '<span>' + esc(t) + '</span></li>').join('') +
+  '</' + tag + '>';
 }
 
-// แผงข้อบ่งใช้
-function panelUse(b, c) {
-  const acc = c.indications.length
-    ? '<div class="acc">' + c.indications.map((t, i) =>
-        '<div class="acc-item">' +
-          '<button class="acc-btn" type="button" aria-expanded="' + (i === 0) + '" aria-controls="acb-' + i + '">' +
-            '<span class="chev">' + svg('caret') + '</span><span>' + esc(t) + '</span></button>' +
-          '<div class="acc-body' + (i === 0 ? ' open' : '') + '" id="acb-' + i + '"><div>' +
-            '<p>อ้างอิงจากข้อมูลบนฉลากยาของสูตรตำรับ ' + esc(c.formName) + '</p>' +
-          '</div></div>' +
-        '</div>').join('') + '</div>'
-    : '<p class="muted">ไม่มีข้อมูลข้อบ่งใช้ในระบบ</p>';
+// เอกสารกำกับยาทั้งก้อน
+function insertDoc(b, c) {
+  const ing  = ingredientsTh(c);
+  // วิธีใช้บันทึกเป็นข้อ ๆ คั่นด้วยขึ้นบรรทัดใหม่ · ของเดิมที่เป็นข้อความยาวก็ยังแสดงได้
+  const dose = String(c.dosage || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const warn = c.warnings || [];
 
-  return '<div class="panel-head"><h3>' + svg('clipboard') + 'ข้อบ่งใช้และสรรพคุณ</h3></div>' +
-    acc +
-    '<div class="infogrid">' +
-      // บรรทัดละตัวยา ปริมาณอยู่คอลัมน์ขวา
-      infoRow('pill', 'ตัวยาสำคัญและปริมาณ', ingredientsTh(c)) +
-      infoRow('factory', 'ผู้ผลิต / ผู้รับอนุญาต', b.licensee) +
-      infoRow('box', 'รูปแบบยา', thForm(b.dosageForm || c.dosageForm)) +
-    '</div>' +
-    warnSection(c);
-}
+  return '<div class="ins">' +
 
-// แผงขนาดการใช้
-function panelDose(b, c) {
-  // หัวการ์ดเปลี่ยนตามว่าข้อความพูดถึงเด็กด้วยหรือไม่
-  const withKid = /เด็ก|ทารก/.test(c.dosageAdult || '');
+    insRow('ตัวยาสำคัญ', ing.length
+      ? '<ul class="items">' + ing.map(p =>
+          '<li class="ing"><b>' + esc(p[0]) + '</b>' +
+          (p[1] ? '<span class="dots" aria-hidden="true"></span>' +
+                  '<i>' + esc(p[1]) + '</i>' : '') + '</li>').join('') + '</ul>'
+      : '<p class="nodata">ไม่มีข้อมูลในระบบ</p>') +
 
-  // ไม่มีป้ายบรรจุภัณฑ์ในหัวการ์ดแล้ว
-  const card = c.dosageAdult
-    ? '<div class="dosecard">' +
-        '<div class="dosecard-h"><b>' +
-          (withKid ? 'สำหรับผู้ใหญ่และเด็กตามอายุที่ฉลากระบุ' : 'สำหรับผู้ใหญ่') +
-        '</b></div>' +
-        // ไม่มีช่อง รูปแบบยา ในการ์ดนี้แล้ว
-        '<dl class="dosecard-g">' +
-          '<div><dt>ขนาดรับประทาน</dt><dd>' + esc(c.dosageAdult) + '</dd></div>' +
-        '</dl>' +
-        '<p class="dosecard-f">' +
-          (withKid
-            ? 'ขนาดนี้เป็นไปตามที่ฉลากยาระบุ เด็กที่อายุน้อยกว่านั้น โปรดปรึกษาแพทย์หรือเภสัชกร'
-            : 'ระบบครอบคลุมเฉพาะสูตรตำรับสำหรับผู้ใหญ่ กรณีใช้ในเด็กโปรดปรึกษาแพทย์หรือเภสัชกร') +
-        '</p>' +
-      '</div>'
-    : '';
+    insRow('สรรพคุณ', insList(c.indications || [], false)) +
 
-  return '<div class="panel-head"><h3>' + svg('clock') + 'ขนาดและวิธีใช้ยาที่ถูกต้อง</h3></div>' +
-    card +
-    infoRow('clipboard', 'ข้อความเต็มตามฉลากยา', c.dosage, true) +
-    '<div class="okbox">' + svg('check-c') + '<div><b>การเก็บรักษา</b>' +
-      '<p>เก็บที่อุณหภูมิห้อง ไม่เกิน 30°C ให้พ้นแสงแดดและความชื้น เก็บให้พ้นมือเด็ก</p></div></div>';
-}
+    insRow('ขนาดและวิธีใช้', insList(dose, false)) +
 
-// ส่วนคำเตือน · ต่อท้ายแผงข้อบ่งใช้
-function warnSection(c) {
-  const list = c.warnings.length
-    ? '<div class="warnbox"><ul>' +
-        c.warnings.map(w =>
-          '<li>' + svg(w.level === 'danger' ? 'ban' : 'alert') + '<span>' + esc(w.text) + '</span></li>'
-        ).join('') +
-      '</ul></div>'
-    : '<div class="notice is-warn">' + svg('warning') + '<div><p>ยังไม่มีข้อมูลคำเตือนของสูตรตำรับนี้ในฐานข้อมูล ' +
-        'โปรดอ่านคำเตือนจากฉลากและเอกสารกำกับยาของผลิตภัณฑ์จริง</p></div></div>';
+    insRow('คำเตือน', warn.length
+      ? '<ol class="items num is-warn">' + warn.map(w =>
+          '<li' + (w.level === 'danger' ? ' class="hot"' : '') + '>' +
+          '<span>' + esc(w.text) + '</span></li>').join('') + '</ol>'
+      : '<p class="nodata">ไม่มีข้อมูลคำเตือนของสูตรตำรับนี้ในระบบ ' +
+        'โปรดอ่านคำเตือนจากฉลากของผลิตภัณฑ์จริง</p>') +
 
-  return '<div class="panel-head mt-5"><h3>' + svg('warning') + 'ข้อควรระวังและคำเตือน</h3></div>' +
-    list +
-    '<div class="notice is-danger mt-4">' + svg('alert') + '<div><p>หากมีอาการแพ้ยา เช่น ผื่นขึ้น หน้าบวม หายใจลำบาก ' +
-      'หรืออาการไม่ดีขึ้นตามระยะเวลาที่ระบุ ให้หยุดใช้ยาและพบแพทย์หรือเภสัชกรทันที</p></div></div>';
+    insRow('ผลิตโดย', '<p>' + esc(b.licensee || 'ไม่มีข้อมูลในระบบ') + '</p>') +
+
+  '</div>' +
+
+  // คำเตือนของระบบเอง ไม่ใช่ข้อความบนฉลาก จึงอยู่นอกตัวเอกสาร
+  '<div class="notice is-danger mt-4">' + svg('alert') +
+    '<div><p>หากมีอาการแพ้ยา เช่น ผื่นขึ้น หน้าบวม หายใจลำบาก ' +
+    'หรืออาการไม่ดีขึ้นตามระยะเวลาที่ระบุ ให้หยุดใช้ยาและพบแพทย์หรือเภสัชกรทันที</p></div></div>';
 }
 
 // ส่วนท้ายของหน้าข้อมูลยา
@@ -1135,7 +1078,7 @@ const BACK_TO = {
 };
 
 // วาดหน้าข้อมูลยา
-function renderDetail(id, tab) {
+function renderDetail(id) {
   const host = $('#detailBody');
   const b = brand(id);
 
@@ -1143,13 +1086,11 @@ function renderDetail(id, tab) {
     host.innerHTML = '<div class="state"><div class="state-ico is-warn">' + svg('search') + '</div>' +
       '<h2>ไม่พบข้อมูลยาที่ต้องการ</h2><p>รายการนี้อาจถูกลบออกจากฐานข้อมูลแล้ว</p>' +
       '<div class="state-actions"><a class="btn btn-primary" href="/search">กลับไปหน้าค้นหา</a></div></div>';
-    inkFn = null;
     return;
   }
 
   pushRecent(b.id);
   const c = content(b), ct = cat(b.categoryId);
-  const active = TABS.some(t => t[0] === tab) ? tab : 'use';
   const others = brandsOf(b.formulationId).filter(x => x.id !== b.id);
   const backTo = BACK_TO[detailFrom] || BACK_TO.search;
 
@@ -1157,9 +1098,8 @@ function renderDetail(id, tab) {
     '<div class="page-head"><a class="backlink" href="/' + backTo[0] + '" aria-label="' + backTo[1] + '">' +
       svg('back') + '</a></div>' +
     '<div class="rescard">' +
-      detailHead(b, c, ct, active) +
-      tabPanel('use',  active, panelUse(b, c)) +
-      tabPanel('dose', active, panelDose(b, c)) +
+      detailHead(b, c, ct) +
+      '<div class="resdoc">' + insertDoc(b, c) + '</div>' +
       detailFoot() +
     '</div>' +
     (others.length
@@ -1716,56 +1656,6 @@ start();
 
 // ผูกเหตุการณ์ในหน้าข้อมูลยา
 function bindDetail(host, b, c, ct) {
-
-  const tabs = $$('[data-tab]', host);
-
-  function moveInk() {
-    const cur = $('[data-tab][aria-selected="true"]', host);
-    const ink = $('#tabInk', host);
-    if (!cur || !ink) return;
-    ink.style.width = cur.offsetWidth + 'px';
-    ink.style.transform = 'translateX(' + cur.offsetLeft + 'px)';
-  }
-
-  function switchTab(name) {
-    tabs.forEach(t => {
-      const on = t.dataset.tab === name;
-      t.setAttribute('aria-selected', String(on));
-      t.tabIndex = on ? 0 : -1;
-    });
-    TABS.forEach(t => { $('#panel-' + t[0], host).hidden = t[0] !== name; });
-
-    moveInk();
-    history.replaceState(null, '', '/drug/' + encodeURIComponent(b.id) + '/' + name);
-  }
-
-  $('.tabs', host).addEventListener('click', e => {
-    const t = e.target.closest('[data-tab]');
-    if (t) switchTab(t.dataset.tab);
-  });
-
-  $('.tabs', host).addEventListener('keydown', e => {
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
-    e.preventDefault();
-    const i = tabs.indexOf(document.activeElement);
-    let n = e.key === 'Home'      ? 0
-          : e.key === 'End'       ? tabs.length - 1
-          : e.key === 'ArrowLeft' ? i - 1
-          : i + 1;
-    n = (n + tabs.length) % tabs.length;
-    tabs[n].focus();
-    switchTab(tabs[n].dataset.tab);
-  });
-
-  inkFn = moveInk;
-  requestAnimationFrame(moveInk);
-  setTimeout(moveInk, 340);
-
-  $$('.acc-btn', host).forEach(btn => btn.addEventListener('click', () => {
-    const open = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', String(!open));
-    $('#' + btn.getAttribute('aria-controls'), host).classList.toggle('open', !open);
-  }));
 
   const read = $('#readDrug', host);
   if (read) read.addEventListener('click', () => {
