@@ -86,6 +86,15 @@ const thName = t => splitLang(t).th || String(t || '');
 const lines  = t => String(t || '').split('\n').map(s => s.trim()).filter(Boolean);
 const unline = list => list.join('\n');
 
+// ข้อความที่กรอกเป็นข้อ ๆ · เก็บในฟอร์มเป็นอาร์เรย์ หนึ่งช่องต่อหนึ่งข้อ
+// ต้องเหลืออย่างน้อยหนึ่งแถวเสมอ ไม่งั้นไม่มีที่ให้พิมพ์
+const textRows = t => {
+  const rows = (Array.isArray(t) ? t : lines(t)).map(s => String(s == null ? '' : s));
+  return rows.length ? rows : [''];
+};
+const textList = rows => (rows || []).map(s => String(s || '').trim()).filter(Boolean);
+const hasText  = rows => textList(rows).length > 0;
+
 
 /*  ชั้นข้อมูล  */
 
@@ -345,11 +354,11 @@ function doLogout() {
 /*  โครงหน้าจัดการ  */
 
 // สถานะของหน้าจัดการ
-let view    = 'home';   // หน้าที่เปิดอยู่ 'home' 'list' 'formula' หรือ 'ingredient'
+let view    = 'home';   // หน้าที่เปิดอยู่ · home คือหน้าแรก list คือหน้าจัดการข้อมูล
 let editing = '';       // รายการที่กำลังแก้
 let query   = '';       // คำค้น
+let cat     = '';       // หมวดหมู่ที่กรองอยู่ ว่างคือทุกหมวด
 let form    = null;     // ค่าที่กรอกค้างในฟอร์ม
-let ingEdit = 0;        // รหัสตัวยาที่กำลังแก้ชื่ออยู่ 0 คือไม่ได้แก้
 let listY   = 0;        // ตำแหน่งที่เลื่อนค้างไว้ในรายการ ก่อนเปิดฟอร์ม
 let formStart = '';     // สภาพฟอร์มตอนเพิ่งเปิด ไว้ดูว่ามีอะไรถูกแก้แล้วหรือยัง
 
@@ -357,6 +366,7 @@ let formStart = '';     // สภาพฟอร์มตอนเพิ่ง�
 async function openApp() {
   $('#viewLogin').hidden = true;
   $('#viewApp').hidden = false;
+  view = 'home';
   paintIcons();
   syncThemeBtn();
   skeleton();
@@ -371,7 +381,6 @@ async function openApp() {
     return;
   }
 
-  view = 'home';
   editing = '';
   form = null;
   query = '';
@@ -454,6 +463,28 @@ const ingLabel = g => g ? (g.name_th || g.name_en) : '';
 const brandTh  = b => thName(b && b.brand_name);
 
 
+/*  ช่องที่กรอกเป็นข้อ ๆ · ข้อบ่งใช้ วิธีใช้ คำเตือน  */
+
+const LISTF = {
+  indications: {
+    label: 'ข้อบ่งใช้และสรรพคุณ *',
+    hint:  'กด Enter เพื่อขึ้นข้อใหม่',
+    ph:    'เช่น บรรเทาอาการปวด ลดไข้',
+  },
+  dosage_instructions: {
+    label: 'วิธีใช้และขนาดรับประทาน *',
+    hint:  'กด Enter เพื่อขึ้นข้อใหม่',
+    ph:    'เช่น ผู้ใหญ่ รับประทานครั้งละ 1-2 เม็ด ทุก 4-6 ชั่วโมง',
+  },
+  warnings: {
+    label: 'คำเตือนและข้อควรระวังสำคัญ',
+    hint:  'กด Enter เพื่อขึ้นข้อใหม่',
+    ph:    'เช่น ห้ามรับประทานเกินวันละ 8 เม็ด',
+  },
+};
+const LKEYS = Object.keys(LISTF);
+
+
 /*  ตัวช่วยสร้างฟอร์ม  */
 
 // ช่องที่ต้องกรอก เขียน * ต่อท้ายข้อความป้ายตามเดิม ไม่ต้องส่งพารามิเตอร์เพิ่ม
@@ -480,15 +511,20 @@ function field(name, label, value, hint) {
   '</div>';
 }
 
-// ช่องกรอกหลายบรรทัด
-function fieldArea(name, label, value, hint, rows) {
+// ช่องกรอกของข้อหนึ่งข้อ · ไม่มีป้ายให้เห็น เพราะป้ายอยู่หัวรายการแล้ว
+function fieldRow(name, aria, value, ph) {
   return '<div class="field" data-fl="' + name + '">' +
-    lbl(name, label) +
-    '<textarea id="fl-' + name + '" rows="' + (rows || 5) + '"' + reqAttr(label) + ' ' +
-      'aria-describedby="fh-' + name + ' fe-' + name + '">' + esc(value == null ? '' : value) + '</textarea>' +
-    (hint ? '<p class="hint" id="fh-' + name + '">' + esc(hint) + '</p>' : '') +
+    '<textarea id="fl-' + name + '" class="lrtx" rows="1" ' +
+      'aria-label="' + esc(aria) + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + ' ' +
+      'aria-describedby="fe-' + name + '">' + esc(value == null ? '' : value) + '</textarea>' +
     '<p class="field-err" id="fe-' + name + '" hidden></p>' +
   '</div>';
+}
+
+// ช่องข้อความขยายเองตามจำนวนบรรทัด · ไม่ต้องมีแถบเลื่อนในช่องเตี้ย ๆ
+function growArea(el) {
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight + el.offsetHeight - el.clientHeight) + 'px';
 }
 
 // ช่องเลือกจากรายการ
@@ -508,6 +544,101 @@ function fieldSelect(name, label, value, options, hint) {
 }
 
 // ปุ่มบันทึกและยกเลิกท้ายฟอร์ม
+// แถวของแต่ละข้อ · แยกออกมาต่างหาก จะได้วาดใหม่เฉพาะรายการนี้ตอนเพิ่มหรือลบข้อ
+function listRows(key, rows) {
+  const d    = LISTF[key];
+  const list = textRows(rows);
+  const name = String(d.label).replace(/\s\*$/, '');
+
+  const one = (s, i) =>
+    '<li class="lrow" data-lrow="' + key + '" data-i="' + i + '">' +
+      '<span class="lrno" aria-hidden="true">' + (i + 1) + '</span>' +
+      fieldRow(key + '_' + i, name + ' ข้อที่ ' + (i + 1), s, d.ph) +
+      (list.length > 1
+        ? '<button class="iconact is-danger" type="button" data-lrdel="' + i + '" ' +
+            'aria-label="ลบ' + esc(name) + ' ข้อที่ ' + (i + 1) + '">' + svg('trash') + '</button>'
+        : '') +
+    '</li>';
+
+  return '<ul class="lrlist" id="lr_' + key + '">' + list.map(one).join('') + '</ul>';
+}
+
+// ช่องกรอกแบบหลายข้อทั้งก้อน · ป้ายหนึ่งอัน รายการข้อ คำอธิบาย แล้วปุ่มเพิ่มข้อ
+function listField(key, f) {
+  const d = LISTF[key];
+  return '<div class="listfield" data-lf="' + key + '">' +
+    '<p class="flabel">' + esc(String(d.label).replace(/\s\*$/, '')) +
+      (isReq(d.label) ? ' <span class="req" aria-hidden="true">*</span>' : '') + '</p>' +
+    listRows(key, f[key]) +
+    '<p class="hint">' + esc(d.hint) + '</p>' +
+    '<p class="lradd"><button class="btn btn-soft btn-sm" type="button" ' +
+      'data-lradd="' + key + '">' + svg('plus') + 'เพิ่มข้อ</button></p>' +
+  '</div>';
+}
+
+// วาดรายการข้อใหม่ทั้งรายการ · ใช้ตอนเพิ่ม ลบ หรือแตกข้อเท่านั้น
+function redrawList(key) {
+  const box = $('#lr_' + key);
+  if (!box) return;
+  box.outerHTML = listRows(key, form[key]);
+  paintIcons($('#panel'));
+  bindList(key);
+}
+
+// ช่องกรอกของรายการหนึ่ง · ผูกใหม่ทุกครั้งที่วาดรายการนั้นใหม่
+function bindList(key) {
+  $$('#lr_' + key + ' .lrtx').forEach(el => {
+    growArea(el);
+    el.addEventListener('input', () => growArea(el));
+
+    // Enter คือขึ้นข้อใหม่ · ตัดข้อความตรงเคอร์เซอร์ไปเป็นข้อถัดไป
+    el.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || e.isComposing) return;
+      e.preventDefault();
+      formRead();
+      const i  = +el.closest('[data-lrow]').dataset.i;
+      const at = el.selectionStart;
+      const v  = String(el.value);
+      form[key][i] = v.slice(0, at);
+      form[key].splice(i + 1, 0, v.slice(at));
+      redrawList(key);
+      const next = $('#fl-' + key + '_' + (i + 1));
+      if (next) { next.focus(); next.setSelectionRange(0, 0); }
+    });
+
+    // วางข้อความหลายบรรทัดมาทีเดียว ให้แตกเป็นข้อ ๆ ให้เลย
+    el.addEventListener('change', () => {
+      if (String(el.value).indexOf('\n') < 0) return;
+      formRead();
+      const i = +el.closest('[data-lrow]').dataset.i;
+      form[key].splice.apply(form[key], [i, 1].concat(lines(el.value)));
+      if (!form[key].length) form[key] = [''];
+      redrawList(key);
+      const back = $('#fl-' + key + '_' + i);
+      if (back) back.focus();
+    });
+  });
+
+  $$('#lr_' + key + ' [data-lrdel]').forEach(b => b.addEventListener('click', () => {
+    formRead();
+    form[key].splice(+b.dataset.lrdel, 1);
+    if (!form[key].length) form[key] = [''];
+    redrawList(key);
+  }));
+}
+
+// ปุ่มเพิ่มข้อ · อยู่นอกรายการ ไม่ถูกวาดทับ จึงผูกตอนวาดฟอร์มครั้งเดียว
+function bindListAdd() {
+  $$('#panel [data-lradd]').forEach(b => b.addEventListener('click', () => {
+    const key = b.dataset.lradd;
+    formRead();
+    form[key].push('');
+    redrawList(key);
+    const last = $('#fl-' + key + '_' + (form[key].length - 1));
+    if (last) last.focus();
+  }));
+}
+
 function formAct(okLabel) {
   return '<p class="formmsg" id="adFormMsg" role="alert" hidden></p>' +
     '<div class="formact">' +
@@ -570,54 +701,47 @@ async function apply(btn, work, okText) {
     return;
   }
   editing = '';
-  ingEdit = 0;
   toast(okText);
   render();
 }
 
 
-/*  หน้าจัดการ · สองแท็บ  */
+/*  หน้าจัดการ · มีหน้าเดียว คือรายการยากับฟอร์มเพิ่มหรือแก้ไข  */
 
-// วาดหน้าตามแท็บที่เปิดอยู่
+// วาดหน้าใหม่
 function render() {
+  setHead();
   if (view === 'home') homePage();
-  else if (view === 'formula') formulaPage();
-  else if (view === 'ingredient') ingredientPage();
-  else { view = 'list'; productPage(); }
+  else productPage();
   paintIcons($('#panel'));
 }
 
-// แถบสลับแท็บ
-function navBar(now) {
-  const tab = (key, ico, label, n) =>
-    '<button class="adtab" type="button" data-go="' + key + '" aria-pressed="' +
-      (now === key ? 'true' : 'false') + '">' + svg(ico) + esc(label) +
-      (n === undefined ? '' : '<span class="tally">' + n + '</span>') + '</button>';
-  return '<nav class="adtabs" aria-label="หมวดข้อมูลที่จัดการ">' +
-    tab('home', 'home', 'หน้าแรก') +
-    tab('list', 'pill', 'รายการยา', BRANDS.length) +
-    tab('formula', 'flask', 'ข้อมูลที่ใช้ร่วมกัน', MEDS.length) +
-    tab('ingredient', 'atom', 'ตัวยาสำคัญ', INGS.length) +
-  '</nav>';
+// หัวเรื่องของหน้า เปลี่ยนตามหน้าที่เปิดอยู่
+function setHead() {
+  const h = $('#adTitle');
+  const p = $('#adLead');
+  if (h) h.textContent = view === 'home'
+    ? 'ระบบจัดการข้อมูลยาสามัญประจำบ้าน'
+    : 'จัดการฐานข้อมูลยาสามัญประจำบ้าน';
+  if (p) p.textContent = view === 'home'
+    ? 'สำหรับผู้ดูแลระบบ โปรดเลือกรายการที่ต้องการดำเนินการ'
+    : 'ตรวจสอบ แก้ไข เพิ่ม หรือลบข้อมูลยาและรายละเอียดการขึ้นทะเบียน อย.';
 }
 
-async function goTab(v) {
+// เปลี่ยนหน้า · ถ้ายังมีฟอร์มค้างอยู่ต้องถามก่อน
+async function goView(v) {
   if (view === v) return;
   if (!await leaveForm()) return;
   view = v;
   editing = '';
   form = null;
-  ingEdit = 0;
-  query = '';
   render();
   window.scrollTo(0, 0);
-  if (v === 'ingredient') refreshIngs();
 }
 
 function closeForm() {
   editing = '';
   form = null;
-  ingEdit = 0;
   render();
   // พากลับไปตรงที่ค้างไว้ในรายการ
   window.scrollTo(0, listY);
@@ -647,9 +771,9 @@ async function leaveForm() {
 }
 
 
-/*  หน้าแรก  */
+/*  หน้าแรกของส่วนผู้ดูแล  */
 
-// ไอคอนประจำการ์ด · line คือเส้น hit คือส่วนทึบสีเน้น
+// ภาพประกอบบนการ์ด · เส้นเป็นโครง ส่วน hit เป็นจุดเน้นสีแบรนด์
 const HICO = {
 
   // แผงยา
@@ -661,22 +785,22 @@ const HICO = {
     hit:  '<circle cx="30" cy="15" r="3.6"/>',
   },
 
-  // โกร่งบดยากับสาก
-  formula: {
-    line: '<path d="M19 6h10"/>' +
-          '<path d="M21 6v12L12.4 36a3.5 3.5 0 0 0 3.1 5.2h17a3.5 3.5 0 0 0 3.1-5.2L27 18V6"/>' +
-          '<path d="M16.3 27h15.4"/>',
-    hit:  '<circle cx="21" cy="33.5" r="1.9"/><circle cx="27.5" cy="36.5" r="1.4"/>' +
-          '<circle cx="24.5" cy="30.5" r="1.1"/>',
+  // แคปซูลกับเครื่องหมายบวก
+  add: {
+    line: '<path d="M24.5 7.5a8.5 8.5 0 0 1 12 12L21 35a8.5 8.5 0 0 1-12-12L24.5 7.5Z"/>' +
+          '<path d="M16.2 15.8 28 27.6"/>',
+    hit:  '<rect x="36.4" y="28" width="3.2" height="13" rx="1.6"/>' +
+          '<rect x="31.5" y="32.9" width="13" height="3.2" rx="1.6"/>',
   },
 
-  // โครงสร้างโมเลกุล
-  ing: {
-    line: '<path d="M24 9 37 16.5v15L24 39l-13-7.5v-15L24 9Z"/>' +
-          '<circle cx="24" cy="9" r="2.5"/><circle cx="37" cy="16.5" r="2.5"/>' +
-          '<circle cx="37" cy="31.5" r="2.5"/><circle cx="24" cy="39" r="2.5"/>' +
-          '<circle cx="11" cy="31.5" r="2.5"/>',
-    hit:  '<circle cx="11" cy="16.5" r="3.4"/>',
+  // หน้าต่างเว็บกับแว่นขยาย
+  view: {
+    line: '<rect x="6" y="9" width="36" height="29" rx="4"/>' +
+          '<path d="M6 17h36"/>' +
+          '<circle cx="21.5" cy="25" r="5.5"/>' +
+          '<path d="m25.6 29.1 5.2 5.2"/>',
+    hit:  '<circle cx="11.5" cy="13" r="1.5"/><circle cx="16.5" cy="13" r="1.5"/>' +
+          '<circle cx="21.5" cy="13" r="1.5"/>',
   },
 };
 
@@ -692,23 +816,23 @@ function hicon(k) {
 function homePage() {
   $('#panel').innerHTML =
     '<div class="homegrid">' +
-      homeCard('list', 'is-hero', 'meds', 'รายการยา',
-        'ผลิตภัณฑ์ที่ผู้ใช้เห็นในหน้าค้นหา ชื่อการค้าและเลขทะเบียน',
+      homeCard('list', 'is-hero', 'meds', 'จัดการข้อมูลยา',
+        'ตรวจสอบ แก้ไข หรือลบรายการยาที่เผยแพร่อยู่ในระบบ',
         BRANDS.length + ' รายการ') +
-      homeCard('formula', '', 'formula', 'ข้อมูลที่ใช้ร่วมกัน',
-        'ข้อบ่งใช้ วิธีใช้ และคำเตือน ของยาที่ตัวยาตรงกัน · ปกติไม่ต้องเข้ามาที่นี่',
-        MEDS.length + ' ชุด') +
-      homeCard('ingredient', '', 'ing', 'ตัวยาสำคัญ',
-        'ชื่อตัวยาและชื่อเรียกอื่น ที่ระบบสแกนใช้จับคู่กับฉลากยา',
-        INGS.length + ' ตัวยา') +
+      homeCard('new', '', 'add', 'เพิ่มยาใหม่',
+        'บันทึกผลิตภัณฑ์ยาใหม่ พร้อมรายละเอียดการขึ้นทะเบียนตำรับยา',
+        'เริ่มกรอกข้อมูล') +
+      homeCard('/', '', 'view', 'หน้าเว็บสำหรับผู้ใช้',
+        'เปิดหน้าค้นหายาที่ผู้ใช้เห็น เพื่อตรวจทานข้อมูลที่เผยแพร่',
+        'เปิดในแท็บใหม่') +
     '</div>';
 
-  bindNav();
+  bindHome();
 }
 
-function homeCard(key, tone, ico, title, desc, n) {
-  return '<button class="hcard' + (tone ? ' ' + tone : '') + '" type="button" ' +
-      'data-go="' + key + '">' +
+// การ์ดหนึ่งใบ · ปลายทางที่ขึ้นต้นด้วย / เป็นลิงก์ นอกนั้นเป็นปุ่มเปลี่ยนหน้า
+function homeCard(go, tone, ico, title, desc, n) {
+  const body =
     '<span class="hcard-top">' +
       '<span class="hcard-h">' + esc(title) + '</span>' +
       hicon(ico) +
@@ -719,17 +843,44 @@ function homeCard(key, tone, ico, title, desc, n) {
         '<span class="hcard-p">' + esc(desc) + '</span>' +
       '</span>' +
       '<span class="hcard-go">' + svg('fwd') + '</span>' +
-    '</span>' +
-  '</button>';
+    '</span>';
+
+  const cls = 'hcard' + (tone ? ' ' + tone : '');
+
+  return String(go).indexOf('/') === 0
+    ? '<a class="' + cls + '" href="' + esc(go) + '" target="_blank" rel="noopener">' +
+        body + '</a>'
+    : '<button class="' + cls + '" type="button" data-go="' + esc(go) + '">' + body + '</button>';
 }
 
-/*  แท็บรายการยา  */
+function bindHome() {
+  $$('#panel [data-go]').forEach(b => b.addEventListener('click', () => {
+    // เพิ่มยาใหม่ · ข้ามไปหน้าจัดการข้อมูลแล้วเปิดฟอร์มให้เลย
+    if (b.dataset.go === 'new') {
+      view = 'list';
+      setHead();
+      openNew();
+      return;
+    }
+    goView(b.dataset.go);
+  }));
+}
 
-// ค้นหาในแท็บรายการยา
+
+/*  รายการยา  */
+
+// หมวดหมู่ของผลิตภัณฑ์ · มาจากชุดข้อมูลที่ผูกอยู่
+const catOf = b => { const m = medRow(b.medicine_id); return m ? String(m.category || '') : ''; };
+
+// เข้าเงื่อนไขตัวกรองหมวดหมู่ไหม
+const inCat = b => !cat || catOf(b) === cat;
+
+// ค้นหาและกรองในรายการ
 function searchList() {
   const q = query.trim().toLowerCase();
   const qReg = regKey(query);
   const list = BRANDS.filter(b => {
+    if (!inCat(b)) return false;
     if (!q) return true;
     const med = medRow(b.medicine_id);
     const hay = (b.brand_name + ' ' + b.licensee + ' ' +
@@ -738,6 +889,14 @@ function searchList() {
     return qReg.length > 2 && regKey(b.reg_no).includes(qReg);
   });
   return list.sort((a, b) => brandTh(a).localeCompare(brandTh(b), 'th'));
+}
+
+// ตัวเลือกหมวดหมู่พร้อมจำนวนผลิตภัณฑ์ในแต่ละหมวด
+function catOptions() {
+  return CATS.map(c => {
+    const n = BRANDS.filter(b => catOf(b) === c.name_th).length;
+    return [c.name_th, shortCat(c.name_th) + ' (' + n + ')'];
+  });
 }
 
 function formPane(ico, title, body) {
@@ -767,173 +926,95 @@ function productPage() {
         : '';
 
   $('#panel').innerHTML =
-    navBar('list') +
-
     (pane ||
+      '<p class="backbar">' +
+        '<button class="btn btn-soft btn-sm" type="button" id="backHome">' +
+          svg('back') + 'กลับไปหน้าแรก</button>' +
+      '</p>' +
+
       '<div class="adbar">' +
         '<span class="srch">' + svg('search') +
           '<input type="search" id="adQ" value="' + esc(query) + '" ' +
           'placeholder="ค้นหาชื่อยา เลขทะเบียน ผู้ผลิต หมวดหมู่" ' +
           'aria-label="ค้นหายาในระบบ"></span>' +
+        '<span class="catwrap">' + svg('filter') +
+          '<select class="catsel" id="adCat" aria-label="กรองตามหมวดหมู่">' +
+            '<option value="">ทุกหมวดหมู่ (' + BRANDS.length + ')</option>' +
+            catOptions().map(o => '<option value="' + esc(o[0]) + '"' +
+              (o[0] === cat ? ' selected' : '') + '>' + esc(o[1]) + '</option>').join('') +
+          '</select></span>' +
         '<button class="btn btn-primary" type="button" id="addBtn">' +
           svg('plus') + 'เพิ่มยาใหม่</button>' +
-        '<span class="count">' + list.length + ' จาก ' + BRANDS.length + ' รายการ</span>' +
       '</div>' +
 
       (list.length
-        ? '<ul class="druglist">' + list.map(productRow).join('') + '</ul>'
+        ? '<div class="tablewrap"><table class="dtable">' +
+            '<thead><tr>' +
+              '<th scope="col">ชื่อผลิตภัณฑ์ยา</th>' +
+              '<th scope="col">หมวดหมู่</th>' +
+              '<th scope="col">เลขทะเบียน อย.</th>' +
+              '<th scope="col">รูปแบบยา</th>' +
+              '<th scope="col"><span class="vhide">การจัดการ</span></th>' +
+            '</tr></thead>' +
+            '<tbody>' + list.map(productRow).join('') + '</tbody>' +
+          '</table></div>' +
+          '<p class="count">' + list.length + ' จาก ' + BRANDS.length + ' รายการ</p>'
         : '<div class="state"><div class="state-ico">' + svg('search') + '</div>' +
-          '<h2>' + (query ? 'ไม่พบรายการที่ค้นหา' : 'ยังไม่มีข้อมูลยาในระบบ') + '</h2>' +
-          '<p>' + (query ? 'โปรดตรวจสอบคำค้นอีกครั้ง'
-                         : 'เริ่มต้นด้วยการเพิ่มรายการแรก') + '</p></div>'));
+          '<h2>' + (query || cat ? 'ไม่พบรายการที่ค้นหา' : 'ยังไม่มีข้อมูลยาในระบบ') + '</h2>' +
+          '<p>' + (query || cat ? 'โปรดตรวจสอบคำค้นหรือหมวดหมู่อีกครั้ง'
+                                : 'เริ่มต้นด้วยการเพิ่มรายการแรก') + '</p></div>'));
 
   bindNav();
   bindSearch();
   const add = $('#addBtn');
   if (add) add.addEventListener('click', openNew);
-  $$('#panel [data-edit]').forEach(b =>
-    b.addEventListener('click', () => openEdit(+b.dataset.edit)));
-  $$('#panel [data-del]').forEach(b =>
-    b.addEventListener('click', () => delProduct(+b.dataset.del)));
+  $$('#panel [data-edit]').forEach(x =>
+    x.addEventListener('click', () => openEdit(+x.dataset.edit)));
+  $$('#panel [data-del]').forEach(x =>
+    x.addEventListener('click', () => delProduct(+x.dataset.del)));
 
   if (!form) return;
-  // เปลี่ยนรูปแบบยาแล้วต้องหาสูตรใหม่ เพราะรูปแบบยาเป็นส่วนหนึ่งของตัวระบุสูตร
+
+  // เปลี่ยนรูปแบบยาแล้วต้องหาใหม่ว่ามียาตัวอื่นที่ใช้ข้อมูลชุดเดียวกันไหม
   const df = $('#fl-dosage_form');
-  if (df) df.addEventListener('change', () => { formRead(); render(); });
+  if (df) df.addEventListener('change', () => scanFormula().then(autoShare));
 
-  const useBtn = $('#useFormula');
-  if (useBtn) useBtn.addEventListener('click', useFormula);
-
-  const soloBtn = $('#soloFormula');
-  if (soloBtn) soloBtn.addEventListener('click', () => {
+  const addIng = $('#ingAddBtn');
+  if (addIng) addIng.addEventListener('click', () => {
     formRead();
-    form.solo = true;
-    form.askErr = false;
-    render();
+    form.ingRows.push({ nm: '', st: '' });
+    redrawIng();
+    const last = $('#fl-in_' + (form.ingRows.length - 1));
+    if (last) last.focus();
   });
 
-  const undoBtn = $('#undoSolo');
-  if (undoBtn) undoBtn.addEventListener('click', () => {
-    formRead();
-    form.solo = false;
-    render();
-  });
-
-  const edShared = $('#editShared');
-  if (edShared) edShared.addEventListener('click', () => {
-    const id = form.mid;
-    goTab('formula');
-    openFormula(id);
-  });
-
-  bindIngPicker();
+  bindIngRows();
+  LKEYS.forEach(bindList);
+  bindListAdd();
+  bindNote();
   bindFormBtns(saveProduct);
-  scanFormula();
+  scanFormula().then(autoShare);
 }
 
-// หนึ่งแถวผลิตภัณฑ์ในรายการ
+// หนึ่งแถวในตารางรายการยา
 function productRow(b) {
   const med = medRow(b.medicine_id);
 
-  return '<li class="drugrow is-static">' +
-    '<span class="drugrow-ico">' + svg('pill') + '</span>' +
-    '<span class="drugrow-b">' +
-      '<b>' + esc(brandTh(b)) + '</b>' +
-      '<span class="sub">' + esc(b.licensee) + '</span>' +
-      '<span class="meta">' +
-        (med ? '<span class="pill pill-red">' + esc(shortCat(med.category) || 'ยังไม่ระบุหมวด') +
-               '</span>' : '') +
-        (med && med.dosage_form
-          ? '<span class="tally">' + svg('flask') + esc(formTh(med.dosage_form)) + '</span>' : '') +
-        '<span class="tally">' + svg('db') + 'เลขทะเบียน ' + esc(b.reg_no) + '</span>' +
-      '</span>' +
-    '</span>' +
-    (editing ? '' :
-      '<span class="subrow-act">' +
-        '<button class="iconact" type="button" data-edit="' + b.id + '" ' +
-          'aria-label="แก้ไข ' + esc(brandTh(b)) + '">' + svg('pencil') + '</button>' +
-        '<button class="iconact is-danger" type="button" data-del="' + b.id + '" ' +
-          'aria-label="ลบ ' + esc(brandTh(b)) + '">' + svg('trash') + '</button>' +
-      '</span>') +
-  '</li>';
-}
-
-
-/*  แท็บสูตรตำรับ · ตาราง medicines  */
-
-function searchFormula() {
-  const q = query.trim().toLowerCase();
-  const list = MEDS.filter(m => {
-    if (!q) return true;
-    const hay = (m.name_th + ' ' + (m.category || '') + ' ' + formTh(m.dosage_form) + ' ' +
-      brandsOf(m.id).map(b => b.brand_name).join(' ')).toLowerCase();
-    return hay.includes(q);
-  });
-  return list.slice().sort((a, b) => String(a.name_th).localeCompare(String(b.name_th), 'th'));
-}
-
-function formulaPage() {
-  const list = searchFormula();
-  const m = editing.indexOf('f-') === 0 ? medRow(+editing.slice(2)) : null;
-
-  const pane = m
-    ? formPane('pencil', 'แก้ไขสูตร ' + m.name_th, form ? formulaForm() : skelBox())
-    : '';
-
-  $('#panel').innerHTML =
-    navBar('formula') +
-
-    (pane ||
-      '<div class="adbar">' +
-        '<span class="srch">' + svg('search') +
-          '<input type="search" id="adQ" value="' + esc(query) + '" ' +
-          'placeholder="ค้นหาชื่อสูตร หมวดหมู่ หรือชื่อผลิตภัณฑ์" ' +
-          'aria-label="ค้นหาข้อมูลที่ใช้ร่วมกัน"></span>' +
-        '<span class="count">' + list.length + ' จาก ' + MEDS.length + ' ชุด</span>' +
-      '</div>' +
-
-      (list.length
-        ? '<ul class="druglist">' + list.map(formulaRow).join('') + '</ul>'
-        : '<div class="state"><div class="state-ico">' + svg('search') + '</div>' +
-          '<h2>' + (query ? 'ไม่พบข้อมูลที่ค้นหา' : 'ยังไม่มีข้อมูลชุดใดในระบบ') + '</h2>' +
-          '<p>' + (query ? 'โปรดตรวจสอบคำค้นอีกครั้ง'
-                         : 'ข้อมูลชุดนี้เกิดขึ้นเองเมื่อเพิ่มยาในแท็บรายการยา') + '</p></div>'));
-
-  bindNav();
-  bindSearch();
-  $$('#panel [data-fedit]').forEach(b =>
-    b.addEventListener('click', () => openFormula(+b.dataset.fedit)));
-  $$('#panel [data-fdel]').forEach(b =>
-    b.addEventListener('click', () => delFormula(+b.dataset.fdel)));
-
-  if (!form) return;
-  bindIngPicker();
-  bindFormBtns(saveFormula);
-}
-
-// แถวในรายการอย่างเดียว · ฟอร์มแก้ไขไปอยู่ที่ formPane() ใน formulaPage() แล้ว
-function formulaRow(m) {
-  const n = brandCount(m.id);
-
-  return '<li class="drugrow is-static">' +
-    '<span class="drugrow-ico">' + svg('flask') + '</span>' +
-    '<span class="drugrow-b">' +
-      '<b>' + esc(m.name_th) + '</b>' +
-      '<span class="meta">' +
-        '<span class="pill pill-red">' + esc(shortCat(m.category) || 'ยังไม่ระบุหมวด') + '</span>' +
-        (m.dosage_form
-          ? '<span class="tally">' + svg('pill') + esc(formTh(m.dosage_form)) + '</span>' : '') +
-        '<span class="tally">' + svg('tag') + n + ' ผลิตภัณฑ์</span>' +
-      '</span>' +
-    '</span>' +
-    (editing ? '' :
-      '<span class="subrow-act">' +
-        '<button class="iconact" type="button" data-fedit="' + m.id + '" ' +
-          'aria-label="แก้ไขสูตร ' + esc(m.name_th) + '">' + svg('pencil') + '</button>' +
-        '<button class="iconact is-danger" type="button" data-fdel="' + m.id + '" ' +
-          'aria-label="ลบสูตร ' + esc(m.name_th) + '">' + svg('trash') + '</button>' +
-      '</span>') +
-  '</li>';
+  return '<tr>' +
+    '<td><span class="nm">' + esc(brandTh(b)) + '</span>' +
+      (med ? '<span class="sub">' + esc(med.name_th) + '</span>' : '') +
+      '<span class="sub">' + esc(b.licensee) + '</span></td>' +
+    '<td><span class="pill pill-red">' +
+      esc((med && shortCat(med.category)) || 'ยังไม่ระบุหมวด') + '</span></td>' +
+    '<td class="reg">' + esc(b.reg_no) + '</td>' +
+    '<td>' + esc((med && formTh(med.dosage_form)) || '—') + '</td>' +
+    '<td><span class="act">' +
+      '<button class="iconact" type="button" data-edit="' + b.id + '" ' +
+        'aria-label="แก้ไข ' + esc(brandTh(b)) + '">' + svg('pencil') + '</button>' +
+      '<button class="iconact is-danger" type="button" data-del="' + b.id + '" ' +
+        'aria-label="ลบ ' + esc(brandTh(b)) + '">' + svg('trash') + '</button>' +
+    '</span></td>' +
+  '</tr>';
 }
 
 
@@ -950,17 +1031,19 @@ function newForm(b, m) {
     category_id: m ? String(m.category_id || '') : '',
     name_th:     m ? m.name_th : '',
     dosage_form: m ? String(m.dosage_form || '').toUpperCase() : '',
-    indications: m ? m.indications : '',
-    dosage_instructions: m ? m.dosage_instructions : '',
-    warnings:    m ? unline(m.warnings || []) : '',
+    // สามช่องนี้กรอกเป็นข้อ ๆ เก็บเป็นอาร์เรย์ หนึ่งช่องต่อหนึ่งข้อ
+    indications: textRows(m ? m.indications : ''),
+    dosage_instructions: textRows(m ? m.dosage_instructions : ''),
+    warnings:    textRows(m ? (m.warnings || []) : []),
+    // ตัวยาสำคัญกรอกทีละแถว ชื่อกับปริมาณแยกช่องกัน
+    ingRows:     ingRowsOf(m && m.ingredients),
     ingIds:      m ? (m.ingredients || []).map(g => g.id) : [],
     // ปริมาณตัวยารายตัว เก็บเป็น ไอดีตัวยา -> ข้อความ เช่น 7 -> '500 mg'
     ingStr:      m ? (m.ingredients || []).reduce(
                    (o, g) => (o[g.id] = g.strength || '', o), {}) : {},
-    // ตอบแล้วว่ายาตัวนี้ไม่เหมือนสูตรที่เจอ จะกรอกข้อความเอง
-    solo:        false,
-    // กดบันทึกแล้วแต่ยังไม่ได้ตอบ ใช้ค้างข้อความเตือนไว้ในกล่อง
-    askErr:      false,
+    ingMiss:     0,     // จำนวนตัวยาที่พิมพ์มาแล้วยังไม่มีในระบบ
+    newIng:      {},    // ชื่อสองภาษาของตัวยาใหม่ที่รอสร้าง
+    autoName:    '',    // ชื่อสามัญที่ระบบเติมให้ครั้งล่าสุด
     base:        '',
   };
 }
@@ -969,11 +1052,11 @@ function newForm(b, m) {
 function medBody(f) {
   return {
     category_id: +f.category_id,
-    name_th: f.mid ? f.name_th : autoName(f),
+    name_th: f.name_th,
     dosage_form: f.dosage_form,
-    indications: f.indications,
-    dosage_instructions: f.dosage_instructions,
-    warnings: lines(f.warnings),
+    indications: unline(textList(f.indications)),
+    dosage_instructions: unline(textList(f.dosage_instructions)),
+    warnings: textList(f.warnings),
     // ต้องส่ง ingredients ไม่ใช่ ingredient_ids
     ingredients: f.ingIds.map(id => ({
       ingredient_id: id,
@@ -982,14 +1065,14 @@ function medBody(f) {
   };
 }
 
-// ตั้งชื่อสูตรจากตัวยาสำคัญ ปริมาณตัวยา และรูปแบบยา 
-function autoName(f) {
-  const names = f.ingIds.map(id => {
-    const nm = ingLabel(INGS.find(g => g.id === id));
-    if (!nm) return '';
-    const st = String((f.ingStr || {})[id] || '').trim();
-    return st ? nm + ' ' + st : nm;
-  }).filter(Boolean);
+// ชื่อสามัญที่ระบบเดาให้จากตัวยาสำคัญ ปริมาณตัวยา และรูปแบบยา
+// นับตัวยาที่ยังไม่มีในระบบด้วย ไม่งั้นยาที่มีตัวยาใหม่จะได้ชื่อไม่ครบ
+function autoName(f, list) {
+  const names = (list || rowsInfo(f))
+    .map(x => (x.strength ? x.name + ' ' + x.strength : x.name))
+    .filter(Boolean);
+  if (!names.length) return '';
+
   const fm = formTh(f.dosage_form);
   const base = names.join(' + ') + (fm ? ' · ' + fm : '');
 
@@ -998,316 +1081,281 @@ function autoName(f) {
   return taken && who ? base + ' (เฉพาะ ' + who + ')' : base;
 }
 
+// เติมชื่อสามัญให้เอง ตราบใดที่ยังไม่ได้พิมพ์ทับ
+function syncName(f, list) {
+  if (f.mid) return;                                  // ใช้ชื่อเดิมของยาที่ผูกข้อมูลร่วมอยู่
+  if (f.name_th && f.name_th !== f.autoName) return;  // พิมพ์เองไว้แล้ว ห้ามทับ
+  f.autoName = autoName(f, list);
+  f.name_th = f.autoName;
+
+  // เขียนลงช่องกรอกเดี๋ยวนี้ ไม่งั้นรอบอ่านถัดไปจะอ่านค่าเก่ากลับมาทับ
+  const el = $('#fl-name_th');
+  if (el && el.value !== f.name_th) el.value = f.name_th;
+}
+
 const medBase = m => JSON.stringify(medBody(newForm(null, m)));
 
 // เก็บค่าที่พิมพ์ไว้ก่อนวาดหน้าใหม่
 function formRead() {
   if (!form) return;
   ['brand_name', 'reg_no', 'legal_type', 'licensee', 'category_id', 'name_th',
-   'dosage_form', 'indications', 'dosage_instructions', 'warnings',
-   'gi_th', 'gi_en', 'gi_alias'].forEach(n => {
-    if ($('#fl-' + n)) form[n] = fv(n);
+   'dosage_form']
+    .forEach(n => {
+      if ($('#fl-' + n)) form[n] = fv(n);
+    });
+
+  // ข้อความที่กรอกเป็นข้อ ๆ · อ่านทีละแถวตามลำดับที่วาดไว้
+  LKEYS.forEach(k => {
+    (form[k] || []).forEach((s, i) => {
+      if ($('#fl-' + k + '_' + i)) form[k][i] = fv(k + '_' + i);
+    });
   });
 
-  // ช่องปริมาณมีกี่ช่องขึ้นกับว่าเลือกตัวยาไว้กี่ตัว
-  if (!form.ingStr) form.ingStr = {};
-  (form.ingIds || []).forEach(id => {
-    if ($('#fl-st_' + id)) form.ingStr[id] = fv('st_' + id).replace(/\s+/g, ' ');
+  // ชื่อกับปริมาณของตัวยาแต่ละแถว
+  (form.ingRows || []).forEach((r, i) => {
+    if ($('#fl-in_' + i)) r.nm = fv('in_' + i);
+    if ($('#fl-st_' + i)) r.st = fv('st_' + i);
   });
+
+  // ชื่อสองภาษาของตัวยาใหม่ · เก็บตามชื่อที่พิมพ์ ไม่ใช่ตามลำดับแถว จะได้ไม่สลับกัน
+  if (!form.newIng) form.newIng = {};
+  $$('#panel [data-newing]').forEach(el => {
+    const o = form.newIng[el.dataset.newing] || (form.newIng[el.dataset.newing] = {});
+    if ($('#fl-ne_th_' + el.dataset.i)) o.th = fv('ne_th_' + el.dataset.i);
+    if ($('#fl-ne_en_' + el.dataset.i)) o.en = fv('ne_en_' + el.dataset.i);
+  });
+
+  syncName(form, ingSync(form));
 }
 
-// ช่องข้อความของสูตร ใช้ร่วมกันทั้งสองฟอร์ม · ตัวยาสำคัญแยกไปที่ ingBlock()
-function textFields(f) {
-  return fieldArea('indications', 'ข้อบ่งใช้และสรรพคุณ *', f.indications,
-      'หลายข้อให้ขึ้นบรรทัดใหม่') +
-    fieldArea('dosage_instructions', 'วิธีใช้และขนาดรับประทาน *', f.dosage_instructions,
-      'ระบุทั้งผู้ใหญ่และเด็ก') +
-    fieldArea('warnings', 'คำเตือนและข้อควรระวังสำคัญ', f.warnings,
-      'หนึ่งข้อต่อหนึ่งบรรทัด');
+
+/*  ตัวยาสำคัญ · พิมพ์เป็นข้อความ ระบบจับคู่กับตัวยาที่มีอยู่ให้เอง  */
+
+// ปรับข้อความก่อนเทียบชื่อ · ไม่สนตัวพิมพ์เล็กใหญ่และช่องว่างซ้ำ
+const nameKey = s => String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ' ').trim();
+
+// ชื่อทุกแบบที่ใช้เรียกตัวยาหนึ่งตัว
+const ingNames = g => [g.name_th, g.name_en].concat(g.aliases || []).filter(Boolean);
+
+// ชื่อตัวยาที่ขึ้นต้นข้อความ · ยอมให้ช่องว่างไม่เท่ากันได้
+const nameRe = n => new RegExp('^\\s*' +
+  String(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+') + '\\s*', 'i');
+
+// ปริมาณตัวยาต้องมีหน่วยกำกับ ไม่งั้นชื่ออย่าง วิตามินบี 1 จะถูกตัดผิด
+const RE_STR = /^(.+?)\s+(\d[\d.,\/\s]*(?:มก|มคก|มล|ซีซี|กรัม|มิลลิกรัม|มิลลิลิตร|ไมโครกรัม|หน่วย|mg|mcg|µg|g|ml|cc|l|iu|u|%)[^]*)$/i;
+
+// ข้อความท่อนนี้ขึ้นต้นด้วยตัวยาตัวไหนในระบบ · เอาชื่อที่ยาวที่สุดที่ตรง
+function ingFind(part) {
+  let best = null;
+  INGS.forEach(g => ingNames(g).forEach(n => {
+    if (!nameKey(part).startsWith(nameKey(n))) return;
+    if (!best || String(n).length > String(best.n).length) best = { g: g, n: n };
+  }));
+  if (!best) return null;
+
+  let rest = String(part).replace(nameRe(best.n), '').trim();
+  // เขียนชื่อซ้ำสองภาษา เช่น พาราเซตามอล Paracetamol 500 mg · ตัดอีกชื่อออกด้วย
+  ingNames(best.g).forEach(n => {
+    if (nameKey(rest).startsWith(nameKey(n))) rest = rest.replace(nameRe(n), '').trim();
+  });
+  return { g: best.g, strength: rest };
 }
 
-// ช่องปริมาณตัวยา · ชื่อช่องคือ st_<ไอดีตัวยา>
-const strField = (f, g) =>
-  '<div class="stf">' +
-    field('st_' + g.id, 'ปริมาณตัวยา', (f.ingStr || {})[g.id] || '',
-      'ตามที่พิมพ์บนกล่อง เช่น 500 mg · เว้นว่างได้') +
-  '</div>';
+// หนึ่งแถวตัวยา · คืนสิ่งที่ระบบเข้าใจจากแถวนั้น ถ้าแถวว่างคืน null
+// id เป็น 0 แปลว่ายังไม่มีตัวยาชื่อนี้ในระบบ
+function rowInfo(r) {
+  const raw = String((r && r.nm) || '').trim();
+  const st  = String((r && r.st) || '').trim();
+  if (!raw) return null;
 
-// ตัวยาสำคัญ
-function ingBlock(f) {
-  const picked = f.ingIds.map(id => INGS.find(g => g.id === id)).filter(Boolean);
-  const left = INGS.filter(g => f.ingIds.indexOf(g.id) < 0);
+  // ชื่ออังกฤษในวงเล็บเก็บไว้ก่อน แล้วเอาวงเล็บออกเพื่อให้จับคู่ชื่อได้
+  const extra = (raw.match(/\([^)]*\)/g) || []).join(' ').replace(/[()]/g, ' ');
+  const part  = raw.replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
 
-  // แถวที่กดแก้อยู่ เปลี่ยนเป็นช่องกรอกแทน
-  const editRow = g =>
-    '<li class="subrow is-edit">' +
-      field('ed_th', 'ชื่อตัวยา (ไทย)', g.name_th || '', '') +
-      field('ed_en', 'ชื่อตัวยา (อังกฤษ)', g.name_en || '', '') +
-      field('ed_alias', 'ชื่อเรียกอื่น', (g.aliases || []).join(', '),
-        'คั่นด้วยจุลภาค · ระบบสแกนใช้จับคู่ฉลากที่พิมพ์ชื่ออื่น') +
-      '<div class="ingedit-act">' +
-        '<button class="btn btn-primary btn-sm" type="button" id="ingSave">บันทึกตัวยา</button>' +
-        '<button class="btn btn-soft btn-sm" type="button" id="ingCancel">ยกเลิก</button>' +
+  const hit = ingFind(part);
+  if (hit) return { id: hit.g.id, name: ingLabel(hit.g), strength: st || hit.strength };
+
+  // ยังไม่มีในระบบ · เผื่อพิมพ์ปริมาณติดมากับชื่อ ให้แยกออกให้ ปริมาณต้องมีหน่วยกำกับ
+  const cut  = part.match(RE_STR);
+  const name = String(cut ? cut[1] : part).trim();
+  const two  = splitLang(name + ' ' + extra);
+  return { id: 0, name: name, th: two.th, en: two.en,
+           strength: st || (cut ? cut[2].trim() : '') };
+}
+
+// ทุกแถวที่กรอกไว้ แปลงเป็นสิ่งที่ระบบเข้าใจ · แถวว่างไม่นับ
+const rowsInfo = f => (f.ingRows || []).map(rowInfo).filter(Boolean);
+
+// แถวตัวยาจากข้อมูลที่อยู่ในฐานข้อมูล · ไม่มีเลยก็ต้องมีแถวว่างไว้หนึ่งแถว
+const ingRowsOf = list => {
+  const rows = (list || []).map(g => ({ nm: g.name_th || g.name_en, st: g.strength || '' }));
+  return rows.length ? rows : [{ nm: '', st: '' }];
+};
+
+// แปลงแถวที่กรอกเป็นรายการไอดีและปริมาณ ที่ใช้ส่งขึ้นเซิร์ฟเวอร์
+function ingSync(f) {
+  const list = rowsInfo(f);
+  f.ingIds = [];
+  f.ingStr = {};
+  f.ingMiss = 0;
+
+  list.forEach(x => {
+    if (!x.id) { f.ingMiss++; return; }
+    if (f.ingIds.indexOf(x.id) < 0) f.ingIds.push(x.id);
+    f.ingStr[x.id] = x.strength;
+  });
+  return list;
+}
+
+// บรรทัดใต้แถว บอกว่าระบบเข้าใจแถวนั้นว่าอะไร
+// อยู่ในกล่องของตัวเอง จะได้วาดใหม่ได้โดยไม่แตะช่องกรอกที่พิมพ์ค้างอยู่
+function rowNote(f, i) {
+  const x = rowInfo((f.ingRows || [])[i]);
+  if (!x) return '';   // ยังไม่ได้พิมพ์ชื่อ ไม่ต้องบอกอะไร
+
+  if (x.id)
+    return '<p class="ingst is-ok">' + svg('check') +
+      '<span>ตรงกับ <b>' + esc(x.name) + '</b> ที่มีอยู่แล้วในระบบ</span></p>';
+
+  const d = (f.newIng || {})[nameKey(x.name)] || {};
+  return '<p class="ingst">' + svg('plus') +
+      '<span><b>' + esc(x.name) + '</b> ยังไม่มีในระบบ · จะเพิ่มให้ตอนกดบันทึก</span></p>' +
+    (x.th && x.en ? '' :
+      '<div class="formgrid two" data-newing="' + esc(nameKey(x.name)) + '" ' +
+          'data-i="' + i + '">' +
+        (x.th ? '' : field('ne_th_' + i, 'ชื่อตัวยา (ไทย) *', d.th || '', 'เช่น ไซเมทิโคน')) +
+        (x.en ? '' : field('ne_en_' + i, 'ชื่อตัวยา (อังกฤษ) *', d.en || '',
+          'ระบบสแกนใช้ชื่อนี้จับคู่กับฉลาก')) +
+      '</div>');
+}
+
+// รายการแถวตัวยาทั้งหมด
+function ingList(f) {
+  const rows = f.ingRows || [];
+
+  const one = (r, i) =>
+    '<li class="subrow is-edit" data-row="' + i + '">' +
+      '<div class="formgrid two">' +
+        field('in_' + i, 'ชื่อตัวยาสำคัญ *', r.nm, 'ตามที่พิมพ์บนฉลาก เช่น พาราเซตามอล') +
+        field('st_' + i, 'ปริมาณตัวยา', r.st, 'เช่น 500 มก. · เว้นว่างได้') +
       '</div>' +
+      '<div class="ingx" id="ingx_' + i + '">' + rowNote(f, i) + '</div>' +
+      (rows.length > 1
+        ? '<p class="ingrow-act"><button class="btn btn-soft btn-sm" type="button" ' +
+            'data-ingdel="' + i + '">' + svg('trash') + 'นำตัวยานี้ออก</button></p>'
+        : '') +
     '</li>';
 
-  const showRow = g => {
-    const name = g.name_th || g.name_en;
-    return '<li class="subrow"><span class="subrow-tx"><b>' + esc(name) + '</b>' +
-      (g.name_th && g.name_en ? '<span class="sub">' + esc(g.name_en) + '</span>' : '') +
-      ((g.aliases || []).length
-        ? '<span class="sub">ชื่อเรียกอื่น · ' + esc(g.aliases.join(', ')) + '</span>' : '') +
-      strField(f, g) +
-      '</span>' +
-    '<span class="subrow-act">' +
-      '<button class="iconact" type="button" data-ingedit="' + g.id + '" ' +
-        'aria-label="แก้ไข ' + esc(name) + '">' + svg('pencil') + '</button>' +
-      '<button class="iconact is-danger" type="button" data-ingdrop="' + g.id + '" ' +
-        'aria-label="นำ ' + esc(name) + ' ออกจากสูตรนี้">' + svg('trash') + '</button>' +
-    '</span></li>';
-  };
+  return '<ul class="sublist" id="ingList">' + rows.map(one).join('') + '</ul>';
+}
 
+// กล่องตัวยาสำคัญทั้งกล่อง
+function ingBlock(f) {
   return '<div class="ingbox">' +
-    '<p class="flabel">ตัวยาสำคัญ</p>' +
-    (picked.length
-      ? '<ul class="sublist">' +
-          picked.map(g => (ingEdit === g.id ? editRow(g) : showRow(g))).join('') + '</ul>'
-      : '<p class="blank">ยังไม่ได้ระบุตัวยาสำคัญ</p>') +
-    '<div class="addbox">' +
-      (left.length
-        ? fieldSelect('ing_pick', 'เพิ่มตัวยา', '', left.map(g => [g.id, ingLabel(g)]),
-            'หากไม่มีตัวยาที่ต้องการ โปรดสร้างที่แท็บตัวยาสำคัญก่อน') +
-          '<button class="btn btn-soft" type="button" id="addIngBtn">เพิ่มตัวยา</button>'
-        : '<p class="blank">' + (INGS.length
-            ? 'เพิ่มครบทุกตัวที่มีในระบบแล้ว'
-            : 'ยังไม่มีตัวยาในระบบ โปรดสร้างที่แท็บตัวยาสำคัญก่อน') + '</p>') +
-    '</div>' +
+    '<p class="flabel">ตัวยาสำคัญและปริมาณ <span class="req" aria-hidden="true">*</span></p>' +
+    ingList(f) +
+    '<p class="ingadd"><button class="btn btn-soft" type="button" id="ingAddBtn">' +
+      svg('plus') + 'เพิ่มตัวยาอีกตัว</button></p>' +
+    // รายชื่อตัวยาที่มีอยู่ ช่วยเติมให้ตรงกับในระบบ ไม่ได้บังคับให้เลือก
+    '<datalist id="ingNames">' +
+      INGS.map(g => '<option value="' + esc(ingLabel(g)) + '">').join('') +
+    '</datalist>' +
   '</div>';
 }
 
+// วาดรายการแถวตัวยาใหม่ทั้งก้อน · ใช้ตอนเพิ่มหรือนำแถวออกเท่านั้น
+function redrawIng() {
+  const box = $('#ingList');
+  if (!box) return;
+  box.outerHTML = ingList(form);
+  paintIcons($('#panel'));
+  bindIngRows();
+}
 
-/*  แท็บตัวยาสำคัญ  */
+// สร้างตัวยาที่ยังไม่มีในระบบ ก่อนบันทึกยา
+async function makeNewIngs(f) {
+  const list = rowsInfo(f).filter(x => !x.id);
 
-// ดึงรายการตัวยาใหม่ เผื่อเพิ่งบันทึกสูตรไปแล้วจำนวนสูตรที่ใช้เปลี่ยน
-async function refreshIngs() {
-  let list;
-  try {
-    list = await api('/admin/ingredients');
-  } catch (err) {
-    return;   // ใช้ของเดิมต่อได้ ไม่ต้องรบกวนผู้ใช้
+  for (let i = 0; i < list.length; i++) {
+    const x = list[i];
+    const d = (f.newIng || {})[nameKey(x.name)] || {};
+    const made = await send('/admin/ingredients', 'POST', {
+      name_th: x.th || String(d.th || '').trim(),
+      name_en: x.en || String(d.en || '').trim(),
+      aliases: [],
+    });
+    if (made) INGS.push(made);
   }
-  if (!list) return;
-  INGS = list;
-  if (view === 'ingredient' && !form) render();
+  if (list.length) ingSync(f);   // ตอนนี้ชื่อที่พิมพ์ไว้จับคู่ได้แล้ว
 }
 
-// ค้นหาในแท็บตัวยาสำคัญ
-function searchIng() {
-  const q = query.trim().toLowerCase();
-  const list = INGS.filter(g => {
-    if (!q) return true;
-    return (String(g.name_th || '') + ' ' + String(g.name_en || '') + ' ' +
-            (g.aliases || []).join(' ')).toLowerCase().includes(q);
-  });
-  return list.slice().sort((a, b) =>
-    String(a.name_th || a.name_en).localeCompare(String(b.name_th || b.name_en), 'th'));
-}
 
-function ingredientPage() {
-  const list = searchIng();
-  const g = editing.indexOf('g-') === 0 && editing !== 'g-new'
-    ? INGS.find(x => x.id === +editing.slice(2)) : null;
-
-  const pane =
-    editing === 'g-new'
-      ? formPane('atom', 'เพิ่มตัวยาสำคัญใหม่', ingForm())
-      : g
-        ? formPane('pencil', 'แก้ไขตัวยา ' + (g.name_th || g.name_en), ingForm())
-        : '';
-
-  $('#panel').innerHTML =
-    navBar('ingredient') +
-
-    (pane ||
-      '<div class="adbar">' +
-        '<span class="srch">' + svg('search') +
-          '<input type="search" id="adQ" value="' + esc(query) + '" ' +
-          'placeholder="ค้นหาชื่อตัวยา หรือชื่อเรียกอื่น" ' +
-          'aria-label="ค้นหาตัวยาสำคัญ"></span>' +
-        '<button class="btn btn-primary" type="button" id="addGBtn">' +
-          svg('plus') + 'เพิ่มตัวยาใหม่</button>' +
-        '<span class="count">' + list.length + ' จาก ' + INGS.length + ' ตัวยา</span>' +
-      '</div>' +
-
-      (list.length
-        ? '<ul class="druglist">' + list.map(ingRow).join('') + '</ul>'
-        : '<div class="state"><div class="state-ico">' + svg('search') + '</div>' +
-          '<h2>' + (query ? 'ไม่พบตัวยาที่ค้นหา' : 'ยังไม่มีตัวยาสำคัญในระบบ') + '</h2>' +
-          '<p>' + (query ? 'โปรดตรวจสอบคำค้นอีกครั้ง'
-                         : 'เพิ่มได้ที่หน้านี้ หรือสร้างขณะกรอกสูตรตำรับ') + '</p></div>'));
-
-  bindNav();
-  bindSearch();
-  const add = $('#addGBtn');
-  if (add) add.addEventListener('click', openNewIng);
-  $$('#panel [data-gedit]').forEach(b =>
-    b.addEventListener('click', () => openIng(+b.dataset.gedit)));
-  $$('#panel [data-gdel]').forEach(b =>
-    b.addEventListener('click', () => delIng(+b.dataset.gdel)));
-
-  if (form) bindFormBtns(saveIng);
-}
-
-// แถวในรายการอย่างเดียว · ฟอร์มแก้ไขไปอยู่ที่ formPane() ใน ingredientPage() แล้ว
-function ingRow(g) {
-  const n = g.medicine_count || 0;
-  const name = g.name_th || g.name_en;
-
-  return '<li class="drugrow is-static">' +
-    '<span class="drugrow-ico">' + svg('atom') + '</span>' +
-    '<span class="drugrow-b">' +
-      '<b>' + esc(name) + '</b>' +
-      (g.name_th && g.name_en ? '<span class="sub">' + esc(g.name_en) + '</span>' : '') +
-      ((g.aliases || []).length
-        ? '<span class="sub">ชื่อเรียกอื่น · ' + esc(g.aliases.join(', ')) + '</span>' : '') +
-      '<span class="meta">' +
-        '<span class="tally">' + svg('flask') + n + ' สูตร</span>' +
-      '</span>' +
-    '</span>' +
-    (editing ? '' :
-      '<span class="subrow-act">' +
-        '<button class="iconact" type="button" data-gedit="' + g.id + '" ' +
-          'aria-label="แก้ไขตัวยา ' + esc(name) + '">' + svg('pencil') + '</button>' +
-        (n
-          ? '<button class="iconact is-danger" type="button" disabled ' +
-              'aria-label="ไม่สามารถลบได้ มี ' + n + ' สูตรใช้ตัวยานี้อยู่" ' +
-              'title="มี ' + n + ' สูตรใช้ตัวยานี้อยู่">' + svg('trash') + '</button>'
-          : '<button class="iconact is-danger" type="button" data-gdel="' + g.id + '" ' +
-              'aria-label="ลบตัวยา ' + esc(name) + '">' + svg('trash') + '</button>') +
-      '</span>') +
-  '</li>';
-}
-
-function ingForm() {
-  const f = form;
-  return '<div class="formgrid">' +
-      field('gi_th', 'ชื่อตัวยา (ไทย) *', f.gi_th, 'เช่น พาราเซตามอล') +
-      field('gi_en', 'ชื่อตัวยา (อังกฤษ) *', f.gi_en, 'เช่น Paracetamol') +
-    '</div>' +
-    field('gi_alias', 'ชื่อเรียกอื่น', f.gi_alias,
-      'คั่นด้วยจุลภาค · ระบบสแกนใช้จับคู่ฉลากที่พิมพ์ชื่ออื่น เช่น Acetaminophen') +
-    formAct('บันทึก');
-}
-
-function openNewIng() {
-  if (editing === 'g-new') return closeForm();
-  leaveList();
-  editing = 'g-new';
-  form = { gid: 0, gi_th: '', gi_en: '', gi_alias: '' };
-  render();
-  markClean();
-  window.scrollTo(0, 0);
-}
-
-function openIng(id) {
-  if (editing === 'g-' + id) return closeForm();
-  const g = INGS.find(x => x.id === id);
-  if (!g) return;
-  leaveList();
-  editing = 'g-' + id;
-  form = { gid: id, gi_th: g.name_th || '', gi_en: g.name_en || '',
-           gi_alias: (g.aliases || []).join(', ') };
-  render();
-  markClean();
-  window.scrollTo(0, 0);   // ฟอร์มแทนที่รายการทั้งหน้า ต้องเริ่มอ่านจากหัวฟอร์ม
-}
-
-function saveIng(btn) {
-  formRead();
-  const f = form;
-
-  let ok = req('gi_th', f.gi_th, 'ระบุชื่อภาษาไทย');
-  ok = req('gi_en', f.gi_en, 'ระบุชื่อภาษาอังกฤษ') && ok;
-
-  // ชื่ออังกฤษซ้ำกับตัวอื่นไม่ได้ ไม่นับตัวที่กำลังแก้
-  const key = f.gi_en.trim().toLowerCase();
-  if (ok && INGS.some(g => g.id !== f.gid && String(g.name_en).toLowerCase() === key))
-    ok = setErr('gi_en', 'ชื่อนี้ซ้ำกับตัวยาอื่น');
-  if (!ok) return focusBad();
-
-  const body = {
-    name_th: f.gi_th,
-    name_en: f.gi_en,
-    aliases: f.gi_alias ? f.gi_alias.split(',').map(x => x.trim()).filter(Boolean) : [],
-  };
-  const adding = !f.gid;
-
-  return apply(btn, async () => {
-    if (adding) {
-      const made = await send('/admin/ingredients', 'POST', body);
-      if (made) INGS.push(made);
-    } else {
-      const res = await send('/admin/ingredients/' + f.gid, 'PUT', body);
-      const g = INGS.find(x => x.id === f.gid);
-      if (g) Object.assign(g, res || body);
-    }
-    form = null;
-  }, adding ? 'เพิ่มตัวยาแล้ว' : 'บันทึกแล้ว');
-}
-
-// ลบตัวยา · ได้เฉพาะตัวที่ไม่มีสูตรไหนใช้
-async function delIng(id) {
-  const g = INGS.find(x => x.id === id);
-  if (!g) return;
-
-  const n = g.medicine_count || 0;
-  if (n) return toast('มี ' + n + ' สูตรใช้ตัวยานี้อยู่ ต้องนำออกจากสูตรเหล่านั้นก่อน', true);
-
-  const name = g.name_th || g.name_en;
-  const ok = await confirmBox('ยืนยันการลบ',
-    'ลบตัวยา ' + name + ' พร้อมชื่อเรียกอื่นออกจากฐานข้อมูล การลบนี้ไม่สามารถย้อนกลับได้', 'ลบ');
-  if (!ok) return;
-
-  try {
-    await api('/admin/ingredients/' + id, { method: 'DELETE' });
-  } catch (err) {
-    if (token()) toast(err.message, true);
-    return;
-  }
-  INGS = INGS.filter(x => x.id !== id);
-  toast('ลบตัวยา ' + name + ' แล้ว');
-  render();
-}
-
-/*  ฟอร์มผลิตภัณฑ์  */
+/*  ข้อมูลที่ใช้ร่วมกับยายี่ห้ออื่น  */
 
 function sharedWith(f) {
   if (!f.mid) return [];
   return brandsOf(f.mid).filter(b => b.id !== f.bid);
 }
 
-// สถานะของสามช่อง ข้อบ่งใช้ วิธีใช้ คำเตือน · shared · ask · own
-function textMode(f) {
-  if (f.mid) return sharedWith(f).length ? 'shared' : 'own';
-  if (formulaHit(f) && !f.solo) return 'ask';
-  return 'own';
+// กล่องเสนอให้ใช้ข้อความชุดเดียวกัน · ไม่บังคับตอบ บันทึกได้โดยไม่ต้องกด
+function offerNote(hit) {
+  const kids = brandsOf(hit);
+  const who = kids.length ? brandTh(kids[0]) : (medRow(hit) || {}).name_th || '';
+
+  return '<div class="notice">' + svg('alert') + '<div>' +
+      '<p><b>' + esc(who) + '</b> ใช้ตัวยาสำคัญ ปริมาณตัวยา และรูปแบบยา ชุดเดียวกัน ' +
+        'ถ้าข้อความบนฉลากเหมือนกัน กดใช้ข้อความชุดเดียวกันได้ ไม่ต้องพิมพ์ซ้ำ</p>' +
+      '<p class="noteact">' +
+        '<button class="btn btn-soft btn-sm" type="button" id="useFormula">' +
+          'ใช้ข้อความชุดเดียวกับ ' + esc(who) + '</button>' +
+      '</p>' +
+    '</div></div>';
 }
 
 // กล่องบอกว่าการแก้ไขกระทบผลิตภัณฑ์ใดบ้าง
-function sharedNote(list, head, blank) {
-  if (!list.length)
-    return '<div class="notice">' + svg('alert') + '<div><p>' + blank + '</p></div></div>';
-
+function sharedNote(list, head) {
   return '<div class="notice is-warn">' + svg('warning') + '<div>' +
       '<p><b>' + head + '</b> การแก้ไขจะมีผลกับรายการต่อไปนี้</p>' +
       '<ul>' + list.map(b => '<li>' + esc(brandTh(b)) + '</li>').join('') + '</ul>' +
     '</div></div>';
 }
 
+// ช่องว่างสำหรับกล่องแจ้ง · วาดใหม่ได้โดยไม่ต้องวาดทั้งฟอร์ม
+function noteSlot(f) {
+  const others = sharedWith(f);
+  let note = '';
 
-/*  จับคู่สูตร  */
+  if (f.mid) {
+    // ผูกกับข้อมูลชุดเดิมแล้ว แก้ช่องข้อความแล้วยี่ห้ออื่นเปลี่ยนตาม ต้องบอกให้ชัด
+    if (others.length)
+      note = sharedNote(others, 'ยาตัวนี้ใช้ข้อมูลร่วมกับอีก ' + others.length + ' ผลิตภัณฑ์');
+  } else if (formulaHit(f)) {
+    // ปกติระบบเติมให้เองตั้งแต่พิมพ์ตัวยาครบ จะมาถึงตรงนี้เฉพาะตอนพิมพ์ข้อความไว้ก่อนแล้ว
+    note = offerNote(formulaHit(f));
+  }
+  return '<div id="noteSlot">' + note + '</div>';
+}
 
-// ตัวระบุสูตร · ตัวยาสำคัญ + ปริมาณตัวยา + รูปแบบยา
+// วาดเฉพาะส่วนที่เปลี่ยนตามตัวยา · ห้ามวาดทั้งฟอร์ม ไม่งั้นปุ่มบันทึกหลุดตอนกด
+function refreshIng() {
+  if (!form) return;
+  formRead();
+
+  // อัปเดตแค่บรรทัดสรุปใต้แต่ละแถว ห้ามวาดช่องกรอกใหม่ ไม่งั้นที่พิมพ์ค้างอยู่จะหลุด
+  (form.ingRows || []).forEach((r, i) => {
+    const el = $('#ingx_' + i);
+    if (el) el.innerHTML = rowNote(form, i);
+  });
+
+  const slot = $('#noteSlot');
+  if (slot) slot.outerHTML = noteSlot(form);
+
+  paintIcons($('#panel'));
+  bindNote();
+}
+
+
+/*  จับคู่ข้อมูลที่ใช้ร่วมกัน · ตัวยาสำคัญ + ปริมาณตัวยา + รูปแบบยา  */
 
 // ปรับข้อความก่อนเทียบ · ไม่สนตัวพิมพ์เล็กใหญ่และช่องว่างซ้ำ
 const normStr = s => String(s == null ? '' : s).trim().toLowerCase().replace(/\s+/g, ' ');
@@ -1321,52 +1369,49 @@ const ingKeyOf = list => ingKey((list || []).map(g => g.id),
 
 const sameForm = (a, b) => String(a || '').toUpperCase() === String(b || '').toUpperCase();
 
-// กุญแจสูตรของแต่ละสูตร · สูตรที่ไม่มีตัวยาเก็บเป็น -
+// กุญแจของข้อมูลแต่ละชุด · ชุดที่ไม่มีตัวยาเก็บเป็น -
 let MEDKEY = {};
 
-// วิธีใช้ของแต่ละสูตร
-let MEDDOSE = {};
-
-// คืนไอดีสูตรที่ตรงกับที่กรอกอยู่ ถ้าไม่เจอคืน 0
+// คืนไอดีชุดข้อมูลที่ตรงกับที่กรอกอยู่ ถ้าไม่เจอคืน 0
 function formulaHit(f) {
-  if (!f.dosage_form || !f.ingIds.length) return 0;
+  if (!f.dosage_form || !f.ingIds.length || f.ingMiss) return 0;
   const key = ingKey(f.ingIds, f.ingStr);
   const hit = MEDS.find(m => m.id !== f.mid && sameForm(m.dosage_form, f.dosage_form) &&
     MEDKEY[m.id] && MEDKEY[m.id] === key);
   return hit ? hit.id : 0;
 }
 
-// ดึงตัวยาของสูตรที่รูปแบบยาตรงกัน แล้ววาดใหม่
+// ดึงตัวยาของชุดข้อมูลที่รูปแบบยาตรงกัน แล้ววาดส่วนที่เกี่ยวข้องใหม่
 async function scanFormula() {
   const f = form;
-  if (!f || !f.dosage_form) return;
+  if (!f) return;
+  formRead();
+  if (!f.dosage_form) return refreshIng();
 
   const need = MEDS.filter(m => sameForm(m.dosage_form, f.dosage_form) && !MEDKEY[m.id]);
-  if (!need.length) return;
+  if (!need.length) return refreshIng();
 
   const got = await Promise.all(need.map(m =>
     api('/admin/medicines/' + m.id).catch(() => null)));
   got.forEach((med, i) => {
     MEDKEY[need[i].id] = (med ? ingKeyOf(med.ingredients) : '') || '-';
-    if (med) MEDDOSE[med.id] = med.dosage_instructions || '';
   });
 
   if (form !== f) return;   // ปิดฟอร์มหรือเปิดตัวอื่นไปแล้วระหว่างรอ
-  formRead();               // เก็บสิ่งที่พิมพ์ค้างไว้ก่อนวาดใหม่
-  render();
+  refreshIng();
 }
 
-// ใช้ข้อมูลร่วมกับสูตรที่เจอ
+// ใช้ข้อความชุดเดียวกับยาที่เจอ
 async function useFormula() {
   formRead();
   const f = form;
   const id = formulaHit(f);
   if (!id) return;
 
-  if (f.indications || f.dosage_instructions || f.warnings) {
-    const ok = await confirmBox('ใช้ข้อมูลร่วมกัน',
-      'ข้อบ่งใช้ วิธีใช้ และคำเตือน ที่กรอกไว้จะถูกแทนที่ด้วยข้อมูลของยาตัวนั้น',
-      'ใช้ข้อมูลร่วม');
+  if (LKEYS.some(k => hasText(f[k]))) {
+    const ok = await confirmBox('ใช้ข้อความชุดเดียวกัน',
+      'ข้อบ่งใช้ วิธีใช้ และคำเตือน ที่กรอกไว้จะถูกแทนที่ด้วยข้อความของยาตัวนั้น',
+      'ใช้ข้อความชุดเดียวกัน');
     if (!ok || form !== f) return;
   }
 
@@ -1379,129 +1424,65 @@ async function useFormula() {
   if (form !== f) return;
 
   const got = newForm(null, med);
-  ['name_th', 'category_id', 'indications', 'dosage_instructions', 'warnings']
-    .forEach(k => { f[k] = got[k]; });
+  ['name_th', 'category_id'].forEach(k => { f[k] = got[k]; });
+  LKEYS.forEach(k => { f[k] = got[k].slice(); });
 
-  // รับปริมาณตามที่สูตรนั้นสะกดไว้ ไม่งั้นบันทึกครั้งต่อไปจะไปแก้ค่าของเขาโดยไม่ตั้งใจ
+  // รับปริมาณตามที่ชุดนั้นสะกดไว้ ไม่งั้นบันทึกครั้งต่อไปจะไปแก้ค่าของเขาโดยไม่ตั้งใจ
+  f.ingRows = got.ingRows.map(r => ({ nm: r.nm, st: r.st }));
   f.ingIds = got.ingIds.slice();
   f.ingStr = Object.assign({}, got.ingStr);
+  f.ingMiss = 0;
 
-  f.askErr = false;
   f.mid = med.id;
   f.base = medBase(med);
+
+  // วาดใหม่ทั้งฟอร์ม · จำช่องที่กำลังกรอกไว้ ไม่งั้นโฟกัสหลุดกลางทาง
+  const at = document.activeElement && document.activeElement.id;
   render();
+  const back = at && document.getElementById(at);
+  if (back) back.focus();
+}
+
+// เจอชุดข้อมูลที่ตัวยา ปริมาณ และรูปแบบยาตรงกัน ดึงข้อความมาใส่ให้เลย ไม่ต้องถาม
+// เติมเฉพาะตอนสามช่องยังว่าง จะได้ไม่ทับสิ่งที่พิมพ์ไปแล้ว
+function autoShare() {
+  const f = form;
+  if (!f || f.mid || !formulaHit(f)) return;
+  if (LKEYS.some(k => hasText(f[k]))) return;
+  useFormula();
 }
 
 
-/*  ฟอร์มผลิตภัณฑ์  */
-
-// กล่องถามว่าจะใช้ข้อมูลร่วมกับสูตรที่เจอ หรือกรอกเอง
-function askNote(hit, bad) {
-  const kids = brandsOf(hit);
-  const who = kids.length ? brandTh(kids[0]) : (medRow(hit) || {}).name_th || '';
-  const dose = String(MEDDOSE[hit] || '').replace(/\s*\n+\s*/g, ' · ').trim();
-
-  return '<div class="notice">' + svg('alert') + '<div>' +
-      '<p><b>' + esc(who) + '</b> ใช้ตัวยาสำคัญ ปริมาณตัวยา และรูปแบบยา ชุดเดียวกัน ' +
-        'ใช้ข้อบ่งใช้ วิธีใช้ และคำเตือน ร่วมกันได้ ไม่ต้องพิมพ์ซ้ำ ' +
-        'หลังจากนั้นถ้าแก้ข้อมูลชุดนี้ จะมีผลกับยาทั้งสองตัว</p>' +
-      (dose ? '<p class="notedose"><b>วิธีใช้ของชุดนี้</b><br>' + esc(dose) + '</p>' : '') +
-      '<p class="notewarn">เทียบจากตัวยาสำคัญ ปริมาณตัวยา และรูปแบบยา ที่กรอกไว้ข้างบน ' +
-        'ถ้าปริมาณบนกล่องสะกดคนละแบบ เช่น 500 mg กับ 500 มก. ระบบจะมองเป็นคนละสูตร ' +
-        'กรุณาเทียบวิธีใช้ข้างบนกับกล่องยาที่ถืออยู่ แล้วเลือกอย่างใดอย่างหนึ่ง</p>' +
-      (bad ? '<p class="notebad">' + svg('warning') +
-        '<span>เลือกอย่างใดอย่างหนึ่งก่อน จึงจะบันทึกได้</span></p>' : '') +
-      '<p class="noteact">' +
-        '<button class="btn btn-soft btn-sm" type="button" id="useFormula">' +
-          'ใช้ข้อมูลร่วมกับยาตัวนี้</button>' +
-        '<button class="btn btn-soft btn-sm" type="button" id="soloFormula">' +
-          'ยาตัวนี้ไม่เหมือนกัน · กรอกเอง</button>' +
-      '</p>' +
-    '</div></div>';
-}
+/*  ฟอร์มยา · หน้าเดียวจบ เรียงตามที่อ่านได้จากกล่องยา  */
 
 function productForm() {
   const f = form;
 
-  // ตัวยาหรือรูปแบบยาเปลี่ยนจนไม่เจอสูตรที่ตรงกันแล้ว คำตอบเดิมใช้ไม่ได้ ต้องถามใหม่
-  if (f.solo && !formulaHit(f)) f.solo = false;
-
-  const mode = textMode(f);
-  const others = sharedWith(f);
-  let note = '';
-
-  if (f.mid) {
-    // ผูกกับสูตรแล้ว แก้ช่องข้อความแล้วยี่ห้ออื่นเปลี่ยนตาม ต้องบอกให้ชัด
-    if (others.length)
-      note = sharedNote(others, 'ยาตัวนี้ใช้ข้อมูลร่วมกับอีก ' + others.length + ' ผลิตภัณฑ์', '');
-  } else if (mode === 'ask') {
-    note = askNote(formulaHit(f), f.askErr);
-  } else if (formulaHit(f)) {
-    // ตอบไปแล้วว่าไม่เหมือนกัน เหลือไว้บรรทัดเดียวให้ย้อนได้
-    note = '<p class="noteundo"><span>ยาตัวนี้กรอกข้อความเอง ไม่ใช้ข้อมูลร่วมกับยาที่ตัวยาตรงกัน</span>' +
-      '<button class="btn btn-soft btn-sm" type="button" id="undoSolo">เปลี่ยนใจ</button></p>';
-  }
-
-  return '<h4 class="cardhd fsec">' + svg('tag') + 'ข้อมูลบนฉลาก</h4>' +
-    '<div class="formgrid two">' +
+  return '<div class="formgrid two">' +
       field('brand_name', 'ชื่อผลิตภัณฑ์ยา (Trade Name) *', f.brand_name,
         'ตามที่ปรากฏบนฉลาก') +
-      field('reg_no', 'เลขทะเบียน อย. (Reg. No.) *', f.reg_no, 'ตัวอย่าง 1A 844/39') +
+      field('name_th', 'ชื่อสามัญ (Generic Name) *', f.name_th,
+        'ระบบสร้างให้จากตัวยาสำคัญโดยอัตโนมัติ · แก้ไขได้') +
     '</div>' +
+
+    '<div class="formgrid three">' +
+      fieldSelect('category_id', 'หมวดหมู่ *', f.category_id, CATS.map(c => [c.id, c.name_th]),
+        'ตามประกาศยาสามัญประจำบ้าน อย.') +
+      field('reg_no', 'เลขทะเบียน อย. (Reg. No.) *', f.reg_no, 'ตัวอย่าง 1A 844/39') +
+      fieldSelect('dosage_form', 'รูปแบบยา *', f.dosage_form, formOptions(),
+        'แสดงผลเป็นภาษาไทยในหน้าค้นหาของผู้ใช้') +
+    '</div>' +
+
+    ingBlock(f) +
+
     '<div class="formgrid two">' +
       field('licensee', 'ผู้ผลิต / จำหน่าย *', f.licensee, 'ผู้รับอนุญาตตามที่ระบุบนฉลาก') +
       field('legal_type', 'ประเภทตามกฎหมาย *', f.legal_type) +
     '</div>' +
 
-    '<h4 class="cardhd fsec">' + svg('pill') + 'ตัวยาและสรรพคุณ</h4>' +
-    '<div class="formgrid two">' +
-      fieldSelect('category_id', 'หมวดหมู่ *', f.category_id, CATS.map(c => [c.id, c.name_th]),
-        'ตามประกาศยาสามัญประจำบ้าน อย.') +
-      fieldSelect('dosage_form', 'รูปแบบยา *', f.dosage_form, formOptions(),
-        'จัดเก็บเป็นภาษาอังกฤษ แสดงผลเป็นภาษาไทย') +
-    '</div>' +
-    ingBlock(f) +
-    note +
-    (mode === 'ask' ? '' :
-      mode === 'shared' ? sharedText(f, others.length) : textFields(f)) +
-    formAct('บันทึก');
-}
+    noteSlot(f) +
 
-// สามช่องแบบใช้ร่วมกับยี่ห้ออื่น · แสดงอย่างเดียว
-function sharedText(f, n) {
-  const box = (label, value) =>
-    '<div class="field"><label>' + esc(label) + '</label>' +
-      (value
-        ? '<div class="rotext">' + esc(value).replace(/\n/g, '<br>') + '</div>'
-        : '<div class="rotext is-blank">ยังไม่มีข้อมูล กดปุ่มด้านล่างเพื่อเพิ่ม</div>') +
-    '</div>';
-
-  return box('ข้อบ่งใช้และสรรพคุณ', f.indications) +
-    box('วิธีใช้และขนาดรับประทาน', f.dosage_instructions) +
-    box('คำเตือนและข้อควรระวังสำคัญ', f.warnings) +
-    '<p class="noteact"><button class="btn btn-soft btn-sm" type="button" id="editShared">' +
-      'แก้ข้อมูลชุดนี้ · มีผลกับ ' + (n + 1) + ' ยี่ห้อ</button></p>';
-}
-
-
-/*  ฟอร์มข้อมูลที่ใช้ร่วมกัน  */
-
-function formulaForm() {
-  const f = form;
-  // ที่นี่ทุกผลิตภัณฑ์ของสูตรได้รับผลหมด ไม่ต้องกรองตัวใดออกเหมือนฟอร์มผลิตภัณฑ์
-  const kids = f.mid ? brandsOf(f.mid) : [];
-
-  return sharedNote(kids,
-      'ข้อมูลชุดนี้ใช้กับ ' + kids.length + ' ผลิตภัณฑ์',
-      'ยังไม่มีผลิตภัณฑ์ใดใช้ข้อมูลชุดนี้ ลบทิ้งได้ถ้าไม่ได้ใช้แล้ว') +
-    '<div class="formgrid two">' +
-      fieldSelect('category_id', 'หมวดหมู่ *', f.category_id, CATS.map(c => [c.id, c.name_th]),
-        'ตามประกาศยาสามัญประจำบ้าน อย.') +
-      fieldSelect('dosage_form', 'รูปแบบยา *', f.dosage_form, formOptions(),
-        'จัดเก็บเป็นภาษาอังกฤษ แสดงผลเป็นภาษาไทย') +
-    '</div>' +
-    ingBlock(f) +
-    textFields(f) +
+    LKEYS.map(k => listField(k, f)).join('') +
     formAct('บันทึก');
 }
 
@@ -1512,14 +1493,12 @@ function openNew() {
   if (editing === 'new') return closeForm();
   leaveList();
   editing = 'new';
-  ingEdit = 0;
   form = newForm(null, null);
   render();
   markClean();
   window.scrollTo(0, 0);
 }
 
-// แก้ผลิตภัณฑ์
 async function openEdit(id) {
   if (editing === 'p-' + id) return closeForm();
   const b = BRANDS.find(x => x.id === id);
@@ -1528,7 +1507,6 @@ async function openEdit(id) {
   leaveList();
   editing = 'p-' + id;
   form = null;
-  ingEdit = 0;
   render();
   window.scrollTo(0, 0);   // ฟอร์มแทนที่รายการทั้งหน้า ต้องเริ่มอ่านจากหัวฟอร์ม
 
@@ -1548,55 +1526,46 @@ async function openEdit(id) {
   markClean();
 }
 
-async function openFormula(id) {
-  if (editing === 'f-' + id) return closeForm();
-  if (!medRow(id)) return;
-
-  leaveList();
-  editing = 'f-' + id;
-  form = null;
-  ingEdit = 0;
-  render();
-  window.scrollTo(0, 0);   // ฟอร์มแทนที่รายการทั้งหน้า ต้องเริ่มอ่านจากหัวฟอร์ม
-
-  let med;
-  try {
-    med = await api('/admin/medicines/' + id);
-  } catch (err) {
-    if (!token()) return;
-    toast(err.message, true);
-    editing = '';
-    return render();
-  }
-  if (editing !== 'f-' + id) return;
-  form = newForm(null, med);
-  form.base = medBase(med);
-  render();
-  markClean();
-}
 
 /*  ตรวจและบันทึก  */
 
-// ตรวจช่องของสูตรตำรับ
-function checkMed(f, mode) {
-  // ไม่มีช่องชื่อสามัญแล้ว ชื่อสูตรสร้างจากตัวยา จึงต้องมีตัวยาอย่างน้อยหนึ่งตัว
+function checkMed(f) {
   let ok = true;
-  if (!f.ingIds.length) {
-    toast('เลือกตัวยาสำคัญอย่างน้อยหนึ่งตัว', true);
-    ok = false;
-  }
+
+  (f.ingRows || []).forEach((r, i) => {
+    const x = rowInfo(r);
+
+    // กรอกปริมาณไว้แต่ไม่มีชื่อตัวยา คือกรอกไม่ครบ ส่วนแถวว่างทั้งแถวปล่อยผ่าน
+    if (!x) {
+      ok = (String(r.st || '').trim()
+        ? setErr('in_' + i, 'ระบุชื่อตัวยา') : setErr('in_' + i, '')) && ok;
+      return;
+    }
+    setErr('in_' + i, '');
+    if (x.id) return;
+
+    // ตัวยาที่ยังไม่มีในระบบ ต้องได้ชื่อครบสองภาษาก่อน ไม่งั้นระบบสแกนจับคู่ไม่ได้
+    const d = (f.newIng || {})[nameKey(x.name)] || {};
+    if (!(x.th || String(d.th || '').trim()))
+      ok = setErr('ne_th_' + i, 'ระบุชื่อภาษาไทย') && ok;
+    if (!(x.en || String(d.en || '').trim()))
+      ok = setErr('ne_en_' + i, 'ระบุชื่อภาษาอังกฤษ') && ok;
+  });
+
+  if (!rowsInfo(f).length) ok = setErr('in_0', 'ระบุตัวยาสำคัญอย่างน้อยหนึ่งตัว') && ok;
+
+  ok = req('name_th', f.name_th, 'ระบุชื่อสามัญ') && ok;
   ok = req('category_id', f.category_id, 'เลือกหมวดหมู่') && ok;
   ok = req('dosage_form', f.dosage_form, 'เลือกรูปแบบยา') && ok;
-
-  // บังคับสามช่องเฉพาะตอนเป็น own
-  if (mode !== 'own') return ok;
-
-  ok = req('indications', f.indications, 'ระบุข้อบ่งใช้') && ok;
-  ok = req('dosage_instructions', f.dosage_instructions, 'ระบุวิธีใช้') && ok;
+  // ข้อความที่กรอกเป็นข้อ ๆ · ขอแค่มีข้อที่ไม่ว่างอย่างน้อยหนึ่งข้อ แจ้งที่ข้อแรก
+  ok = setErr('indications_0',
+    hasText(f.indications) ? '' : 'ระบุข้อบ่งใช้อย่างน้อยหนึ่งข้อ') && ok;
+  ok = setErr('dosage_instructions_0',
+    hasText(f.dosage_instructions) ? '' : 'ระบุวิธีใช้อย่างน้อยหนึ่งข้อ') && ok;
   return ok;
 }
 
-// ส่งสูตรตำรับ · เฉพาะตอนเปลี่ยนจริง
+// ส่งข้อมูลส่วนที่ใช้ร่วมกันได้ · เฉพาะตอนเปลี่ยนจริง
 async function saveMedPart(f) {
   const body = medBody(f);
   if (!f.mid) {
@@ -1622,16 +1591,9 @@ function saveProduct(btn) {
   formRead();
   const f = form;
 
-  const mode = textMode(f);
   let ok = req('brand_name', f.brand_name, 'ระบุชื่อผลิตภัณฑ์ยา');
-  ok = checkMed(f, mode) && ok;
+  ok = checkMed(f) && ok;
 
-  // ยังไม่ตอบว่าจะใช้ข้อมูลร่วมหรือกรอกเอง · เตือนที่กล่อง ไม่ใช่ที่ช่อง
-  if (mode === 'ask') {
-    f.askErr = true;
-    toast('เลือกก่อนว่าจะใช้ข้อมูลร่วมกัน หรือกรอกเอง', true);
-    ok = false;
-  }
   ok = req('licensee', f.licensee, 'ระบุผู้ผลิตหรือผู้จำหน่าย') && ok;
   ok = req('legal_type', f.legal_type, 'ระบุประเภทตามกฎหมาย') && ok;
 
@@ -1641,12 +1603,10 @@ function saveProduct(btn) {
   else if (BRANDS.some(x => x.id !== f.bid && regKey(x.reg_no) === regKey(f.reg_no)))
     ok = setErr('reg_no', 'เลขทะเบียนนี้มีอยู่แล้ว') && ok;
   else setErr('reg_no', '');
-  if (!ok) {
-    if (mode === 'ask') render();   // วาดใหม่ให้ข้อความเตือนในกล่องโผล่
-    return focusBad();
-  }
+  if (!ok) return focusBad();
 
   return apply(btn, async () => {
+    await makeNewIngs(f);     // ตัวยาใหม่ต้องมีไอดีก่อน ถึงจะผูกเข้ากับยาได้
     await saveMedPart(f);
 
     const bb = { medicine_id: f.mid, brand_name: f.brand_name, reg_no: f.reg_no,
@@ -1657,10 +1617,10 @@ function saveProduct(btn) {
       if (b) Object.assign(b, await send('/admin/brands/' + b.id, 'PUT', bb));
       else BRANDS.push(await send('/admin/brands', 'POST', bb));
     } catch (err) {
-      throw new Error('บันทึกสูตรตำรับแล้ว แต่บันทึกผลิตภัณฑ์ไม่สำเร็จ · ' + err.message);
+      throw new Error('บันทึกข้อมูลยาแล้ว แต่บันทึกชื่อผลิตภัณฑ์ไม่สำเร็จ · ' + err.message);
     }
 
-    // อัปเดตจำนวนผลิตภัณฑ์ของสูตรเดิมและสูตรใหม่
+    // อัปเดตจำนวนผลิตภัณฑ์ของชุดข้อมูลเดิมและชุดใหม่
     [was, f.mid].forEach(mid => {
       const row = mid && medRow(mid);
       if (row) row.brand_count = brandCount(mid);
@@ -1669,84 +1629,23 @@ function saveProduct(btn) {
   }, f.bid ? 'บันทึกแล้ว' : 'เพิ่มรายการแล้ว');
 }
 
-function saveFormula(btn) {
-  formRead();
-  const f = form;
-
-  const ok = checkMed(f, 'own');
-  if (!ok) return focusBad();
-
-  const adding = !f.mid;
-  return apply(btn, async () => {
-    await saveMedPart(f);
-    form = null;
-  }, adding ? 'เพิ่มสูตรตำรับแล้ว' : 'บันทึกแล้ว');
-}
-
-// เพิ่มตัวยาเข้าสูตร
-function addIngredient() {
-  const v = fv('ing_pick');
-  if (!req('ing_pick', v, 'เลือกตัวยาที่จะเพิ่ม')) return focusBad();
-  formRead();
-  form.ingIds.push(+v);
-  if (!form.ingStr) form.ingStr = {};
-  if (form.ingStr[+v] == null) form.ingStr[+v] = '';
-  ingEdit = 0;
-  render();
-}
-
-
-// บันทึกชื่อและชื่อเรียกอื่นของตัวยา
-async function saveIngEdit(btn) {
-  const id = ingEdit;
-  const d = readForm(['ed_th', 'ed_en', 'ed_alias']);
-
-  let ok = req('ed_th', d.ed_th, 'ระบุชื่อภาษาไทย');
-  ok = req('ed_en', d.ed_en, 'ระบุชื่อภาษาอังกฤษ') && ok;
-
-  // ชื่ออังกฤษซ้ำกับตัวยาอื่นไม่ได้ ไม่นับตัวที่กำลังแก้
-  const key = d.ed_en.toLowerCase();
-  if (ok && INGS.some(g => g.id !== id && String(g.name_en).toLowerCase() === key))
-    ok = setErr('ed_en', 'ชื่อนี้ซ้ำกับตัวยาอื่น');
-  if (!ok) return focusBad();
-
-  const body = {
-    name_th: d.ed_th,
-    name_en: d.ed_en,
-    aliases: d.ed_alias ? d.ed_alias.split(',').map(x => x.trim()).filter(Boolean) : [],
-  };
-  formRead();
-
-  const label = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'กำลังบันทึก…';
-  try {
-    const res = await send('/admin/ingredients/' + id, 'PUT', body);
-    const g = INGS.find(x => x.id === id);
-    if (g) Object.assign(g, res || body);
-  } catch (err) {
-    if (!token()) return;
-    showFormMsg(err.message);
-    btn.disabled = false;
-    btn.textContent = label;
-    return;
-  }
-  ingEdit = 0;
-  toast('แก้ไขตัวยาแล้ว');
-  render();
-}
-
 
 /*  การลบ  */
 
-// ลบผลิตภัณฑ์ · ไม่ลบสูตรตาม
+// ลบผลิตภัณฑ์ · ถ้าไม่มียี่ห้ออื่นใช้ข้อมูลชุดนั้นแล้ว ลบชุดข้อมูลตามไปด้วย
 async function delProduct(id) {
   const b = BRANDS.find(x => x.id === id);
   if (!b) return;
 
+  const mid = b.medicine_id;
+  const others = brandsOf(mid).filter(x => x.id !== id);
+
   const ok = await confirmBox('ยืนยันการลบ',
-    'ลบ ' + brandTh(b) + ' เลขทะเบียน ' + b.reg_no + ' ออกจากฐานข้อมูล ' +
-    'สูตรตำรับยังคงอยู่ในแท็บสูตรตำรับ การลบนี้ไม่สามารถย้อนกลับได้', 'ลบ');
+    'ลบ ' + brandTh(b) + ' เลขทะเบียน ' + b.reg_no + ' ออกจากฐานข้อมูล' +
+    (others.length
+      ? ' · ยาอีก ' + others.length + ' ยี่ห้อที่ใช้ข้อมูลร่วมกันยังอยู่ครบ'
+      : ' พร้อมข้อบ่งใช้ วิธีใช้ และคำเตือนของยาตัวนี้ เพราะไม่มียี่ห้ออื่นใช้อยู่') +
+    ' การลบนี้ไม่สามารถย้อนกลับได้', 'ลบ');
   if (!ok) return;
 
   try {
@@ -1756,37 +1655,20 @@ async function delProduct(id) {
     return;
   }
   BRANDS = BRANDS.filter(x => x.id !== id);
-  const row = medRow(b.medicine_id);
-  if (row) row.brand_count = brandCount(b.medicine_id);
+
+  if (!others.length && mid) {
+    // ลบยี่ห้อสำเร็จไปแล้ว ถ้าลบชุดข้อมูลไม่ผ่านก็ไม่ต้องขัดจังหวะ
+    try {
+      await api('/admin/medicines/' + mid, { method: 'DELETE' });
+      MEDS = MEDS.filter(x => x.id !== mid);
+      delete MEDKEY[mid];
+    } catch (err) {}
+  } else {
+    const row = medRow(mid);
+    if (row) row.brand_count = brandCount(mid);
+  }
 
   toast('ลบ ' + brandTh(b) + ' แล้ว');
-  render();
-}
-
-// ลบสูตรตำรับ
-async function delFormula(id) {
-  const m = medRow(id);
-  if (!m) return;
-  const n = brandCount(id);
-
-  if (n) return toast('มี ' + n + ' ผลิตภัณฑ์ใช้สูตรนี้อยู่ ต้องลบผลิตภัณฑ์เหล่านั้นก่อน', true);
-
-
-  const ok = await confirmBox('ยืนยันการลบ',
-    'ลบสูตรตำรับ ' + m.name_th + ' พร้อมข้อบ่งใช้ วิธีใช้ และคำเตือน ' +
-    'ออกจากฐานข้อมูล การลบนี้ไม่สามารถย้อนกลับได้', 'ลบ');
-  if (!ok) return;
-
-  try {
-    await api('/admin/medicines/' + id, { method: 'DELETE' });
-  } catch (err) {
-    if (token()) toast(err.message, true);
-    return;
-  }
-  MEDS = MEDS.filter(x => x.id !== id);
-  delete MEDKEY[id];
-  delete MEDDOSE[id];
-  toast('ลบสูตร ' + m.name_th + ' แล้ว');
   render();
 }
 
@@ -1794,18 +1676,24 @@ async function delFormula(id) {
 /*  ผูกปุ่มที่ใช้ร่วมกัน  */
 
 function bindNav() {
-  $$('#panel [data-go]').forEach(b =>
-    b.addEventListener('click', () => goTab(b.dataset.go)));
-
   // ผูกที่นี่ ไม่ใช่ที่ bindFormBtns() เพราะต้องกดได้ตั้งแต่ตอนที่ยังรอข้อมูลจาก API
   const back = $('#backList');
   if (back) back.addEventListener('click', async () => {
     if (await leaveForm()) closeForm();
   });
+
+  const home = $('#backHome');
+  if (home) home.addEventListener('click', () => goView('home'));
 }
 
 // คืนโฟกัสและตำแหน่งเคอร์เซอร์หลังวาดใหม่
 function bindSearch() {
+  const sel = $('#adCat');
+  if (sel) sel.addEventListener('change', e => {
+    cat = e.target.value;
+    render();
+  });
+
   const box = $('#adQ');
   if (!box) return;
   box.addEventListener('input', e => {
@@ -1818,37 +1706,36 @@ function bindSearch() {
   });
 }
 
-function bindIngPicker() {
-  const addIng = $('#addIngBtn');
-  if (addIng) addIng.addEventListener('click', addIngredient);
+// ช่องกรอกและปุ่มของแต่ละแถวตัวยา · ผูกใหม่ทุกครั้งที่วาดรายการแถวใหม่
+function bindIngRows() {
+  $$('#panel [data-row]').forEach(li => {
+    const i = li.dataset.row;
 
-  // กรอกปริมาณเสร็จแล้วหาสูตรใหม่ทันที · ใช้ change ห้ามใช้ input
-  $$('#panel [data-fl^="st_"] input').forEach(el =>
-    el.addEventListener('change', () => { formRead(); render(); }));
+    const nm = $('#fl-in_' + i);
+    if (nm) {
+      nm.setAttribute('list', 'ingNames');   // ช่วยเติมชื่อให้ตรงกับที่มีในระบบ
+      // ใช้ change ห้ามใช้ input ไม่งั้นวาดใหม่ทุกตัวอักษร
+      nm.addEventListener('change', () => scanFormula().then(autoShare));
+    }
 
-  $$('#panel [data-ingedit]').forEach(b => b.addEventListener('click', () => {
-    formRead();
-    ingEdit = +b.dataset.ingedit;
-    render();
-  }));
+    const st = $('#fl-st_' + i);
+    if (st) st.addEventListener('change', () => scanFormula().then(autoShare));
 
-  const ingSave = $('#ingSave');
-  if (ingSave) ingSave.addEventListener('click', () => saveIngEdit(ingSave));
-
-  const ingCancel = $('#ingCancel');
-  if (ingCancel) ingCancel.addEventListener('click', () => {
-    formRead();
-    ingEdit = 0;
-    render();
+    const del = $('#panel [data-ingdel="' + i + '"]');
+    if (del) del.addEventListener('click', () => {
+      formRead();
+      form.ingRows.splice(+i, 1);
+      if (!form.ingRows.length) form.ingRows.push({ nm: '', st: '' });
+      redrawIng();
+      scanFormula().then(autoShare);
+    });
   });
+}
 
-  $$('#panel [data-ingdrop]').forEach(b => b.addEventListener('click', () => {
-    formRead();
-    const id = +b.dataset.ingdrop;
-    form.ingIds = form.ingIds.filter(x => x !== id);
-    if (form.ingStr) delete form.ingStr[id];
-    render();
-  }));
+// ปุ่มในกล่องแจ้ง · วาดใหม่ทุกครั้งที่ตัวยาเปลี่ยน จึงต้องผูกใหม่ทุกครั้ง
+function bindNote() {
+  const useBtn = $('#useFormula');
+  if (useBtn) useBtn.addEventListener('click', useFormula);
 }
 
 function bindFormBtns(saveFn) {
